@@ -1,0 +1,245 @@
+import React, { useState, useEffect } from 'react';
+import { initializeApp } from 'firebase/app';
+import { 
+  getFirestore, 
+  doc, 
+  onSnapshot, 
+  setDoc, 
+  updateDoc, 
+  Timestamp 
+} from 'firebase/firestore';
+import { 
+  getAuth, 
+  signInAnonymously, 
+  onAuthStateChanged,
+  signInWithCustomToken
+} from 'firebase/auth';
+import { Timer, Plus, RotateCcw, Cloud, CloudOff, Zap } from 'lucide-react';
+
+// Configuration Firebase vérifiée
+const firebaseConfig = {
+  apiKey: "AIzaSyDN-aqV8J3IQ1PAfyh-K6lIl2g9TK5fNrk",
+  authDomain: "bonte-20602316-d466c.firebaseapp.com",
+  projectId: "bonte-20602316-d466c",
+  storageBucket: "bonte-20602316-d466c.firebasestorage.app",
+  messagingSenderId: "139604748294",
+  appId: "1:139604748294:web:8b933e82243e5bd71f3b87"
+};
+
+// Initialisation unique des services
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
+const currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'global-countdown-v1';
+
+export default function App() {
+  const [user, setUser] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [targetDate, setTargetDate] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Chemin Firestore conforme (6 segments)
+  const docPath = `artifacts/${currentAppId}/public/data/timers/shared-countdown`;
+
+  // 1. Authentification (Correction du Custom Token Mismatch)
+  useEffect(() => {
+    const initAuth = async () => {
+      try {
+        // Priorité à l'authentification anonyme pour éviter les erreurs de mismatch de token
+        // sauf si un token spécifique est requis et valide.
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+          try {
+            await signInWithCustomToken(auth, __initial_auth_token);
+          } catch (tokenErr) {
+            console.warn("Custom token failed, falling back to anonymous", tokenErr);
+            await signInAnonymously(auth);
+          }
+        } else {
+          await signInAnonymously(auth);
+        }
+      } catch (e) {
+        console.error("Auth error:", e);
+        setError("Erreur de connexion sécurisée");
+      }
+    };
+
+    initAuth();
+    const unsubscribe = onAuthStateChanged(auth, (currUser) => {
+      if (currUser) {
+        setUser(currUser);
+      }
+    });
+    return () => unsubscribe();
+  }, []);
+
+  // 2. Écoute des données Firestore
+  useEffect(() => {
+    if (!user) return;
+
+    const timerDoc = doc(db, docPath);
+
+    const unsubscribe = onSnapshot(timerDoc, (snap) => {
+      setLoading(false);
+      if (snap.exists()) {
+        const data = snap.data();
+        if (data.expiresAt) {
+          setTargetDate(data.expiresAt.toMillis());
+        }
+      } else {
+        // Initialisation du document
+        setDoc(timerDoc, { 
+          expiresAt: Timestamp.fromMillis(Date.now()),
+          updatedAt: Timestamp.now()
+        }).catch(err => console.error("Init error:", err));
+      }
+    }, (err) => {
+      console.error("Firestore error:", err);
+      // Ne pas bloquer l'UI si c'est juste une erreur de permission momentanée
+      if (err.code === 'permission-denied') {
+        setError("Accès refusé. Vérifiez vos règles Firestore.");
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, [user]);
+
+  // 3. Mise à jour du chrono local
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (!targetDate) return;
+      const diff = targetDate - Date.now();
+      setTimeLeft(diff > 0 ? diff : 0);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [targetDate]);
+
+  // Fonctions d'interaction
+  const addTime = async (minutes) => {
+    if (!user) return;
+    const now = Date.now();
+    const baseTime = targetDate > now ? targetDate : now;
+    const newTarget = baseTime + (minutes * 60 * 1000);
+    
+    try {
+      await updateDoc(doc(db, docPath), {
+        expiresAt: Timestamp.fromMillis(newTarget),
+        updatedAt: Timestamp.now()
+      });
+    } catch (e) {
+      console.error("Update error:", e);
+    }
+  };
+
+  const resetTimer = async () => {
+    if (!user) return;
+    try {
+      await updateDoc(doc(db, docPath), {
+        expiresAt: Timestamp.fromMillis(Date.now()),
+        updatedAt: Timestamp.now()
+      });
+    } catch (e) {
+      console.error("Reset error:", e);
+    }
+  };
+
+  const formatDisplay = (ms) => {
+    const totalSec = Math.floor(ms / 1000);
+    const h = Math.floor(totalSec / 3600);
+    const m = Math.floor((totalSec % 3600) / 60);
+    const s = totalSec % 60;
+    return {
+      h: h.toString().padStart(2, '0'),
+      m: m.toString().padStart(2, '0'),
+      s: s.toString().padStart(2, '0')
+    };
+  };
+
+  const t = formatDisplay(timeLeft);
+
+  if (loading && !error) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-zinc-500 gap-4">
+        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+        <p className="text-[10px] tracking-widest font-bold uppercase">Synchronisation...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-4 font-mono">
+      <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-[2rem] p-8 shadow-2xl relative">
+        
+        <div className="flex justify-between items-center mb-10">
+          <div className="flex items-center gap-2">
+            <Timer className="text-blue-500" size={20} />
+            <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">Chrono Synchronisé</span>
+          </div>
+          <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold ${user ? 'bg-blue-500/10 text-blue-500' : 'bg-red-500/10 text-red-500'}`}>
+            {user ? <Cloud size={12} /> : <CloudOff size={12} />}
+            {user ? "CONNECTÉ" : "DÉCONNECTÉ"}
+          </div>
+        </div>
+
+        {error && (
+          <div className="mb-6 p-3 bg-red-900/20 border border-red-900/50 text-red-400 text-[10px] rounded-lg text-center uppercase tracking-wider">
+            {error}
+          </div>
+        )}
+
+        <div className="flex justify-around items-center mb-12 bg-black/40 py-8 rounded-2xl border border-zinc-800/50 shadow-inner">
+          <div className="text-center">
+            <div className="text-5xl font-light tracking-tighter">{t.h}</div>
+            <div className="text-[9px] text-zinc-600 mt-2 font-black uppercase">Heures</div>
+          </div>
+          <div className="text-2xl text-zinc-800 font-bold">:</div>
+          <div className="text-center">
+            <div className="text-5xl font-light tracking-tighter text-blue-500">{t.m}</div>
+            <div className="text-[9px] text-zinc-600 mt-2 font-black uppercase">Minutes</div>
+          </div>
+          <div className="text-2xl text-zinc-800 font-bold">:</div>
+          <div className="text-center">
+            <div className="text-5xl font-light tracking-tighter">{t.s}</div>
+            <div className="text-[9px] text-zinc-600 mt-2 font-black uppercase">Secondes</div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <button 
+            onClick={() => addTime(30)}
+            className="flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 active:scale-95 transition-all py-4 rounded-xl font-bold text-xs border border-zinc-700/50"
+          >
+            <Plus size={14} /> 30 MIN
+          </button>
+          <button 
+            onClick={() => addTime(60)}
+            className="flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 active:scale-95 transition-all py-4 rounded-xl font-bold text-xs border border-zinc-700/50"
+          >
+            <Plus size={14} /> 1 HEURE
+          </button>
+          
+          <button 
+            onClick={() => addTime(5)}
+            className="col-span-2 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all py-4 rounded-xl font-bold text-sm shadow-lg shadow-blue-900/30"
+          >
+            <Zap size={16} fill="currentColor" /> +5 MINUTES
+          </button>
+
+          <button 
+            onClick={resetTimer}
+            className="col-span-2 mt-4 flex items-center justify-center gap-2 text-zinc-600 hover:text-red-500 transition-colors py-2 text-[10px] font-bold tracking-[0.2em] uppercase"
+          >
+            <RotateCcw size={12} /> Réinitialiser
+          </button>
+        </div>
+
+        <div className="mt-8 text-center border-t border-zinc-800 pt-6">
+          <p className="text-[9px] text-zinc-700 font-medium tracking-[0.2em] uppercase">
+            Synchronisation Cloud Temps Réel
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
