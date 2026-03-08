@@ -1,243 +1,243 @@
 import React, { useState, useEffect } from 'react';
 import { initializeApp } from 'firebase/app';
-import { 
-  getFirestore, 
-  doc, 
-  onSnapshot, 
-  setDoc, 
-  updateDoc, 
-  Timestamp 
-} from 'firebase/firestore';
-import { 
-  getAuth, 
-  signInAnonymously, 
-  onAuthStateChanged,
-  signInWithCustomToken
-} from 'firebase/auth';
-import { Timer, Plus, RotateCcw, Cloud, CloudOff, Zap } from 'lucide-react';
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signInWithCustomToken, signInAnonymously } from 'firebase/auth';
+import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
+import { ShieldCheck, Copy, Star } from 'lucide-react';
 
-// Configuration Firebase vérifiée
+// Configuration Firebase
 const firebaseConfig = {
-  apiKey: "AIzaSyDN-aqV8J3IQ1PAfyh-K6lIl2g9TK5fNrk",
-  authDomain: "bonte-20602316-d466c.firebaseapp.com",
-  projectId: "bonte-20602316-d466c",
-  storageBucket: "bonte-20602316-d466c.firebasestorage.app",
-  messagingSenderId: "139604748294",
-  appId: "1:139604748294:web:8b933e82243e5bd71f3b87"
+  apiKey: "AIzaSyA3JgvNu5p-43037jvm4WRDaJHI9ES7uGM",
+  authDomain: "levelup-ia.firebaseapp.com",
+  projectId: "levelup-ia",
+  storageBucket: "levelup-ia.firebasestorage.app",
+  messagingSenderId: "229420004282",
+  appId: "1:229420004282:web:6735f059a947f0936ae383",
+  measurementId: "G-MSRDY2574K"
 };
 
-// Initialisation unique des services
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
 const auth = getAuth(app);
-const currentAppId = typeof __app_id !== 'undefined' ? __app_id : 'global-countdown-v1';
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+const currentAppId = "levelup-ia";
 
 export default function App() {
+  const [page, setPage] = useState('login'); // 'login', 'confirm', 'key'
   const [user, setUser] = useState(null);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [targetDate, setTargetDate] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [accessKey, setAccessKey] = useState('...');
+  const [timeLeft, setTimeLeft] = useState(180);
+  const [loading, setLoading] = useState(false);
+  const [isCopied, setIsCopied] = useState(false);
 
-  // Chemin Firestore conforme (6 segments)
-  const docPath = `artifacts/${currentAppId}/public/data/timers/shared-countdown`;
-
-  // 1. Authentification (Correction du Custom Token Mismatch)
+  // Authentification
   useEffect(() => {
-    const initAuth = async () => {
-      try {
-        // Priorité à l'authentification anonyme pour éviter les erreurs de mismatch de token
-        // sauf si un token spécifique est requis et valide.
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          try {
-            await signInWithCustomToken(auth, __initial_auth_token);
-          } catch (tokenErr) {
-            console.warn("Custom token failed, falling back to anonymous", tokenErr);
-            await signInAnonymously(auth);
-          }
-        } else {
-          await signInAnonymously(auth);
-        }
-      } catch (e) {
-        console.error("Auth error:", e);
-        setError("Erreur de connexion sécurisée");
-      }
-    };
-
-    initAuth();
     const unsubscribe = onAuthStateChanged(auth, (currUser) => {
       if (currUser) {
         setUser(currUser);
+        if (page === 'login') setPage('confirm');
       }
     });
     return () => unsubscribe();
-  }, []);
+  }, [page]);
 
-  // 2. Écoute des données Firestore
+  // Timer pour la clé
   useEffect(() => {
-    if (!user) return;
-
-    const timerDoc = doc(db, docPath);
-
-    const unsubscribe = onSnapshot(timerDoc, (snap) => {
-      setLoading(false);
-      if (snap.exists()) {
-        const data = snap.data();
-        if (data.expiresAt) {
-          setTargetDate(data.expiresAt.toMillis());
-        }
-      } else {
-        // Initialisation du document
-        setDoc(timerDoc, { 
-          expiresAt: Timestamp.fromMillis(Date.now()),
-          updatedAt: Timestamp.now()
-        }).catch(err => console.error("Init error:", err));
-      }
-    }, (err) => {
-      console.error("Firestore error:", err);
-      // Ne pas bloquer l'UI si c'est juste une erreur de permission momentanée
-      if (err.code === 'permission-denied') {
-        setError("Accès refusé. Vérifiez vos règles Firestore.");
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, [user]);
-
-  // 3. Mise à jour du chrono local
-  useEffect(() => {
+    if (page !== 'key' || timeLeft <= 0) return;
     const timer = setInterval(() => {
-      if (!targetDate) return;
-      const diff = targetDate - Date.now();
-      setTimeLeft(diff > 0 ? diff : 0);
+      setTimeLeft((prev) => prev - 1);
     }, 1000);
     return () => clearInterval(timer);
-  }, [targetDate]);
+  }, [page, timeLeft]);
 
-  // Fonctions d'interaction
-  const addTime = async (minutes) => {
-    if (!user) return;
-    const now = Date.now();
-    const baseTime = targetDate > now ? targetDate : now;
-    const newTarget = baseTime + (minutes * 60 * 1000);
-    
+  const handleGoogleLogin = async () => {
     try {
-      await updateDoc(doc(db, docPath), {
-        expiresAt: Timestamp.fromMillis(newTarget),
-        updatedAt: Timestamp.now()
-      });
-    } catch (e) {
-      console.error("Update error:", e);
+      await signInWithPopup(auth, provider);
+    } catch (error) {
+      console.error("Erreur Auth:", error);
     }
   };
 
-  const resetTimer = async () => {
+  const generateAccessKey = async () => {
     if (!user) return;
+    setLoading(true);
+
     try {
-      await updateDoc(doc(db, docPath), {
-        expiresAt: Timestamp.fromMillis(Date.now()),
-        updatedAt: Timestamp.now()
-      });
-    } catch (e) {
-      console.error("Reset error:", e);
+      const userRef = doc(db, 'artifacts', currentAppId, 'public', 'data', 'early_access', user.uid);
+      const userDoc = await getDoc(userRef);
+
+      let key;
+      if (userDoc.exists()) {
+        key = userDoc.data().accessKey;
+      } else {
+        key = 'LU-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+        await setDoc(userRef, {
+          userId: user.uid,
+          email: user.email,
+          accessKey: key,
+          createdAt: new Date().toISOString()
+        });
+      }
+
+      setAccessKey(key);
+      setPage('key');
+    } catch (error) {
+      console.error("Erreur Firestore:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const formatDisplay = (ms) => {
-    const totalSec = Math.floor(ms / 1000);
-    const h = Math.floor(totalSec / 3600);
-    const m = Math.floor((totalSec % 3600) / 60);
-    const s = totalSec % 60;
-    return {
-      h: h.toString().padStart(2, '0'),
-      m: m.toString().padStart(2, '0'),
-      s: s.toString().padStart(2, '0')
-    };
+  const copyToClipboard = () => {
+    if (timeLeft <= 0 || accessKey === '...') return;
+    const textArea = document.createElement("textarea");
+    textArea.value = accessKey;
+    document.body.appendChild(textArea);
+    textArea.select();
+    document.execCommand('copy');
+    document.body.removeChild(textArea);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
   };
 
-  const t = formatDisplay(timeLeft);
-
-  if (loading && !error) {
-    return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center text-zinc-500 gap-4">
-        <div className="w-10 h-10 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
-        <p className="text-[10px] tracking-widest font-bold uppercase">Synchronisation...</p>
-      </div>
-    );
-  }
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white flex items-center justify-center p-4 font-mono">
-      <div className="w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-[2rem] p-8 shadow-2xl relative">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-slate-900 bg-slate-50 font-['Plus_Jakarta_Sans']">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
         
-        <div className="flex justify-between items-center mb-10">
-          <div className="flex items-center gap-2">
-            <Timer className="text-blue-500" size={20} />
-            <span className="text-xs font-bold uppercase tracking-widest text-zinc-400">Chrono Synchronisé</span>
-          </div>
-          <div className={`flex items-center gap-2 px-3 py-1 rounded-full text-[10px] font-bold ${user ? 'bg-blue-500/10 text-blue-500' : 'bg-red-500/10 text-red-500'}`}>
-            {user ? <Cloud size={12} /> : <CloudOff size={12} />}
-            {user ? "CONNECTÉ" : "DÉCONNECTÉ"}
+        .star-anim {
+          animation: rotate-360 4s linear infinite;
+        }
+
+        @keyframes rotate-360 {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        .glass-card {
+          background: rgba(255, 255, 255, 0.7);
+          backdrop-filter: blur(10px);
+          border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .fade-in {
+          animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
+
+      <div className="w-full max-w-sm">
+        {/* Logo */}
+        <div className="flex items-center justify-center gap-3 mb-10">
+          <h1 className="text-3xl font-black text-blue-900 tracking-tighter">
+            LevelUp <span className="text-blue-500">IA</span>
+          </h1>
+          <div className="star-anim text-blue-500">
+            <Star fill="currentColor" size={32} />
           </div>
         </div>
 
-        {error && (
-          <div className="mb-6 p-3 bg-red-900/20 border border-red-900/50 text-red-400 text-[10px] rounded-lg text-center uppercase tracking-wider">
-            {error}
+        {/* Status Alpha */}
+        <div className="glass-card rounded-2xl p-4 mb-8 text-center fade-in shadow-sm">
+          <p className="text-[11px] font-bold text-blue-700 uppercase tracking-widest mb-1">Status: Développement Alpha</p>
+          <p className="text-[10px] text-slate-500 leading-tight">L'écosystème LevelUp IA est en cours de déploiement. Votre place est réservée.</p>
+        </div>
+
+        {/* PAGE 1 : LOGIN */}
+        {page === 'login' && (
+          <div className="space-y-8 fade-in text-center">
+            <div>
+              <h2 className="text-2xl font-black mb-2 tracking-tight">Accès Prioritaire</h2>
+              <p className="text-slate-400 text-sm">Authentifiez-vous pour sécuriser votre identifiant unique.</p>
+            </div>
+            <button 
+              onClick={handleGoogleLogin}
+              className="w-full flex items-center justify-center gap-3 py-4 px-4 bg-white border border-slate-100 rounded-2xl hover:bg-slate-50 transition-all font-bold shadow-xl shadow-slate-100/50 group"
+            >
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="20" height="20" alt="Google" />
+              Réserver avec Google
+            </button>
           </div>
         )}
 
-        <div className="flex justify-around items-center mb-12 bg-black/40 py-8 rounded-2xl border border-zinc-800/50 shadow-inner">
-          <div className="text-center">
-            <div className="text-5xl font-light tracking-tighter">{t.h}</div>
-            <div className="text-[9px] text-zinc-600 mt-2 font-black uppercase">Heures</div>
+        {/* PAGE 2 : CONFIRMATION */}
+        {page === 'confirm' && (
+          <div className="space-y-8 fade-in text-center">
+            <div>
+              <h2 className="text-2xl font-black mb-1 tracking-tight">
+                Bienvenue, <br /><span className="text-blue-600">{user?.displayName || 'Ami'}</span>
+              </h2>
+              <p className="text-slate-400 text-sm mt-3 px-4 leading-relaxed">Le système est prêt. Générez votre code pour finaliser la réservation.</p>
+            </div>
+            <button 
+              onClick={generateAccessKey}
+              disabled={loading}
+              className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black hover:bg-blue-700 transition-all shadow-xl shadow-blue-200 active:scale-95 disabled:opacity-50"
+            >
+              {loading ? "SÉCURISATION DU PROFIL..." : "CRÉER MON CODE UNIQUE"}
+            </button>
           </div>
-          <div className="text-2xl text-zinc-800 font-bold">:</div>
-          <div className="text-center">
-            <div className="text-5xl font-light tracking-tighter text-blue-500">{t.m}</div>
-            <div className="text-[9px] text-zinc-600 mt-2 font-black uppercase">Minutes</div>
+        )}
+
+        {/* PAGE 3 : CLÉ */}
+        {page === 'key' && (
+          <div className="space-y-6 fade-in">
+            <div className="glass-card border-2 border-dashed border-blue-200 rounded-[32px] p-8 text-center relative overflow-hidden shadow-2xl shadow-blue-100/50">
+              <div className="absolute top-0 right-0 p-4">
+                <div className="bg-blue-600 text-white text-[10px] font-black px-2.5 py-1.5 rounded-xl flex items-center gap-1.5 shadow-lg shadow-blue-200">
+                  <ShieldCheck size={14} />
+                  <span>{formatTime(timeLeft)}</span>
+                </div>
+              </div>
+              
+              <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest mb-6">Identifiant Personnel</p>
+              
+              <div className={`text-3xl font-mono font-black tracking-tighter mb-8 drop-shadow-sm ${timeLeft <= 0 ? 'text-red-500' : 'text-blue-800'}`}>
+                {timeLeft <= 0 ? "EXPIRÉ" : accessKey}
+              </div>
+              
+              <button 
+                onClick={copyToClipboard}
+                className="w-full py-3.5 bg-white border border-slate-100 rounded-2xl text-sm font-black text-slate-700 flex items-center justify-center gap-2 hover:bg-slate-50 hover:shadow-md transition-all active:scale-95"
+              >
+                <Copy size={16} className="text-blue-500" />
+                {isCopied ? "Copié !" : "Copier l'ID"}
+              </button>
+            </div>
+            
+            <div className="text-center space-y-4 px-2">
+              {timeLeft <= 0 ? (
+                <div className="p-4 bg-red-50/80 backdrop-blur-sm rounded-2xl border border-red-100 mt-4 text-left fade-in">
+                  <p className="text-red-700 font-bold text-xs mb-1">Sécurité activée</p>
+                  <p className="text-[10px] text-red-600 leading-tight">
+                    Par mesure de protection, votre clé a été masquée. <strong>C'est votre identifiant unique :</strong> vous ne pourrez pas en obtenir d'autre. Si vous ne l'avez pas notée, rafraîchissez la page.
+                  </p>
+                </div>
+              ) : (
+                <p className="text-[11px] font-semibold text-slate-500 leading-relaxed">
+                  <span className="text-blue-600 font-bold underline decoration-blue-200 underline-offset-4">Important :</span> Ce code est lié à vie à votre compte Google. Vous n'en recevrez jamais d'autre.
+                </p>
+              )}
+            </div>
           </div>
-          <div className="text-2xl text-zinc-800 font-bold">:</div>
-          <div className="text-center">
-            <div className="text-5xl font-light tracking-tighter">{t.s}</div>
-            <div className="text-[9px] text-zinc-600 mt-2 font-black uppercase">Secondes</div>
+        )}
+
+        {/* Footer */}
+        <div className="mt-12 text-center">
+          <div className="inline-flex gap-2">
+            <div className="w-2 h-2 rounded-full bg-blue-600 animate-pulse"></div>
+            <div className="w-2 h-2 rounded-full bg-indigo-400 animate-pulse [animation-delay:0.2s]"></div>
+            <div className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse [animation-delay:0.4s]"></div>
           </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-3">
-          <button 
-            onClick={() => addTime(30)}
-            className="flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 active:scale-95 transition-all py-4 rounded-xl font-bold text-xs border border-zinc-700/50"
-          >
-            <Plus size={14} /> 30 MIN
-          </button>
-          <button 
-            onClick={() => addTime(60)}
-            className="flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 active:scale-95 transition-all py-4 rounded-xl font-bold text-xs border border-zinc-700/50"
-          >
-            <Plus size={14} /> 1 HEURE
-          </button>
-          
-          <button 
-            onClick={() => addTime(5)}
-            className="col-span-2 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 active:scale-95 transition-all py-4 rounded-xl font-bold text-sm shadow-lg shadow-blue-900/30"
-          >
-            <Zap size={16} fill="currentColor" /> +5 MINUTES
-          </button>
-
-          <button 
-            onClick={resetTimer}
-            className="col-span-2 mt-4 flex items-center justify-center gap-2 text-zinc-600 hover:text-red-500 transition-colors py-2 text-[10px] font-bold tracking-[0.2em] uppercase"
-          >
-            <RotateCcw size={12} /> Réinitialiser
-          </button>
-        </div>
-
-        <div className="mt-8 text-center border-t border-zinc-800 pt-6">
-          <p className="text-[9px] text-zinc-700 font-medium tracking-[0.2em] uppercase">
-            Synchronisation Cloud Temps Réel
-          </p>
         </div>
       </div>
     </div>
