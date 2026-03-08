@@ -4,7 +4,7 @@ import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signI
 import { getFirestore, doc, setDoc, getDoc } from 'firebase/firestore';
 import { ShieldCheck, Copy, Star } from 'lucide-react';
 
-// Configuration Firebase
+// Configuration Firebase vérifiée
 const firebaseConfig = {
   apiKey: "AIzaSyA3JgvNu5p-43037jvm4WRDaJHI9ES7uGM",
   authDomain: "levelup-ia.firebaseapp.com",
@@ -106,33 +106,13 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-slate-900 bg-slate-50 font-['Plus_Jakarta_Sans']">
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-slate-900 bg-slate-50 font-sans">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
-        
-        .star-anim {
-          animation: rotate-360 4s linear infinite;
-        }
-
-        @keyframes rotate-360 {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-
-        .glass-card {
-          background: rgba(255, 255, 255, 0.7);
-          backdrop-filter: blur(10px);
-          border: 1px solid rgba(255, 255, 255, 0.5);
-        }
-
-        .fade-in {
-          animation: fadeIn 0.5s ease-out forwards;
-        }
-
-        @keyframes fadeIn {
-          from { opacity: 0; transform: translateY(10px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
+        .star-anim { animation: rotate-360 4s linear infinite; }
+        @keyframes rotate-360 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .glass-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.5); }
+        .fade-in { animation: fadeIn 0.5s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
       `}</style>
 
       <div className="w-full max-w-sm">
