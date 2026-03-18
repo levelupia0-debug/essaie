@@ -13,16 +13,43 @@
         import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
+        // GESTION DU DÉPLOIEMENT (GitHub Pages protection)
+        let config = null;
+        try {
+            if (typeof __firebase_config !== 'undefined') {
+                config = JSON.parse(__firebase_config);
+            } else {
+                console.error("Firebase Config manquante. Assurez-vous de configurer les variables d'environnement.");
+            }
+        } catch (e) {
+            console.error("Erreur lors du parsing de la config Firebase", e);
+        }
 
-        window.auth = auth;
-        window.db = db;
-        window.GoogleAuthProvider = GoogleAuthProvider;
-        window.signInWithPopup = signInWithPopup;
-        window.firestoreUtils = { collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, limit };
+        if (config) {
+            const app = initializeApp(config);
+            const auth = getAuth(app);
+            const db = getFirestore(app);
+
+            window.auth = auth;
+            window.db = db;
+            window.GoogleAuthProvider = GoogleAuthProvider;
+            window.signInWithPopup = signInWithPopup;
+            window.firestoreUtils = { collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, limit };
+        } else {
+            // Afficher une erreur visuelle si la config est absente (utile pour le debug GitHub)
+            window.onload = () => {
+                document.body.innerHTML = `
+                    <div style="background:#000;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;font-family:sans-serif;">
+                        <div>
+                            <h1 style="color:#a855f7;">Thiab's - Erreur de Configuration</h1>
+                            <p>La configuration Firebase est absente ou mal configurée.</p>
+                            <p style="opacity:0.5;font-size:12px;">Vérifiez votre déploiement GitHub Pages.</p>
+                        </div>
+                    </div>
+                `;
+            };
+        }
+        
         window.__app_id = typeof __app_id !== 'undefined' ? __app_id : "thiab-s-app-v3"; 
     </script>
 
@@ -118,7 +145,6 @@
                 <button id="closeSidebar" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5"><i class="fas fa-times text-xs"></i></button>
             </div>
 
-            <!-- User Profile (Google Data) -->
             <div id="userCard" class="p-4 rounded-2xl bg-white/5 border border-white/5 mb-8 flex items-center gap-4">
                 <div id="userAvatar" class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center overflow-hidden border border-white/10 shadow-inner">
                     <i class="fas fa-user text-xs"></i>
@@ -130,7 +156,6 @@
             </div>
 
             <div class="space-y-6">
-                <!-- Storage Monitor -->
                 <div class="space-y-2">
                     <div class="flex justify-between items-center text-[9px] font-black uppercase tracking-widest opacity-40">
                         <span>Espace Cloud</span>
@@ -139,7 +164,6 @@
                     <div class="storage-bar"><div id="storageBar" class="storage-progress" style="width: 0%"></div></div>
                 </div>
 
-                <!-- Chat History -->
                 <div class="space-y-3">
                     <h4 class="text-[9px] font-black uppercase tracking-widest opacity-40">Historique des sessions</h4>
                     <div id="historyList" class="space-y-2 max-h-60 overflow-y-auto pr-2 no-scrollbar">
@@ -147,7 +171,6 @@
                     </div>
                 </div>
 
-                <!-- Settings -->
                 <div class="space-y-4 pt-4 border-t border-white/5">
                     <div class="space-y-2">
                         <label class="text-[9px] font-black uppercase tracking-widest opacity-40">DNA de <strong>Thiab's</strong></label>
@@ -166,7 +189,6 @@
             </div>
         </div>
 
-        <!-- Header -->
         <header class="px-6 py-5 flex items-center justify-between border-b border-white/5 bg-black/40 backdrop-blur-2xl shrink-0 z-40">
             <div class="flex items-center gap-4">
                 <i class="fas fa-star text-xl star-logo"></i>
@@ -181,7 +203,6 @@
             </button>
         </header>
 
-        <!-- Chat Area -->
         <main class="flex-1 overflow-y-auto px-6 py-10 no-scrollbar space-y-10" id="chatArea">
             <div class="max-w-2xl mx-auto space-y-8" id="conversationContainer"></div>
             <div id="aiTyping" class="max-w-2xl mx-auto hidden">
@@ -192,7 +213,6 @@
             </div>
         </main>
 
-        <!-- Footer -->
         <footer class="px-4 py-6 border-t border-white/5 bg-[#020202]/90 backdrop-blur-3xl shrink-0 z-50">
             <div class="max-w-2xl mx-auto">
                 <div class="glass rounded-3xl p-1.5 flex items-end gap-2 focus-within:border-purple-500/40 transition-all shadow-2xl">
@@ -204,248 +224,244 @@
     </div>
 
     <script type="module">
-        const { auth, db, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, firestoreUtils } = window;
-        const { collection, addDoc, query, orderBy, onSnapshot, getDocs, deleteDoc, doc, setDoc, getDoc, limit } = firestoreUtils;
+        // Attendre que Firebase soit chargé via le script module au dessus
+        const checkReady = setInterval(() => {
+            if (window.auth && window.db) {
+                clearInterval(checkReady);
+                initApp();
+            }
+        }, 100);
 
-        const splashScreen = document.getElementById('splashScreen');
-        const authPage = document.getElementById('authPage');
-        const mainApp = document.getElementById('mainApp');
-        const conversationContainer = document.getElementById('conversationContainer');
-        const chatArea = document.getElementById('chatArea');
-        const userInput = document.getElementById('userInput');
-        const sidebar = document.getElementById('sidebar');
-        const appOverlay = document.getElementById('appOverlay');
-        const historyList = document.getElementById('historyList');
+        function initApp() {
+            const { auth, db, firestoreUtils } = window;
+            const { GoogleAuthProvider, signInWithPopup, onAuthStateChanged } = window;
+            const { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, setDoc, getDoc } = firestoreUtils;
 
-        const MODEL = "gemini-2.5-flash-preview-09-2025";
-        const apiKey = "";
-        const appId = window.__app_id;
-        let userId = null;
-        let dnaPrompt = "";
-        let currentMessages = [];
+            const splashScreen = document.getElementById('splashScreen');
+            const authPage = document.getElementById('authPage');
+            const mainApp = document.getElementById('mainApp');
+            const conversationContainer = document.getElementById('conversationContainer');
+            const chatArea = document.getElementById('chatArea');
+            const userInput = document.getElementById('userInput');
+            const sidebar = document.getElementById('sidebar');
+            const appOverlay = document.getElementById('appOverlay');
+            const historyList = document.getElementById('historyList');
 
-        // Animation Intro
-        window.onload = () => {
-            const s1 = document.getElementById('splash1');
-            const s2 = document.getElementById('splash2');
-            setTimeout(() => s1.classList.add('active'), 500);
-            setTimeout(() => { s1.classList.remove('active'); s1.classList.add('exit'); }, 2000);
-            setTimeout(() => s2.classList.add('active'), 2500);
-            setTimeout(() => { s2.classList.remove('active'); s2.classList.add('exit'); }, 4000);
-            setTimeout(() => {
-                splashScreen.style.opacity = '0';
+            const MODEL = "gemini-2.5-flash-preview-09-2025";
+            const apiKey = "";
+            const appId = window.__app_id;
+            let userId = null;
+            let dnaPrompt = "";
+            let currentMessages = [];
+
+            // Animation Intro
+            const startIntro = () => {
+                const s1 = document.getElementById('splash1');
+                const s2 = document.getElementById('splash2');
+                setTimeout(() => s1.classList.add('active'), 500);
+                setTimeout(() => { s1.classList.remove('active'); s1.classList.add('exit'); }, 2000);
+                setTimeout(() => s2.classList.add('active'), 2500);
+                setTimeout(() => { s2.classList.remove('active'); s2.classList.add('exit'); }, 4000);
                 setTimeout(() => {
-                    splashScreen.style.display = 'none';
-                    authPage.classList.remove('hidden');
-                }, 1000);
-            }, 5000);
-        };
+                    splashScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        splashScreen.style.display = 'none';
+                        if (!auth.currentUser) authPage.classList.remove('hidden');
+                    }, 1000);
+                }, 5000);
+            };
+            startIntro();
 
-        // Google Only Auth
-        document.getElementById('googleLogin').onclick = () => {
-            const btn = document.getElementById('googleLogin');
-            btn.classList.add('opacity-50', 'pointer-events-none');
-            const provider = new GoogleAuthProvider();
-            signInWithPopup(auth, provider).catch(e => {
-                btn.classList.remove('opacity-50', 'pointer-events-none');
-                console.error(e);
-            });
-        };
-
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                userId = user.uid;
-                authPage.classList.add('hidden');
-                mainApp.classList.remove('hidden');
-                mainApp.classList.add('flex');
-
-                // Profile Display
-                document.getElementById('userName').innerText = user.displayName || "Membre";
-                document.getElementById('userMail').innerText = user.email || "Compte lié";
-                if (user.photoURL) {
-                    document.getElementById('userAvatar').innerHTML = `<img src="${user.photoURL}" class="w-full h-full object-cover">`;
-                }
-                
-                // Mail Link
-                const mailSubject = encodeURIComponent(`Support Thiab's - ${user.email} (ID: ${userId})`);
-                document.getElementById('supportMail').href = `mailto:levelup.iao@gmail.com?subject=${mailSubject}`;
-
-                // DNA Load
-                const dnaRef = doc(db, "artifacts", appId, "users", userId, "settings", "dna");
-                const dnaDoc = await getDoc(dnaRef);
-                if (dnaDoc.exists()) {
-                    dnaPrompt = dnaDoc.data().prompt;
-                    document.getElementById('customDNA').value = dnaPrompt;
-                }
-
-                setupHistoryListener();
-            } else {
-                authPage.classList.remove('hidden');
-                mainApp.classList.add('hidden');
-            }
-        });
-
-        // Smart History & Storage
-        function setupHistoryListener() {
-            const q = query(collection(db, "artifacts", appId, "users", userId, "chats"), orderBy("timestamp", "asc"));
-            onSnapshot(q, (snap) => {
-                const messages = [];
-                let totalSize = 0;
-                historyList.innerHTML = '';
-
-                snap.forEach(d => {
-                    const data = d.data();
-                    messages.push({id: d.id, ...data});
-                    totalSize += JSON.stringify(data).length;
-
-                    const item = document.createElement('div');
-                    item.className = "chat-item p-3 rounded-xl flex items-center justify-between group cursor-pointer animate-in fade-in";
-                    item.innerHTML = `
-                        <div class="flex-1 min-w-0 pr-2">
-                            <p class="text-[9px] font-bold text-white truncate">${data.user}</p>
-                            <p class="text-[7px] text-white/30 uppercase">${new Date(data.timestamp).toLocaleDateString()}</p>
-                        </div>
-                        <button class="delete-msg opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:text-red-300 transition-all">
-                            <i class="fas fa-trash-alt text-[8px]"></i>
-                        </button>
-                    `;
-                    item.onclick = (e) => {
-                        if (e.target.closest('.delete-msg')) {
-                            deleteDoc(doc(db, "artifacts", appId, "users", userId, "chats", d.id));
-                        } else {
-                            displaySpecificChat(data);
-                            closeSidebar();
-                        }
-                    };
-                    historyList.appendChild(item);
+            document.getElementById('googleLogin').onclick = () => {
+                const btn = document.getElementById('googleLogin');
+                btn.classList.add('opacity-50', 'pointer-events-none');
+                const provider = new GoogleAuthProvider();
+                signInWithPopup(auth, provider).catch(e => {
+                    btn.classList.remove('opacity-50', 'pointer-events-none');
                 });
+            };
 
-                // Capacity calculation (Safe limit ~300KB)
-                const capacityLimit = 300000;
-                const perc = Math.min((totalSize / capacityLimit) * 100, 100);
-                document.getElementById('storageBar').style.width = perc + '%';
-                document.getElementById('storageLabel').innerText = Math.round(perc) + '%';
-                if (perc > 85) document.getElementById('storageBar').style.background = '#f43f5e';
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    userId = user.uid;
+                    authPage.classList.add('hidden');
+                    mainApp.classList.remove('hidden');
+                    mainApp.classList.add('flex');
 
-                if (messages.length === 0) {
-                    conversationContainer.innerHTML = '';
-                    displayAIMessage("Salut bro ! Je suis **Thiab's** IA, développée par **LevelUp**. Ton compte Google est connecté, je suis prêt !", true);
-                } else if (messages.length > currentMessages.length) {
-                    const last = messages[messages.length - 1];
-                    if (last.newlyAdded) displayAIMessage(last.ai, true);
-                    else refreshConversation(messages);
-                }
-                currentMessages = messages;
-            });
-        }
+                    document.getElementById('userName').innerText = user.displayName || "Membre";
+                    document.getElementById('userMail').innerText = user.email || "Compte lié";
+                    if (user.photoURL) {
+                        document.getElementById('userAvatar').innerHTML = `<img src="${user.photoURL}" class="w-full h-full object-cover">`;
+                    }
+                    
+                    const mailSubject = encodeURIComponent(`Support Thiab's - ${user.email} (ID: ${userId})`);
+                    document.getElementById('supportMail').href = `mailto:levelup.iao@gmail.com?subject=${mailSubject}`;
 
-        function refreshConversation(msgs) {
-            conversationContainer.innerHTML = '';
-            msgs.forEach(m => { displayUserMessage(m.user); displayAIMessage(m.ai, false); });
-            chatArea.scrollTop = chatArea.scrollHeight;
-        }
-
-        function displaySpecificChat(data) {
-            conversationContainer.innerHTML = '';
-            displayUserMessage(data.user);
-            displayAIMessage(data.ai, true);
-        }
-
-        // Side Menu Logic
-        function openSidebar() {
-            sidebar.classList.remove('translate-x-full');
-            appOverlay.classList.remove('hidden');
-            appOverlay.classList.add('overlay-active');
-        }
-
-        function closeSidebar() {
-            sidebar.classList.add('translate-x-full');
-            appOverlay.classList.add('hidden');
-            appOverlay.classList.remove('overlay-active');
-        }
-
-        document.getElementById('openSidebar').onclick = openSidebar;
-        document.getElementById('closeSidebar').onclick = closeSidebar;
-        appOverlay.onclick = closeSidebar;
-
-        document.getElementById('logoutBtn').onclick = () => auth.signOut();
-
-        document.getElementById('saveDNA').onclick = async () => {
-            const btn = document.getElementById('saveDNA');
-            btn.innerHTML = '<i class="fas fa-check"></i>';
-            dnaPrompt = document.getElementById('customDNA').value;
-            await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { prompt: dnaPrompt });
-            setTimeout(() => btn.innerText = "Mettre à jour", 2000);
-        };
-
-        // Chat Mechanics
-        function displayUserMessage(text) {
-            const div = document.createElement('div');
-            div.className = "flex justify-end w-full";
-            div.innerHTML = `<div class="bg-white/5 border border-white/10 px-6 py-3 rounded-2xl text-sm message-bubble text-white shadow-lg">${text}</div>`;
-            conversationContainer.appendChild(div);
-            chatArea.scrollTop = chatArea.scrollHeight;
-        }
-
-        function displayAIMessage(text, animate) {
-            const wrap = document.createElement('div');
-            wrap.className = "flex flex-col gap-3 w-full";
-            const content = document.createElement('div');
-            content.className = "prose prose-invert prose-sm text-slate-300 max-w-full message-bubble";
-            wrap.appendChild(content);
-            conversationContainer.appendChild(wrap);
-            if (animate) streamText(content, text); else content.innerHTML = marked.parse(text);
-        }
-
-        function streamText(container, text) {
-            let i = 0; container.innerHTML = '';
-            const interval = setInterval(() => {
-                if (i < text.length) {
-                    container.innerHTML = marked.parse(text.substring(0, i + 1));
-                    i += 3; chatArea.scrollTop = chatArea.scrollHeight;
+                    const dnaDoc = await getDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"));
+                    if (dnaDoc.exists()) {
+                        dnaPrompt = dnaDoc.data().prompt;
+                        document.getElementById('customDNA').value = dnaPrompt;
+                    }
+                    setupHistoryListener();
                 } else {
-                    container.innerHTML = marked.parse(text);
-                    clearInterval(interval); chatArea.scrollTop = chatArea.scrollHeight;
+                    if (splashScreen.style.display === 'none') authPage.classList.remove('hidden');
+                    mainApp.classList.add('hidden');
                 }
-            }, 5);
-        }
+            });
 
-        async function send() {
-            const val = userInput.value.trim();
-            if (!val || !userId) return;
-            userInput.value = ''; userInput.style.height = '44px';
-            displayUserMessage(val);
-            document.getElementById('aiTyping').classList.remove('hidden');
-            chatArea.scrollTop = chatArea.scrollHeight;
+            function setupHistoryListener() {
+                const q = query(collection(db, "artifacts", appId, "users", userId, "chats"), orderBy("timestamp", "asc"));
+                onSnapshot(q, (snap) => {
+                    const messages = [];
+                    let totalSize = 0;
+                    historyList.innerHTML = '';
 
-            const corePrompt = `Tu es **Thiab's** IA. IDENTITÉ : Créée par **Thiab's**, développée par **LevelUp**. 
-            IMPORTANT : Écris toujours les noms **Thiab's** et **LevelUp** en gras.
-            DNA UTILISATEUR : ${dnaPrompt}.`;
+                    snap.forEach(d => {
+                        const data = d.data();
+                        messages.push({id: d.id, ...data});
+                        totalSize += JSON.stringify(data).length;
 
-            try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: val }] }], systemInstruction: { parts: [{ text: corePrompt }] } })
+                        const item = document.createElement('div');
+                        item.className = "chat-item p-3 rounded-xl flex items-center justify-between group cursor-pointer animate-in fade-in";
+                        item.innerHTML = `
+                            <div class="flex-1 min-w-0 pr-2">
+                                <p class="text-[9px] font-bold text-white truncate">${data.user}</p>
+                                <p class="text-[7px] text-white/30 uppercase">${new Date(data.timestamp).toLocaleDateString()}</p>
+                            </div>
+                            <button class="delete-msg opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:text-red-300 transition-all">
+                                <i class="fas fa-trash-alt text-[8px]"></i>
+                            </button>
+                        `;
+                        item.onclick = (e) => {
+                            if (e.target.closest('.delete-msg')) {
+                                deleteDoc(doc(db, "artifacts", appId, "users", userId, "chats", d.id));
+                            } else {
+                                displaySpecificChat(data);
+                                closeSidebar();
+                            }
+                        };
+                        historyList.appendChild(item);
+                    });
+
+                    const capacityLimit = 300000;
+                    const perc = Math.min((totalSize / capacityLimit) * 100, 100);
+                    document.getElementById('storageBar').style.width = perc + '%';
+                    document.getElementById('storageLabel').innerText = Math.round(perc) + '%';
+                    if (perc > 85) document.getElementById('storageBar').style.background = '#f43f5e';
+
+                    if (messages.length === 0) {
+                        conversationContainer.innerHTML = '';
+                        displayAIMessage("Salut bro ! Je suis **Thiab's** IA, développée par **LevelUp**. Ton compte Google est connecté, je suis prêt !", true);
+                    } else if (messages.length > currentMessages.length) {
+                        const last = messages[messages.length - 1];
+                        if (last.newlyAdded) displayAIMessage(last.ai, true);
+                        else refreshConversation(messages);
+                    }
+                    currentMessages = messages;
                 });
-
-                const data = await res.json();
-                const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Erreur réseau bro.";
-                document.getElementById('aiTyping').classList.add('hidden');
-
-                await addDoc(collection(db, "artifacts", appId, "users", userId, "chats"), {
-                    user: val, ai: aiText, timestamp: Date.now(), newlyAdded: true
-                });
-
-            } catch (e) {
-                document.getElementById('aiTyping').classList.add('hidden');
-                displayAIMessage("Erreur technique bro. Vérifie ta connexion.", true);
             }
-        }
 
-        userInput.oninput = function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; };
-        userInput.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
-        document.getElementById('sendBtn').onclick = send;
+            function refreshConversation(msgs) {
+                conversationContainer.innerHTML = '';
+                msgs.forEach(m => { displayUserMessage(m.user); displayAIMessage(m.ai, false); });
+                chatArea.scrollTop = chatArea.scrollHeight;
+            }
+
+            function displaySpecificChat(data) {
+                conversationContainer.innerHTML = '';
+                displayUserMessage(data.user);
+                displayAIMessage(data.ai, true);
+            }
+
+            document.getElementById('openSidebar').onclick = () => {
+                sidebar.classList.remove('translate-x-full');
+                appOverlay.classList.remove('hidden');
+                appOverlay.classList.add('overlay-active');
+            };
+
+            const closeSidebar = () => {
+                sidebar.classList.add('translate-x-full');
+                appOverlay.classList.add('hidden');
+                appOverlay.classList.remove('overlay-active');
+            };
+
+            document.getElementById('closeSidebar').onclick = closeSidebar;
+            appOverlay.onclick = closeSidebar;
+            document.getElementById('logoutBtn').onclick = () => auth.signOut();
+
+            document.getElementById('saveDNA').onclick = async () => {
+                const btn = document.getElementById('saveDNA');
+                btn.innerHTML = '<i class="fas fa-check"></i>';
+                dnaPrompt = document.getElementById('customDNA').value;
+                await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { prompt: dnaPrompt });
+                setTimeout(() => btn.innerText = "Mettre à jour", 2000);
+            };
+
+            function displayUserMessage(text) {
+                const div = document.createElement('div');
+                div.className = "flex justify-end w-full";
+                div.innerHTML = `<div class="bg-white/5 border border-white/10 px-6 py-3 rounded-2xl text-sm message-bubble text-white shadow-lg">${text}</div>`;
+                conversationContainer.appendChild(div);
+                chatArea.scrollTop = chatArea.scrollHeight;
+            }
+
+            function displayAIMessage(text, animate) {
+                const wrap = document.createElement('div');
+                wrap.className = "flex flex-col gap-3 w-full";
+                const content = document.createElement('div');
+                content.className = "prose prose-invert prose-sm text-slate-300 max-w-full message-bubble";
+                wrap.appendChild(content);
+                conversationContainer.appendChild(wrap);
+                if (animate) streamText(content, text); else content.innerHTML = marked.parse(text);
+            }
+
+            function streamText(container, text) {
+                let i = 0; container.innerHTML = '';
+                const interval = setInterval(() => {
+                    if (i < text.length) {
+                        container.innerHTML = marked.parse(text.substring(0, i + 1));
+                        i += 3; chatArea.scrollTop = chatArea.scrollHeight;
+                    } else {
+                        container.innerHTML = marked.parse(text);
+                        clearInterval(interval); chatArea.scrollTop = chatArea.scrollHeight;
+                    }
+                }, 5);
+            }
+
+            async function send() {
+                const val = userInput.value.trim();
+                if (!val || !userId) return;
+                userInput.value = ''; userInput.style.height = '44px';
+                displayUserMessage(val);
+                document.getElementById('aiTyping').classList.remove('hidden');
+                chatArea.scrollTop = chatArea.scrollHeight;
+
+                const corePrompt = `Tu es **Thiab's** IA. IDENTITÉ : Créée par **Thiab's**, développée par **LevelUp**. 
+                IMPORTANT : Écris toujours les noms **Thiab's** et **LevelUp** en gras.
+                DNA UTILISATEUR : ${dnaPrompt}.`;
+
+                try {
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ contents: [{ parts: [{ text: val }] }], systemInstruction: { parts: [{ text: corePrompt }] } })
+                    });
+                    const data = await res.json();
+                    const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Erreur réseau bro.";
+                    document.getElementById('aiTyping').classList.add('hidden');
+                    await addDoc(collection(db, "artifacts", appId, "users", userId, "chats"), {
+                        user: val, ai: aiText, timestamp: Date.now(), newlyAdded: true
+                    });
+                } catch (e) {
+                    document.getElementById('aiTyping').classList.add('hidden');
+                    displayAIMessage("Erreur technique bro. Vérifie ta connexion.", true);
+                }
+            }
+
+            userInput.oninput = function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; };
+            userInput.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
+            document.getElementById('sendBtn').onclick = send;
+        }
     </script>
 </body>
 </html>
