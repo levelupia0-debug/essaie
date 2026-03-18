@@ -10,10 +10,10 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signInAnonymously, deleteUser } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, collectionGroup, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-        // --- CONFIGURATION FIREBASE DIRECTE ---
+        // --- CONFIGURATION FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyAFNuErJ2ToXYJ9vg0YwAneeOSty6mtXNg",
             authDomain: "thiab-s-ia.firebaseapp.com",
@@ -24,20 +24,19 @@
             measurementId: "G-Z1T4LLG22Z"
         };
 
-        // Initialisation
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Export vers le scope global pour le reste de l'app
+        // Export global
         window.auth = auth;
         window.db = db;
-        window.GoogleAuthProvider = GoogleAuthProvider;
-        window.signInWithPopup = signInWithPopup;
-        window.firestoreUtils = { collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, limit };
+        window.signInAnonymously = signInAnonymously;
+        window.onAuthStateChanged = onAuthStateChanged;
+        window.deleteUser = deleteUser;
+        window.firestoreUtils = { collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, collectionGroup, updateDoc, arrayUnion };
         
-        // Identifiant de l'application pour Firestore
-        window.__app_id = "thiab-s-app-v3"; 
+        window.__app_id = "thiab-s-ia-premium"; 
     </script>
 
     <style>
@@ -47,13 +46,11 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--dark); color: #ffffff; height: 100dvh; margin: 0; display: flex; flex-direction: column; overflow: hidden; }
         .bg-main { background: radial-gradient(circle at 50% 0%, #0d061a 0%, #020202 100%); }
 
-        /* Cinematic Intro */
         #splashScreen { position: fixed; inset: 0; z-index: 9999; background: black; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity 1s ease-out; }
         .splash-text { font-size: 1.8rem; font-weight: 900; letter-spacing: 0.6em; text-transform: uppercase; opacity: 0; position: absolute; transform: scale(0.85); filter: blur(15px); transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); text-align: center; }
         .splash-text.active { opacity: 1; transform: scale(1); filter: blur(0px); }
         .splash-text.exit { opacity: 0; transform: scale(1.2); filter: blur(30px); }
 
-        /* Interface */
         .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.05); }
         .overlay-active { pointer-events: auto; background: rgba(0,0,0,0.4); }
         
@@ -72,23 +69,10 @@
 
         .chat-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s; }
         .chat-item:hover { background: rgba(168, 85, 247, 0.1); border-color: var(--primary); }
+        .chat-item.active { background: rgba(168, 85, 247, 0.15); border-color: var(--primary); }
 
         .storage-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
         .storage-progress { height: 100%; background: var(--primary); transition: width 0.5s ease; }
-
-        .google-btn {
-            background: #ffffff;
-            color: #1f1f1f;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-weight: 700;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid #dadce0;
-        }
-        .google-btn:hover {
-            background: #f8f9fa;
-            box-shadow: 0 1px 3px rgba(60,64,67, 0.3), 0 4px 8px 3px rgba(60,64,67, 0.15);
-            transform: translateY(-1px);
-        }
     </style>
 </head>
 <body class="bg-main">
@@ -99,6 +83,26 @@
         <div id="splash2" class="splash-text text-white"><strong>LevelUp</strong></div>
     </div>
 
+    <!-- LANGUAGE SELECTION PAGE -->
+    <div id="langPage" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-8 bg-black">
+        <div class="w-full max-w-sm text-center space-y-8">
+            <i class="fas fa-globe text-4xl text-purple-500 mb-6"></i>
+            <h2 class="text-xl font-bold uppercase tracking-widest text-white mb-8">
+                Language<br><span class="text-[10px] text-white/50 tracking-widest">Choisissez / Choose</span>
+            </h2>
+            <div class="grid grid-cols-2 gap-4">
+                <button class="lang-btn bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-purple-600 hover:border-purple-500 transition-all flex flex-col items-center gap-3" data-lang="fr">
+                    <span class="text-4xl">🇫🇷</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest">Français</span>
+                </button>
+                <button class="lang-btn bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-purple-600 hover:border-purple-500 transition-all flex flex-col items-center gap-3" data-lang="en">
+                    <span class="text-4xl">🇬🇧</span>
+                    <span class="text-[10px] font-black uppercase tracking-widest">English</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- AUTH PAGE -->
     <div id="authPage" class="hidden fixed inset-0 z-[5000] flex items-center justify-center p-8 bg-black">
         <div class="w-full max-w-sm text-center">
@@ -106,18 +110,41 @@
             <h1 class="text-2xl font-bold tracking-[0.4em] text-white uppercase mb-12"><strong>Thiab's</strong></h1>
             
             <div class="space-y-6">
-                <p class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] mb-4">Accès sécurisé via</p>
-                <button id="googleLogin" class="google-btn w-full py-4 rounded-2xl flex items-center justify-center gap-4 text-sm tracking-wide shadow-sm">
-                    <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                    </svg>
-                    Continuer avec Google
-                </button>
+                <p id="authTitle" class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] mb-4">Entrez votre Clé d'Accès</p>
+                <input type="text" id="accessKeyInput" maxlength="15" placeholder="THB-XXXXX-XXXXX" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-center text-white font-mono text-lg tracking-widest outline-none focus:border-purple-500 transition-all uppercase">
+                
+                <div class="space-y-3">
+                    <button id="verifyKeyBtn" class="w-full bg-purple-600 text-white py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-purple-500 transition-all shadow-[0_0_30px_rgba(168,85,247,0.3)]">
+                        Vérifier la clé
+                    </button>
+                    <a href="https://levelupia0-debug.github.io/levelupia/" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center gap-3 py-4 rounded-2xl border border-white/10 bg-white/5 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/10 hover:border-white/20 transition-all text-white">
+                        <i class="fas fa-key text-purple-400"></i> <span id="getKeyText">Obtenir ma clé</span>
+                    </a>
+                </div>
+                
+                <p id="keyError" class="text-xs text-red-400 font-bold hidden">Clé introuvable ou invalide.</p>
                 <p class="text-[8px] text-white/20 uppercase tracking-widest mt-8">Propulsé par <strong>LevelUp</strong></p>
             </div>
+        </div>
+    </div>
+
+    <!-- WELCOME PAGE -->
+    <div id="welcomePage" class="hidden fixed inset-0 z-[4500] flex items-center justify-center p-8 bg-black/80 backdrop-blur-md">
+        <div class="glass p-8 rounded-3xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-500 shadow-2xl border-white/10">
+            <div class="relative w-24 h-24 mx-auto mb-2">
+                <img id="welcomeAvatar" src="" class="w-full h-full rounded-full object-cover border-2 border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                <div class="absolute -bottom-2 -right-2 bg-green-500 w-6 h-6 rounded-full border-2 border-black flex items-center justify-center">
+                    <i class="fas fa-check text-[10px] text-white"></i>
+                </div>
+            </div>
+            <h2 class="text-2xl font-black text-white uppercase tracking-widest leading-tight">
+                <span id="welcomeGreeting" class="text-sm text-white/50 tracking-widest">Bienvenue</span><br>
+                <span id="welcomeName" class="text-purple-400 truncate block"></span>
+            </h2>
+            <p id="welcomeDesc" class="text-xs text-white/60 leading-relaxed px-2">Thiab's IA est prête à vous assister. Découvrez une intelligence conçue pour vous accompagner au quotidien.</p>
+            <button id="startAppBtn" class="w-full bg-white text-black py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-purple-500 hover:text-white transition-all shadow-lg mt-4 flex justify-center items-center gap-3">
+                <span id="continueBtnText">Continuer</span> <i class="fas fa-arrow-right"></i>
+            </button>
         </div>
     </div>
 
@@ -127,12 +154,12 @@
 
         <div id="sidebar" class="fixed inset-y-0 right-0 w-[85%] md:w-80 glass z-[3000] border-l border-white/10 p-6 flex flex-col transition-transform translate-x-full no-scrollbar overflow-y-auto">
             <div class="flex items-center justify-between mb-8">
-                <span class="text-[10px] font-black uppercase tracking-widest opacity-40">Menu</span>
+                <span id="menuTitle" class="text-[10px] font-black uppercase tracking-widest opacity-40">Menu</span>
                 <button id="closeSidebar" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5"><i class="fas fa-times text-xs"></i></button>
             </div>
 
             <div id="userCard" class="p-4 rounded-2xl bg-white/5 border border-white/5 mb-8 flex items-center gap-4">
-                <div id="userAvatar" class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center overflow-hidden border border-white/10 shadow-inner">
+                <div id="userAvatar" class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center overflow-hidden border border-white/10 shadow-inner shrink-0">
                     <i class="fas fa-user text-xs"></i>
                 </div>
                 <div class="flex-1 min-w-0">
@@ -142,34 +169,47 @@
             </div>
 
             <div class="space-y-6">
+                <!-- Modèles IA -->
+                <div class="space-y-2">
+                    <label id="modelTitle" class="text-[9px] font-black uppercase tracking-widest opacity-40">Modèle IA</label>
+                    <select id="modelSelect" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-[10px] text-white outline-none focus:border-purple-500 transition-all uppercase tracking-widest font-bold appearance-none cursor-pointer">
+                        <option value="normal" class="bg-black text-white">Normal (Intelligent)</option>
+                        <option value="coach" class="bg-black text-white">Coach (Motivation)</option>
+                        <option value="procrastination" class="bg-black text-white">Anti-Procrastination</option>
+                    </select>
+                </div>
+
                 <div class="space-y-2">
                     <div class="flex justify-between items-center text-[9px] font-black uppercase tracking-widest opacity-40">
-                        <span>Espace Cloud</span>
+                        <span id="cloudSpace">Espace Cloud</span>
                         <span id="storageLabel">0%</span>
                     </div>
                     <div class="storage-bar"><div id="storageBar" class="storage-progress" style="width: 0%"></div></div>
                 </div>
 
                 <div class="space-y-3">
-                    <h4 class="text-[9px] font-black uppercase tracking-widest opacity-40">Historique des sessions</h4>
+                    <div class="flex justify-between items-center">
+                        <h4 id="historyTitle" class="text-[9px] font-black uppercase tracking-widest opacity-40">Historique des sessions</h4>
+                        <button id="newChatBtn" class="text-[9px] text-purple-400 font-bold hover:text-white transition-all"><i class="fas fa-plus"></i></button>
+                    </div>
                     <div id="historyList" class="space-y-2 max-h-60 overflow-y-auto pr-2 no-scrollbar">
-                        <p class="text-[9px] text-white/20 italic text-center py-4">Recherche des archives...</p>
+                        <!-- History items injected here -->
                     </div>
                 </div>
 
                 <div class="space-y-4 pt-4 border-t border-white/5">
                     <div class="space-y-2">
-                        <label class="text-[9px] font-black uppercase tracking-widest opacity-40">DNA de <strong>Thiab's</strong></label>
-                        <textarea id="customDNA" placeholder="Ex: Sois très court dans tes réponses..." class="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-3 text-[10px] text-white outline-none focus:border-purple-500 transition-all resize-none"></textarea>
+                        <label id="dnaTitle" class="text-[9px] font-black uppercase tracking-widest opacity-40">DNA de <strong>Thiab's</strong></label>
+                        <textarea id="customDNA" placeholder="..." class="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-3 text-[10px] text-white outline-none focus:border-purple-500 transition-all resize-none"></textarea>
                         <button id="saveDNA" class="w-full py-2.5 bg-purple-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-purple-500 transition-all">Mettre à jour</button>
                     </div>
 
                     <div class="pt-4 space-y-3">
                         <a id="supportMail" href="#" class="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/40 transition-all group">
-                            <span class="text-[9px] font-black uppercase tracking-widest">Support & Compte</span>
+                            <span id="supportTitle" class="text-[9px] font-black uppercase tracking-widest">Support & Compte</span>
                             <i class="fas fa-envelope text-xs opacity-20 group-hover:opacity-100"></i>
                         </a>
-                        <button id="logoutBtn" class="w-full py-4 text-[9px] font-black uppercase tracking-[0.2em] opacity-30 hover:opacity-100 transition-opacity">Déconnexion</button>
+                        <button id="logoutBtn" class="w-full py-4 text-[9px] text-red-400 font-black uppercase tracking-[0.2em] opacity-60 hover:opacity-100 transition-opacity">Déconnexion</button>
                     </div>
                 </div>
             </div>
@@ -180,7 +220,7 @@
                 <i class="fas fa-star text-xl star-logo"></i>
                 <div>
                     <h2 class="text-sm font-black uppercase tracking-widest"><strong>Thiab's</strong></h2>
-                    <p class="text-[9px] font-bold text-white/30 uppercase tracking-tighter">Membre <strong>LevelUp</strong></p>
+                    <p id="headerModelName" class="text-[9px] font-bold text-purple-400 uppercase tracking-tighter">Modèle: Normal</p>
                 </div>
             </div>
             <button id="openSidebar" class="w-10 h-10 rounded-xl flex flex-col items-center justify-center gap-1.5 hover:bg-white/5 transition-all">
@@ -199,18 +239,20 @@
             </div>
         </main>
 
-        <footer class="px-4 py-6 border-t border-white/5 bg-[#020202]/90 backdrop-blur-3xl shrink-0 z-50">
+        <footer class="px-4 py-4 border-t border-white/5 bg-[#020202]/90 backdrop-blur-3xl shrink-0 z-50">
             <div class="max-w-2xl mx-auto">
                 <div class="glass rounded-3xl p-1.5 flex items-end gap-2 focus-within:border-purple-500/40 transition-all shadow-2xl">
                     <div class="flex-1 px-2"><textarea id="userInput" placeholder="Dis-moi tout bro..." rows="1" autocomplete="off"></textarea></div>
                     <button id="sendBtn" class="w-12 h-12 rounded-2xl bg-white text-black flex items-center justify-center hover:bg-purple-500 hover:text-white transition-all shadow-lg"><i class="fas fa-chevron-up text-xs"></i></button>
+                </div>
+                <div class="text-center mt-3">
+                    <p id="footerBranding" class="text-[8px] font-bold text-white/30 uppercase tracking-[0.3em]">Propulsé par <strong>LevelUp</strong></p>
                 </div>
             </div>
         </footer>
     </div>
 
     <script type="module">
-        // Attente de l'initialisation de Firebase effectuée dans le premier script module
         const checkReady = setInterval(() => {
             if (window.auth && window.db) {
                 clearInterval(checkReady);
@@ -219,12 +261,14 @@
         }, 100);
 
         function initApp() {
-            const { auth, db, firestoreUtils } = window;
-            const { GoogleAuthProvider, signInWithPopup, onAuthStateChanged } = window;
-            const { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, setDoc, getDoc } = firestoreUtils;
-
+            const { auth, db, firestoreUtils, deleteUser } = window;
+            const { signInAnonymously } = window;
+            const { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, setDoc, getDoc, collectionGroup, getDocs, updateDoc, arrayUnion } = firestoreUtils;
+            
             const splashScreen = document.getElementById('splashScreen');
+            const langPage = document.getElementById('langPage');
             const authPage = document.getElementById('authPage');
+            const welcomePage = document.getElementById('welcomePage');
             const mainApp = document.getElementById('mainApp');
             const conversationContainer = document.getElementById('conversationContainer');
             const chatArea = document.getElementById('chatArea');
@@ -234,13 +278,128 @@
             const historyList = document.getElementById('historyList');
 
             const MODEL = "gemini-2.5-flash-preview-09-2025";
-            const apiKey = ""; // La clé Gemini est gérée par l'environnement
-            const appId = window.__app_id;
+            const apiKey = ""; 
+            const appId = window.__app_id; 
+            
             let userId = null;
             let dnaPrompt = "";
-            let currentMessages = [];
+            let currentLang = 'fr'; // Défaut
+            let currentSessionId = null; 
+            let currentModel = 'normal'; // Modèle par défaut
+            let hasSeenWelcomeMsg = false; // Permet de n'afficher le message d'accueil qu'une seule fois
 
-            // Intro Animation
+            // --- DEFINITION DES MODELES IA ---
+            const aiModels = {
+                normal: { 
+                    fr: "Modèle: Normal", en: "Model: Normal", 
+                    promptFR: "Tu es une IA extrêmement intelligente, précise et utile. Réponds de manière professionnelle et directe.", 
+                    promptEN: "You are an extremely intelligent, precise, and helpful AI. Answer professionally and directly." 
+                },
+                coach: { 
+                    fr: "Modèle: Coach", en: "Model: Coach", 
+                    promptFR: "Tu es un Coach de vie et mentor. Tu dois motiver l'utilisateur, lui donner de la force, le pousser à se dépasser et être très encourageant tout en restant extrêmement intelligent.", 
+                    promptEN: "You are a Life Coach and mentor. You must motivate the user, empower them, push them to excel, and be very encouraging while remaining extremely intelligent." 
+                },
+                procrastination: { 
+                    fr: "Modèle: Anti-Procrastination", en: "Model: Anti-Procrastination", 
+                    promptFR: "Tu es un spécialiste de la productivité et de l'anti-procrastination. Ton but est de forcer l'utilisateur à agir maintenant. Sois strict mais bienveillant, donne des étapes courtes et claires, et ne le laisse pas trouver d'excuses.", 
+                    promptEN: "You are a productivity and anti-procrastination specialist. Your goal is to force the user to take action now. Be strict but caring, give short and clear steps, and don't let them make excuses." 
+                }
+            };
+
+            // --- TRADUCTIONS ---
+            const i18n = {
+                fr: {
+                    authTitle: "Entrez votre Clé d'Accès",
+                    verifyBtn: "Vérifier la clé",
+                    getKeyText: "Obtenir ma clé",
+                    menuTitle: "Menu",
+                    modelTitle: "Modèle IA",
+                    cloudSpace: "Espace Cloud",
+                    historyTitle: "Historique des sessions",
+                    dnaTitle: "DNA de <strong>Thiab's</strong>",
+                    saveDNA: "Mettre à jour",
+                    supportTitle: "Support & Compte",
+                    logoutBtn: "Déconnexion",
+                    placeholder: "Dis-moi tout bro...",
+                    dnaPlaceholder: "Ex: Sois très court dans tes réponses...",
+                    invalidFormat: "Format invalide. Exemple: THB-XXXXX-XXXXX",
+                    keyNotFound: "Clé introuvable ou incorrecte.",
+                    welcomeGreeting: "Bienvenue",
+                    welcomeDesc: "Thiab's IA est prête à vous assister. Découvrez une intelligence conçue pour vous accompagner au quotidien.",
+                    continueBtn: "Continuer",
+                    footerBranding: "Propulsé par <strong>LevelUp</strong>",
+                    modelOptions: { normal: "Normal (Intelligent)", coach: "Coach (Motivation)", procrastination: "Anti-Procrastination" }
+                },
+                en: {
+                    authTitle: "Enter your Access Key",
+                    verifyBtn: "Verify Key",
+                    getKeyText: "Get my Key",
+                    menuTitle: "Menu",
+                    modelTitle: "AI Model",
+                    cloudSpace: "Cloud Space",
+                    historyTitle: "Session History",
+                    dnaTitle: "<strong>Thiab's</strong> DNA",
+                    saveDNA: "Update",
+                    supportTitle: "Support & Account",
+                    logoutBtn: "Log out",
+                    placeholder: "Tell me everything bro...",
+                    dnaPlaceholder: "Ex: Keep your answers very short...",
+                    invalidFormat: "Invalid format. Example: THB-XXXXX-XXXXX",
+                    keyNotFound: "Key not found or incorrect.",
+                    welcomeGreeting: "Welcome",
+                    welcomeDesc: "Thiab's AI is ready to assist you. Discover an intelligence designed to support you daily.",
+                    continueBtn: "Continue",
+                    footerBranding: "Powered by <strong>LevelUp</strong>",
+                    modelOptions: { normal: "Normal (Smart)", coach: "Coach (Motivation)", procrastination: "Anti-Procrastination" }
+                }
+            };
+
+            const applyLanguage = (lang) => {
+                currentLang = lang;
+                const t = i18n[lang];
+                document.getElementById('authTitle').innerHTML = t.authTitle;
+                document.getElementById('verifyKeyBtn').innerText = t.verifyBtn;
+                document.getElementById('getKeyText').innerText = t.getKeyText;
+                document.getElementById('menuTitle').innerText = t.menuTitle;
+                document.getElementById('modelTitle').innerText = t.modelTitle;
+                document.getElementById('cloudSpace').innerText = t.cloudSpace;
+                document.getElementById('historyTitle').innerText = t.historyTitle;
+                document.getElementById('dnaTitle').innerHTML = t.dnaTitle;
+                document.getElementById('saveDNA').innerText = t.saveDNA;
+                document.getElementById('supportTitle').innerText = t.supportTitle;
+                document.getElementById('logoutBtn').innerText = t.logoutBtn;
+                document.getElementById('userInput').placeholder = t.placeholder;
+                document.getElementById('customDNA').placeholder = t.dnaPlaceholder;
+                document.getElementById('welcomeGreeting').innerText = t.welcomeGreeting;
+                document.getElementById('welcomeDesc').innerText = t.welcomeDesc;
+                document.getElementById('continueBtnText').innerText = t.continueBtn;
+                document.getElementById('footerBranding').innerHTML = t.footerBranding;
+                
+                // Mettre à jour les options du select
+                const select = document.getElementById('modelSelect');
+                select.options[0].text = t.modelOptions.normal;
+                select.options[1].text = t.modelOptions.coach;
+                select.options[2].text = t.modelOptions.procrastination;
+                
+                updateHeaderModel();
+            };
+
+            const updateHeaderModel = () => {
+                document.getElementById('headerModelName').innerText = aiModels[currentModel][currentLang];
+            };
+
+            // Changement de modèle manuel
+            document.getElementById('modelSelect').addEventListener('change', async (e) => {
+                currentModel = e.target.value;
+                updateHeaderModel();
+                // Sauvegarde silencieuse du modèle choisi
+                if (userId) {
+                    await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { model: currentModel }, { merge: true });
+                }
+            });
+
+            // Intro Animation -> Lang Page
             const startIntro = () => {
                 const s1 = document.getElementById('splash1');
                 const s2 = document.getElementById('splash2');
@@ -252,73 +411,140 @@
                     splashScreen.style.opacity = '0';
                     setTimeout(() => {
                         splashScreen.style.display = 'none';
-                        if (!auth.currentUser) authPage.classList.remove('hidden');
+                        if (!userId) langPage.classList.remove('hidden'); // Affiche Langue
                     }, 1000);
                 }, 5000);
             };
             startIntro();
 
-            // Login Logic
-            document.getElementById('googleLogin').onclick = () => {
-                const btn = document.getElementById('googleLogin');
-                btn.classList.add('opacity-50', 'pointer-events-none');
-                const provider = new GoogleAuthProvider();
-                signInWithPopup(auth, provider).catch(e => {
-                    btn.classList.remove('opacity-50', 'pointer-events-none');
-                    console.error("Auth Error:", e);
-                });
-            };
-
-            // Auth State
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    userId = user.uid;
-                    authPage.classList.add('hidden');
-                    mainApp.classList.remove('hidden');
-                    mainApp.classList.add('flex');
-
-                    document.getElementById('userName').innerText = user.displayName || "Membre";
-                    document.getElementById('userMail').innerText = user.email || "Compte lié";
-                    if (user.photoURL) {
-                        document.getElementById('userAvatar').innerHTML = `<img src="${user.photoURL}" class="w-full h-full object-cover">`;
-                    }
-                    
-                    const mailSubject = encodeURIComponent(`Support Thiab's - ${user.email} (ID: ${userId})`);
-                    document.getElementById('supportMail').href = `mailto:levelup.iao@gmail.com?subject=${mailSubject}`;
-
-                    try {
-                        const dnaDoc = await getDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"));
-                        if (dnaDoc.exists()) {
-                            dnaPrompt = dnaDoc.data().prompt;
-                            document.getElementById('customDNA').value = dnaPrompt;
-                        }
-                    } catch(e) { console.error("DNA Load Error:", e); }
-                    setupHistoryListener();
-                } else {
-                    if (splashScreen.style.display === 'none') authPage.classList.remove('hidden');
-                    mainApp.classList.add('hidden');
-                }
+            // Séléction Langue
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.onclick = () => {
+                    applyLanguage(btn.dataset.lang);
+                    langPage.classList.add('hidden');
+                    authPage.classList.remove('hidden');
+                };
             });
 
-            // Firestore History
+            // Auth Anonyme
+            const initAuth = async () => {
+                if (!auth.currentUser) await signInAnonymously(auth);
+            };
+            initAuth();
+
+            // Auto-formatage Clé
+            const accessKeyInput = document.getElementById('accessKeyInput');
+            accessKeyInput.addEventListener('input', function(e) {
+                let val = this.value.toUpperCase();
+                val = val.replace(/[^A-Z0-9-]/g, '');
+                if (val.length > 0 && !val.startsWith('T') && !val.startsWith('TH') && !val.startsWith('THB')) {
+                    val = 'THB-' + val.replace(/^-+/, ''); 
+                }
+                this.value = val.substring(0, 16);
+            });
+
+            // Vérification Clé
+            document.getElementById('verifyKeyBtn').onclick = async () => {
+                const btn = document.getElementById('verifyKeyBtn');
+                const errorMsg = document.getElementById('keyError');
+                const keyVal = document.getElementById('accessKeyInput').value.trim().toUpperCase();
+                
+                if (!keyVal) return;
+                const keyFormatRegex = /^THB-[A-Z0-9]{3,6}-[A-Z0-9]{3,6}$/;
+                if (!keyFormatRegex.test(keyVal)) {
+                    errorMsg.innerText = i18n[currentLang].invalidFormat;
+                    errorMsg.classList.remove('hidden');
+                    return;
+                }
+                
+                btn.innerText = "Recherche..."; btn.disabled = true; errorMsg.classList.add('hidden');
+                
+                try {
+                    const q = collectionGroup(db, 'security');
+                    const querySnapshot = await getDocs(q);
+                    let foundUserData = null;
+                    
+                    querySnapshot.forEach(docSnap => {
+                        if (docSnap.data().key === keyVal) foundUserData = docSnap.data();
+                    });
+                    
+                    if (foundUserData) {
+                        userId = foundUserData.uid;
+                        authPage.classList.add('hidden');
+                        
+                        const userName = foundUserData.owner || "Utilisateur";
+                        document.getElementById('userName').innerText = userName;
+                        document.getElementById('userMail').innerText = "Vérifié via clé d'accès";
+                        
+                        // --- GESTION DE LA PHOTO ET WELCOME SCREEN ---
+                        // IMPORTANT: Ton App 1 DOIT sauvegarder 'photoURL: currentUser.photoURL' dans Firestore !
+                        const avatarUrl = foundUserData.photoURL || foundUserData.picture || `https://ui-avatars.com/api/?name=${userName}&background=a855f7&color=fff`;
+                        document.getElementById('userAvatar').innerHTML = `<img src="${avatarUrl}" class="w-full h-full object-cover">`;
+                        
+                        document.getElementById('welcomeName').innerText = userName;
+                        document.getElementById('welcomeAvatar').src = avatarUrl;
+                        
+                        welcomePage.classList.remove('hidden'); // Affiche le modal de bienvenue
+                        
+                        document.getElementById('supportMail').href = `mailto:levelup.iao@gmail.com?subject=Support Thiab's (Clé: ${keyVal})`;
+
+                        try {
+                            const dnaDoc = await getDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"));
+                            if (dnaDoc.exists()) {
+                                const d = dnaDoc.data();
+                                if(d.prompt) {
+                                    dnaPrompt = d.prompt;
+                                    document.getElementById('customDNA').value = dnaPrompt;
+                                }
+                                if(d.model) {
+                                    currentModel = d.model;
+                                    document.getElementById('modelSelect').value = currentModel;
+                                    updateHeaderModel();
+                                }
+                            }
+                        } catch(e) {}
+                        
+                        setupHistoryListener();
+                    } else {
+                        errorMsg.innerText = i18n[currentLang].keyNotFound;
+                        errorMsg.classList.remove('hidden');
+                    }
+                } catch (e) {
+                    errorMsg.innerText = "Erreur de connexion. Vérifiez la base.";
+                    errorMsg.classList.remove('hidden');
+                }
+                btn.innerText = i18n[currentLang].verifyBtn; btn.disabled = false;
+            };
+
+            // Bouton Continuer (Après Bienvenue)
+            document.getElementById('startAppBtn').onclick = () => {
+                welcomePage.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                mainApp.classList.add('flex');
+                startNewChat();
+            };
+
+            // --- GESTION DES SESSIONS ---
             function setupHistoryListener() {
-                const q = query(collection(db, "artifacts", appId, "users", userId, "chats"), orderBy("timestamp", "asc"));
+                if (!userId) return;
+                const q = query(collection(db, "artifacts", appId, "users", userId, "sessions"), orderBy("updatedAt", "desc"));
+                
                 onSnapshot(q, (snap) => {
-                    const messages = [];
                     let totalSize = 0;
                     historyList.innerHTML = '';
 
                     snap.forEach(d => {
                         const data = d.data();
-                        messages.push({id: d.id, ...data});
                         totalSize += JSON.stringify(data).length;
 
                         const item = document.createElement('div');
-                        item.className = "chat-item p-3 rounded-xl flex items-center justify-between group cursor-pointer animate-in fade-in";
+                        const isActive = currentSessionId === d.id ? 'active' : '';
+                        item.className = `chat-item p-3 rounded-xl flex items-center justify-between group cursor-pointer animate-in fade-in ${isActive}`;
+                        
                         item.innerHTML = `
                             <div class="flex-1 min-w-0 pr-2">
-                                <p class="text-[9px] font-bold text-white truncate">${data.user}</p>
-                                <p class="text-[7px] text-white/30 uppercase">${new Date(data.timestamp).toLocaleDateString()}</p>
+                                <p class="text-[10px] font-bold text-white truncate">${data.title}</p>
+                                <p class="text-[7px] text-white/30 uppercase">${new Date(data.updatedAt).toLocaleDateString()}</p>
                             </div>
                             <button class="delete-msg opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:text-red-300 transition-all">
                                 <i class="fas fa-trash-alt text-[8px]"></i>
@@ -326,86 +552,88 @@
                         `;
                         item.onclick = (e) => {
                             if (e.target.closest('.delete-msg')) {
-                                deleteDoc(doc(db, "artifacts", appId, "users", userId, "chats", d.id));
+                                deleteDoc(doc(db, "artifacts", appId, "users", userId, "sessions", d.id));
+                                if (currentSessionId === d.id) startNewChat();
                             } else {
-                                displaySpecificChat(data);
+                                loadSession(d.id, data.messages);
                                 closeSidebar();
                             }
                         };
                         historyList.appendChild(item);
                     });
 
-                    // Storage visual indicator
-                    const capacityLimit = 300000;
-                    const perc = Math.min((totalSize / capacityLimit) * 100, 100);
-                    document.getElementById('storageBar').style.width = perc + '%';
-                    document.getElementById('storageLabel').innerText = Math.round(perc) + '%';
-
-                    if (messages.length === 0) {
-                        conversationContainer.innerHTML = '';
-                        displayAIMessage("Salut bro ! Je suis **Thiab's** IA, développée par **LevelUp**. Je suis prêt !", true);
-                    } else if (messages.length > currentMessages.length) {
-                        const last = messages[messages.length - 1];
-                        if (last.newlyAdded) displayAIMessage(last.ai, true);
-                        else refreshConversation(messages);
-                    }
-                    currentMessages = messages;
-                }, (err) => console.error("Firestore Error:", err));
+                    document.getElementById('storageBar').style.width = Math.min((totalSize / 300000) * 100, 100) + '%';
+                    document.getElementById('storageLabel').innerText = Math.round(Math.min((totalSize / 300000) * 100, 100)) + '%';
+                });
             }
 
-            function refreshConversation(msgs) {
+            function startNewChat() {
+                currentSessionId = null;
                 conversationContainer.innerHTML = '';
-                msgs.forEach(m => { displayUserMessage(m.user); displayAIMessage(m.ai, false); });
+                
+                // Le message d'accueil n'apparaît que lors de la toute première connexion de la session
+                if (!hasSeenWelcomeMsg) {
+                    const welcomeMsg = currentLang === 'fr' 
+                        ? "Salut bro ! Que puis-je faire pour toi aujourd'hui ?" 
+                        : "Hey bro! What can I do for you today?";
+                    displayAIMessage(welcomeMsg, true);
+                    hasSeenWelcomeMsg = true;
+                }
+                
+                document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+            }
+
+            document.getElementById('newChatBtn').onclick = () => {
+                startNewChat();
+                closeSidebar();
+            };
+
+            function loadSession(id, messages) {
+                currentSessionId = id;
+                conversationContainer.innerHTML = '';
+                if(messages && messages.length > 0) {
+                    messages.forEach(m => {
+                        displayUserMessage(m.user);
+                        displayAIMessage(m.ai, false);
+                    });
+                }
+                document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
                 chatArea.scrollTop = chatArea.scrollHeight;
             }
 
-            function displaySpecificChat(data) {
-                conversationContainer.innerHTML = '';
-                displayUserMessage(data.user);
-                displayAIMessage(data.ai, true);
-            }
-
-            // UI Actions
-            document.getElementById('openSidebar').onclick = () => {
-                sidebar.classList.remove('translate-x-full');
-                appOverlay.classList.remove('hidden');
-                appOverlay.classList.add('overlay-active');
+            // --- NETTOYAGE DU COMPTE ANONYME SUR DECONNEXION ---
+            document.getElementById('logoutBtn').onclick = async () => {
+                if (auth.currentUser) {
+                    try {
+                        await deleteUser(auth.currentUser);
+                    } catch(e) { console.error("Erreur supression:", e); }
+                }
+                window.location.reload();
             };
 
-            const closeSidebar = () => {
-                sidebar.classList.add('translate-x-full');
-                appOverlay.classList.add('hidden');
-                appOverlay.classList.remove('overlay-active');
-            };
-
+            // Actions UI...
+            document.getElementById('openSidebar').onclick = () => { sidebar.classList.remove('translate-x-full'); appOverlay.classList.remove('hidden', 'overlay-active'); setTimeout(() => appOverlay.classList.add('overlay-active'), 10); };
+            const closeSidebar = () => { sidebar.classList.add('translate-x-full'); appOverlay.classList.remove('overlay-active'); setTimeout(() => appOverlay.classList.add('hidden'), 400); };
             document.getElementById('closeSidebar').onclick = closeSidebar;
             appOverlay.onclick = closeSidebar;
-            document.getElementById('logoutBtn').onclick = () => auth.signOut();
-
+            
             document.getElementById('saveDNA').onclick = async () => {
-                const btn = document.getElementById('saveDNA');
-                btn.innerHTML = '<i class="fas fa-check"></i>';
+                const btn = document.getElementById('saveDNA'); btn.innerHTML = '<i class="fas fa-check"></i>';
                 dnaPrompt = document.getElementById('customDNA').value;
-                await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { prompt: dnaPrompt });
-                setTimeout(() => btn.innerText = "Mettre à jour", 2000);
+                await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { prompt: dnaPrompt, model: currentModel }, { merge: true });
+                setTimeout(() => btn.innerText = i18n[currentLang].saveDNA, 2000);
             };
 
-            // Messaging
             function displayUserMessage(text) {
-                const div = document.createElement('div');
-                div.className = "flex justify-end w-full";
+                const div = document.createElement('div'); div.className = "flex justify-end w-full";
                 div.innerHTML = `<div class="bg-white/5 border border-white/10 px-6 py-3 rounded-2xl text-sm message-bubble text-white shadow-lg">${text}</div>`;
-                conversationContainer.appendChild(div);
-                chatArea.scrollTop = chatArea.scrollHeight;
+                conversationContainer.appendChild(div); chatArea.scrollTop = chatArea.scrollHeight;
             }
 
             function displayAIMessage(text, animate) {
-                const wrap = document.createElement('div');
-                wrap.className = "flex flex-col gap-3 w-full";
-                const content = document.createElement('div');
-                content.className = "prose prose-invert prose-sm text-slate-300 max-w-full message-bubble";
-                wrap.appendChild(content);
-                conversationContainer.appendChild(wrap);
+                const wrap = document.createElement('div'); wrap.className = "flex flex-col gap-3 w-full";
+                const content = document.createElement('div'); content.className = "prose prose-invert prose-sm text-slate-300 max-w-full message-bubble";
+                wrap.appendChild(content); conversationContainer.appendChild(wrap);
                 if (animate) streamText(content, text); else content.innerHTML = marked.parse(text);
             }
 
@@ -413,11 +641,9 @@
                 let i = 0; container.innerHTML = '';
                 const interval = setInterval(() => {
                     if (i < text.length) {
-                        container.innerHTML = marked.parse(text.substring(0, i + 1));
-                        i += 3; chatArea.scrollTop = chatArea.scrollHeight;
+                        container.innerHTML = marked.parse(text.substring(0, i + 1)); i += 3; chatArea.scrollTop = chatArea.scrollHeight;
                     } else {
-                        container.innerHTML = marked.parse(text);
-                        clearInterval(interval); chatArea.scrollTop = chatArea.scrollHeight;
+                        container.innerHTML = marked.parse(text); clearInterval(interval); chatArea.scrollTop = chatArea.scrollHeight;
                     }
                 }, 5);
             }
@@ -426,31 +652,61 @@
                 const val = userInput.value.trim();
                 if (!val || !userId) return;
                 userInput.value = ''; userInput.style.height = '44px';
+                
+                if(!currentSessionId && conversationContainer.children.length === 1 && hasSeenWelcomeMsg) {
+                    // Ne nettoyer que si c'est exactement le message de bienvenue initial
+                    const firstMsg = conversationContainer.querySelector('.prose');
+                    if(firstMsg && (firstMsg.innerText.includes("Salut bro") || firstMsg.innerText.includes("Hey bro"))) {
+                        conversationContainer.innerHTML = '';
+                    }
+                }
+
                 displayUserMessage(val);
                 document.getElementById('aiTyping').classList.remove('hidden');
                 chatArea.scrollTop = chatArea.scrollHeight;
 
-                const corePrompt = `Tu es **Thiab's** IA. IDENTITÉ : Créée par **Thiab's**, développée par **LevelUp**. 
-                IMPORTANT : Écris toujours les noms **Thiab's** et **LevelUp** en gras.
-                DNA UTILISATEUR : ${dnaPrompt}.`;
+                const sysLang = currentLang === 'fr' ? 'français' : 'english';
+                const modelPrompt = currentLang === 'fr' ? aiModels[currentModel].promptFR : aiModels[currentModel].promptEN;
+
+                // Cerveau mis à jour : Strict, intelligent, Markdown et Emojis
+                const corePrompt = `Tu es l'IA du portail **Thiab's**.
+                RÈGLE ABSOLUE 1 : NE TE PRÉSENTE JAMAIS. Ne dis jamais "Je suis Thiab's IA créée par LevelUp" SAUF si l'utilisateur te demande explicitement qui tu es. Va droit au but, sois pro.
+                RÈGLE ABSOLUE 2 : OBÉIS STRICTEMENT. Fais exactement ce que l'utilisateur te demande (s'il te demande de changer de langue, de format ou de ton, exécute-le immédiatement).
+                RÈGLE ABSOLUE 3 : Utilise le formatage Markdown de façon experte. Mets en **gras** les mots clés et concepts importants (ex: **LevelUp**, noms, chiffres clés). Utilise des listes ou des parenthèses quand c'est pertinent.
+                RÈGLE ABSOLUE 4 : Utilise des emojis de manière naturelle et stylée, comme un vrai humain moderne.
+                LANGUE PAR DÉFAUT : ${sysLang} (Sauf si l'utilisateur te demande explicitement autre chose).
+                PERSONNALITÉ DU MODÈLE SÉLECTIONNÉ : ${modelPrompt}
+                DNA UTILISATEUR (LOI ABSOLUE) : ${dnaPrompt}`;
 
                 try {
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ contents: [{ parts: [{ text: val }] }], systemInstruction: { parts: [{ text: corePrompt }] } })
                     });
                     const data = await res.json();
-                    const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Erreur réseau bro.";
+                    const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Erreur réseau.";
                     document.getElementById('aiTyping').classList.add('hidden');
+                    displayAIMessage(aiText, true);
                     
-                    // On enregistre avec un flag pour déclencher l'animation au retour du snapshot
-                    await addDoc(collection(db, "artifacts", appId, "users", userId, "chats"), {
-                        user: val, ai: aiText, timestamp: Date.now(), newlyAdded: true
-                    });
+                    const messageObj = { user: val, ai: aiText, timestamp: Date.now() };
+                    
+                    if (!currentSessionId) {
+                        const title = val.length > 25 ? val.substring(0, 25) + "..." : val;
+                        const docRef = await addDoc(collection(db, "artifacts", appId, "users", userId, "sessions"), {
+                            title: title,
+                            updatedAt: Date.now(),
+                            messages: [messageObj]
+                        });
+                        currentSessionId = docRef.id;
+                    } else {
+                        await updateDoc(doc(db, "artifacts", appId, "users", userId, "sessions", currentSessionId), {
+                            updatedAt: Date.now(),
+                            messages: arrayUnion(messageObj)
+                        });
+                    }
                 } catch (e) {
                     document.getElementById('aiTyping').classList.add('hidden');
-                    displayAIMessage("Erreur technique bro. Vérifie ta connexion.", true);
+                    displayAIMessage("Erreur technique. / Technical error.", true);
                 }
             }
 
