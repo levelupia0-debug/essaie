@@ -13,54 +13,31 @@
         import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-        // --- DIAGNOSTIC SYSTÈME POUR GITHUB PAGES ---
-        let config = null;
-        let diagnosticMsg = "";
+        // --- CONFIGURATION FIREBASE DIRECTE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyAFNuErJ2ToXYJ9vg0YwAneeOSty6mtXNg",
+            authDomain: "thiab-s-ia.firebaseapp.com",
+            projectId: "thiab-s-ia",
+            storageBucket: "thiab-s-ia.firebasestorage.app",
+            messagingSenderId: "685257281739",
+            appId: "1:685257281739:web:76f60907cd9c87d2c04b4e",
+            measurementId: "G-Z1T4LLG22Z"
+        };
 
-        try {
-            if (typeof __firebase_config !== 'undefined') {
-                config = JSON.parse(__firebase_config);
-            } else {
-                diagnosticMsg = "ERREUR : La variable '__firebase_config' est indéfinie. Sur GitHub, vous devez remplacer manuellement le bloc de configuration par vos clés Firebase.";
-            }
-        } catch (e) {
-            diagnosticMsg = "ERREUR DE PARSING : Le format de la configuration est invalide. " + e.message;
-        }
+        // Initialisation
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-        if (config && config.apiKey) {
-            const app = initializeApp(config);
-            const auth = getAuth(app);
-            const db = getFirestore(app);
-
-            window.auth = auth;
-            window.db = db;
-            window.GoogleAuthProvider = GoogleAuthProvider;
-            window.signInWithPopup = signInWithPopup;
-            window.firestoreUtils = { collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, limit };
-        } else {
-            // Écran de diagnostic amélioré
-            window.onload = () => {
-                document.body.innerHTML = `
-                    <div style="background:#020202;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;font-family:'Plus Jakarta Sans',sans-serif;">
-                        <div style="max-width:500px; border: 1px solid rgba(168, 85, 247, 0.3); padding: 40px; border-radius: 24px; background: rgba(168, 85, 247, 0.05);">
-                            <i class="fas fa-exclamation-triangle" style="color:#a855f7; font-size: 40px; margin-bottom: 20px;"></i>
-                            <h1 style="color:#fff; font-size: 22px; margin-bottom: 10px; letter-spacing: 1px;">Thiab's - Diagnostic</h1>
-                            <p style="opacity:0.7; font-size: 14px; line-height: 1.6; margin-bottom: 25px;">${diagnosticMsg || "La configuration Firebase est incomplète (apiKey manquante)."}</p>
-                            
-                            <div style="text-align:left; background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; font-size:11px; font-family:monospace; color:#a855f7;">
-                                <p style="margin:0 0 5px 0;">// SOLUTION POUR GITHUB :</p>
-                                <p style="margin:0; color:#ccc;">Remplacez la ligne 15 à 25 par votre objet config :</p>
-                                <p style="margin:5px 0 0 0;">const config = { apiKey: "...", ... };</p>
-                            </div>
-                            
-                            <p style="margin-top:30px; opacity:0.3; font-size:10px; text-transform:uppercase; letter-spacing:2px;">Propulsé par LevelUp</p>
-                        </div>
-                    </div>
-                `;
-            };
-        }
+        // Export vers le scope global pour le reste de l'app
+        window.auth = auth;
+        window.db = db;
+        window.GoogleAuthProvider = GoogleAuthProvider;
+        window.signInWithPopup = signInWithPopup;
+        window.firestoreUtils = { collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, limit };
         
-        window.__app_id = typeof __app_id !== 'undefined' ? __app_id : "thiab-s-app-v3"; 
+        // Identifiant de l'application pour Firestore
+        window.__app_id = "thiab-s-app-v3"; 
     </script>
 
     <style>
@@ -233,6 +210,7 @@
     </div>
 
     <script type="module">
+        // Attente de l'initialisation de Firebase effectuée dans le premier script module
         const checkReady = setInterval(() => {
             if (window.auth && window.db) {
                 clearInterval(checkReady);
@@ -256,12 +234,13 @@
             const historyList = document.getElementById('historyList');
 
             const MODEL = "gemini-2.5-flash-preview-09-2025";
-            const apiKey = "";
+            const apiKey = ""; // La clé Gemini est gérée par l'environnement
             const appId = window.__app_id;
             let userId = null;
             let dnaPrompt = "";
             let currentMessages = [];
 
+            // Intro Animation
             const startIntro = () => {
                 const s1 = document.getElementById('splash1');
                 const s2 = document.getElementById('splash2');
@@ -279,6 +258,7 @@
             };
             startIntro();
 
+            // Login Logic
             document.getElementById('googleLogin').onclick = () => {
                 const btn = document.getElementById('googleLogin');
                 btn.classList.add('opacity-50', 'pointer-events-none');
@@ -289,6 +269,7 @@
                 });
             };
 
+            // Auth State
             onAuthStateChanged(auth, async (user) => {
                 if (user) {
                     userId = user.uid;
@@ -319,6 +300,7 @@
                 }
             });
 
+            // Firestore History
             function setupHistoryListener() {
                 const q = query(collection(db, "artifacts", appId, "users", userId, "chats"), orderBy("timestamp", "asc"));
                 onSnapshot(q, (snap) => {
@@ -353,15 +335,15 @@
                         historyList.appendChild(item);
                     });
 
+                    // Storage visual indicator
                     const capacityLimit = 300000;
                     const perc = Math.min((totalSize / capacityLimit) * 100, 100);
                     document.getElementById('storageBar').style.width = perc + '%';
                     document.getElementById('storageLabel').innerText = Math.round(perc) + '%';
-                    if (perc > 85) document.getElementById('storageBar').style.background = '#f43f5e';
 
                     if (messages.length === 0) {
                         conversationContainer.innerHTML = '';
-                        displayAIMessage("Salut bro ! Je suis **Thiab's** IA, développée par **LevelUp**. Ton compte Google est connecté, je suis prêt !", true);
+                        displayAIMessage("Salut bro ! Je suis **Thiab's** IA, développée par **LevelUp**. Je suis prêt !", true);
                     } else if (messages.length > currentMessages.length) {
                         const last = messages[messages.length - 1];
                         if (last.newlyAdded) displayAIMessage(last.ai, true);
@@ -383,6 +365,7 @@
                 displayAIMessage(data.ai, true);
             }
 
+            // UI Actions
             document.getElementById('openSidebar').onclick = () => {
                 sidebar.classList.remove('translate-x-full');
                 appOverlay.classList.remove('hidden');
@@ -407,6 +390,7 @@
                 setTimeout(() => btn.innerText = "Mettre à jour", 2000);
             };
 
+            // Messaging
             function displayUserMessage(text) {
                 const div = document.createElement('div');
                 div.className = "flex justify-end w-full";
@@ -459,6 +443,8 @@
                     const data = await res.json();
                     const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Erreur réseau bro.";
                     document.getElementById('aiTyping').classList.add('hidden');
+                    
+                    // On enregistre avec un flag pour déclencher l'animation au retour du snapshot
                     await addDoc(collection(db, "artifacts", appId, "users", userId, "chats"), {
                         user: val, ai: aiText, timestamp: Date.now(), newlyAdded: true
                     });
