@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Thiab's</title>
+    <title>Thiab's IA</title>
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -674,6 +674,7 @@
                 RÈGLE ABSOLUE 2 : OBÉIS STRICTEMENT. Fais exactement ce que l'utilisateur te demande (s'il te demande de changer de langue, de format ou de ton, exécute-le immédiatement).
                 RÈGLE ABSOLUE 3 : Utilise le formatage Markdown de façon experte. Mets en **gras** les mots clés et concepts importants (ex: **LevelUp**, noms, chiffres clés). Utilise des listes ou des parenthèses quand c'est pertinent.
                 RÈGLE ABSOLUE 4 : Utilise des emojis de manière naturelle et stylée, comme un vrai humain moderne.
+                RÈGLE ABSOLUE 5 (TEMPS RÉEL) : Tu n'as PAS accès à Internet ni aux informations récentes. Si on te demande la météo, l'actualité ou des infos en temps réel, n'invente rien et réponds exactement un truc du genre : "Désolé bro, je ne suis pas encore connecté à Internet en temps réel. Mon développeur **LevelUp** n'a pas encore activé cette fonctionnalité ! 🚧"
                 LANGUE PAR DÉFAUT : ${sysLang} (Sauf si l'utilisateur te demande explicitement autre chose).
                 PERSONNALITÉ DU MODÈLE SÉLECTIONNÉ : ${modelPrompt}
                 DNA UTILISATEUR (LOI ABSOLUE) : ${dnaPrompt}`;
@@ -706,7 +707,10 @@
                     }
                 } catch (e) {
                     document.getElementById('aiTyping').classList.add('hidden');
-                    displayAIMessage("Erreur technique. / Technical error.", true);
+                    const errorMsg = currentLang === 'fr' 
+                        ? "Oups ! 😅 J'ai rencontré un petit souci technique bro. Le réseau n'a pas pu traiter ta demande. Essaie de relancer dans un instant ! 🛠️" 
+                        : "Oops! 😅 I ran into a little technical issue bro. The network couldn't process your request. Try again in a moment! 🛠️";
+                    displayAIMessage(errorMsg, true);
                 }
             }
 
