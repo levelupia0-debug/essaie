@@ -13,19 +13,21 @@
         import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-        // GESTION DU DÉPLOIEMENT (GitHub Pages protection)
+        // --- DIAGNOSTIC SYSTÈME POUR GITHUB PAGES ---
         let config = null;
+        let diagnosticMsg = "";
+
         try {
             if (typeof __firebase_config !== 'undefined') {
                 config = JSON.parse(__firebase_config);
             } else {
-                console.error("Firebase Config manquante. Assurez-vous de configurer les variables d'environnement.");
+                diagnosticMsg = "ERREUR : La variable '__firebase_config' est indéfinie. Sur GitHub, vous devez remplacer manuellement le bloc de configuration par vos clés Firebase.";
             }
         } catch (e) {
-            console.error("Erreur lors du parsing de la config Firebase", e);
+            diagnosticMsg = "ERREUR DE PARSING : Le format de la configuration est invalide. " + e.message;
         }
 
-        if (config) {
+        if (config && config.apiKey) {
             const app = initializeApp(config);
             const auth = getAuth(app);
             const db = getFirestore(app);
@@ -36,14 +38,22 @@
             window.signInWithPopup = signInWithPopup;
             window.firestoreUtils = { collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, limit };
         } else {
-            // Afficher une erreur visuelle si la config est absente (utile pour le debug GitHub)
+            // Écran de diagnostic amélioré
             window.onload = () => {
                 document.body.innerHTML = `
-                    <div style="background:#000;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:20px;font-family:sans-serif;">
-                        <div>
-                            <h1 style="color:#a855f7;">Thiab's - Erreur de Configuration</h1>
-                            <p>La configuration Firebase est absente ou mal configurée.</p>
-                            <p style="opacity:0.5;font-size:12px;">Vérifiez votre déploiement GitHub Pages.</p>
+                    <div style="background:#020202;color:#fff;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:30px;font-family:'Plus Jakarta Sans',sans-serif;">
+                        <div style="max-width:500px; border: 1px solid rgba(168, 85, 247, 0.3); padding: 40px; border-radius: 24px; background: rgba(168, 85, 247, 0.05);">
+                            <i class="fas fa-exclamation-triangle" style="color:#a855f7; font-size: 40px; margin-bottom: 20px;"></i>
+                            <h1 style="color:#fff; font-size: 22px; margin-bottom: 10px; letter-spacing: 1px;">Thiab's - Diagnostic</h1>
+                            <p style="opacity:0.7; font-size: 14px; line-height: 1.6; margin-bottom: 25px;">${diagnosticMsg || "La configuration Firebase est incomplète (apiKey manquante)."}</p>
+                            
+                            <div style="text-align:left; background:rgba(255,255,255,0.05); padding:15px; border-radius:12px; font-size:11px; font-family:monospace; color:#a855f7;">
+                                <p style="margin:0 0 5px 0;">// SOLUTION POUR GITHUB :</p>
+                                <p style="margin:0; color:#ccc;">Remplacez la ligne 15 à 25 par votre objet config :</p>
+                                <p style="margin:5px 0 0 0;">const config = { apiKey: "...", ... };</p>
+                            </div>
+                            
+                            <p style="margin-top:30px; opacity:0.3; font-size:10px; text-transform:uppercase; letter-spacing:2px;">Propulsé par LevelUp</p>
                         </div>
                     </div>
                 `;
@@ -136,7 +146,6 @@
 
     <!-- MAIN APP -->
     <div id="mainApp" class="hidden flex-col h-full w-full relative">
-        <!-- Overlay -->
         <div id="appOverlay" class="fixed inset-0 z-[2999] hidden transition-opacity"></div>
 
         <div id="sidebar" class="fixed inset-y-0 right-0 w-[85%] md:w-80 glass z-[3000] border-l border-white/10 p-6 flex flex-col transition-transform translate-x-full no-scrollbar overflow-y-auto">
@@ -224,7 +233,6 @@
     </div>
 
     <script type="module">
-        // Attendre que Firebase soit chargé via le script module au dessus
         const checkReady = setInterval(() => {
             if (window.auth && window.db) {
                 clearInterval(checkReady);
@@ -254,7 +262,6 @@
             let dnaPrompt = "";
             let currentMessages = [];
 
-            // Animation Intro
             const startIntro = () => {
                 const s1 = document.getElementById('splash1');
                 const s2 = document.getElementById('splash2');
@@ -278,6 +285,7 @@
                 const provider = new GoogleAuthProvider();
                 signInWithPopup(auth, provider).catch(e => {
                     btn.classList.remove('opacity-50', 'pointer-events-none');
+                    console.error("Auth Error:", e);
                 });
             };
 
@@ -297,11 +305,13 @@
                     const mailSubject = encodeURIComponent(`Support Thiab's - ${user.email} (ID: ${userId})`);
                     document.getElementById('supportMail').href = `mailto:levelup.iao@gmail.com?subject=${mailSubject}`;
 
-                    const dnaDoc = await getDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"));
-                    if (dnaDoc.exists()) {
-                        dnaPrompt = dnaDoc.data().prompt;
-                        document.getElementById('customDNA').value = dnaPrompt;
-                    }
+                    try {
+                        const dnaDoc = await getDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"));
+                        if (dnaDoc.exists()) {
+                            dnaPrompt = dnaDoc.data().prompt;
+                            document.getElementById('customDNA').value = dnaPrompt;
+                        }
+                    } catch(e) { console.error("DNA Load Error:", e); }
                     setupHistoryListener();
                 } else {
                     if (splashScreen.style.display === 'none') authPage.classList.remove('hidden');
@@ -358,7 +368,7 @@
                         else refreshConversation(messages);
                     }
                     currentMessages = messages;
-                });
+                }, (err) => console.error("Firestore Error:", err));
             }
 
             function refreshConversation(msgs) {
