@@ -10,19 +10,10 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAFNuErJ2ToXYJ9vg0YwAneeOSty6mtXNg",
-            authDomain: "thiab-s-ia.firebaseapp.com",
-            projectId: "thiab-s-ia",
-            storageBucket: "thiab-s-ia.firebasestorage.app",
-            messagingSenderId: "685257281739",
-            appId: "1:685257281739:web:76f60907cd9c87d2c04b4e",
-            measurementId: "G-Z1T4LLG22Z"
-        };
-
+        const firebaseConfig = JSON.parse(__firebase_config);
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
@@ -31,9 +22,8 @@
         window.db = db;
         window.GoogleAuthProvider = GoogleAuthProvider;
         window.signInWithPopup = signInWithPopup;
-        window.onAuthStateChanged = onAuthStateChanged;
         window.firestoreUtils = { collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, limit };
-        window.__app_id = "thiab-s-app-v3"; 
+        window.__app_id = typeof __app_id !== 'undefined' ? __app_id : "thiab-s-app-v3"; 
     </script>
 
     <style>
@@ -43,13 +33,17 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--dark); color: #ffffff; height: 100dvh; margin: 0; display: flex; flex-direction: column; overflow: hidden; }
         .bg-main { background: radial-gradient(circle at 50% 0%, #0d061a 0%, #020202 100%); }
 
-        #splashScreen { position: fixed; inset: 0; z-index: 10000; background: black; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity 0.8s ease-out; pointer-events: none; }
+        /* Cinematic Intro */
+        #splashScreen { position: fixed; inset: 0; z-index: 9999; background: black; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity 1s ease-out; }
         .splash-text { font-size: 1.8rem; font-weight: 900; letter-spacing: 0.6em; text-transform: uppercase; opacity: 0; position: absolute; transform: scale(0.85); filter: blur(15px); transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); text-align: center; }
         .splash-text.active { opacity: 1; transform: scale(1); filter: blur(0px); }
         .splash-text.exit { opacity: 0; transform: scale(1.2); filter: blur(30px); }
 
+        /* Interface */
         .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 4000; }
+        .overlay-active { pointer-events: auto; background: rgba(0,0,0,0.4); }
+        
+        #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: -20px 0 50px rgba(0,0,0,0.5); }
         
         #userInput { background: transparent !important; border: none !important; color: white !important; outline: none !important; width: 100%; padding: 12px; font-size: 16px !important; min-height: 44px; max-height: 120px; display: block; resize: none; overflow-y: hidden; }
         .message-bubble { max-width: 88%; animation: msgIn 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); }
@@ -65,18 +59,13 @@
         .chat-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s; }
         .chat-item:hover { background: rgba(168, 85, 247, 0.1); border-color: var(--primary); }
 
-        .google-btn {
-            background: #ffffff;
-            color: #1f1f1f;
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            font-weight: 700;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        .storage-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+        .storage-progress { height: 100%; background: var(--primary); transition: width 0.5s ease; }
     </style>
 </head>
 <body class="bg-main">
 
-    <!-- SPLASH SCREEN -->
+    <!-- SPLASH -->
     <div id="splashScreen">
         <div id="splash1" class="splash-text text-purple-500"><strong>Thiab's</strong> IA</div>
         <div id="splash2" class="splash-text text-white"><strong>LevelUp</strong></div>
@@ -87,63 +76,88 @@
         <div class="w-full max-w-sm text-center">
             <i class="fas fa-star text-5xl star-logo mb-10 block"></i>
             <h1 class="text-2xl font-bold tracking-[0.4em] text-white uppercase mb-12"><strong>Thiab's</strong></h1>
-            <button id="googleLogin" class="google-btn w-full py-4 rounded-2xl flex items-center justify-center gap-4 text-sm tracking-wide shadow-sm">
-                <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
-                Continuer avec Google
-            </button>
-            <p class="text-[8px] text-white/20 uppercase tracking-widest mt-8">Propulsé par <strong>LevelUp</strong></p>
+            <div class="space-y-4">
+                <button id="googleLogin" class="w-full bg-white text-black py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-3 hover:bg-purple-500 hover:text-white transition-all">
+                    <i class="fab fa-google"></i> Continuer avec Google
+                </button>
+                <div class="flex items-center gap-4 py-2">
+                    <div class="flex-1 h-px bg-white/10"></div>
+                    <span class="text-[8px] font-bold text-white/20 uppercase">ou</span>
+                    <div class="flex-1 h-px bg-white/10"></div>
+                </div>
+                <button id="anonLogin" class="w-full bg-white/5 border border-white/10 text-white py-4 rounded-2xl font-bold text-[9px] uppercase tracking-[0.2em] hover:bg-white/10 transition-all">
+                    Accès Anonyme
+                </button>
+            </div>
         </div>
     </div>
 
     <!-- MAIN APP -->
     <div id="mainApp" class="hidden flex-col h-full w-full relative">
-        <div id="appOverlay" class="fixed inset-0 z-[2999] hidden bg-black/40"></div>
+        <!-- Clickable Overlay to close sidebar -->
+        <div id="appOverlay" class="fixed inset-0 z-[2999] hidden transition-opacity"></div>
 
-        <div id="sidebar" class="fixed inset-y-0 right-0 w-[85%] md:w-80 glass border-l border-white/10 p-6 flex flex-col transition-transform translate-x-full no-scrollbar overflow-y-auto">
+        <div id="sidebar" class="fixed inset-y-0 right-0 w-[85%] md:w-80 glass z-[3000] border-l border-white/10 p-6 flex flex-col transition-transform translate-x-full no-scrollbar overflow-y-auto">
             <div class="flex items-center justify-between mb-8">
                 <span class="text-[10px] font-black uppercase tracking-widest opacity-40">Menu</span>
                 <button id="closeSidebar" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5"><i class="fas fa-times text-xs"></i></button>
             </div>
+
+            <!-- User Profile -->
             <div id="userCard" class="p-4 rounded-2xl bg-white/5 border border-white/5 mb-8 flex items-center gap-4">
                 <div id="userAvatar" class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center overflow-hidden border border-white/10">
                     <i class="fas fa-user text-xs"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p id="userName" class="text-[10px] font-black uppercase truncate">Utilisateur</p>
+                    <p id="userName" class="text-[10px] font-black uppercase truncate">Invité</p>
                     <p id="userMail" class="text-[9px] text-white/40 truncate">---</p>
                 </div>
             </div>
+
             <div class="space-y-6">
+                <!-- Storage Monitor -->
                 <div class="space-y-2">
                     <div class="flex justify-between items-center text-[9px] font-black uppercase tracking-widest opacity-40">
-                        <span>Espace Cloud</span>
+                        <span>Stockage Cloud</span>
                         <span id="storageLabel">0%</span>
                     </div>
-                    <div class="h-1 bg-white/10 rounded-full overflow-hidden"><div id="storageBar" class="h-full bg-purple-500 transition-all duration-500" style="width: 0%"></div></div>
+                    <div class="storage-bar"><div id="storageBar" class="storage-progress" style="width: 0%"></div></div>
                 </div>
+
+                <!-- Chat History List -->
                 <div class="space-y-3">
-                    <h4 class="text-[9px] font-black uppercase tracking-widest opacity-40">Historique</h4>
-                    <div id="historyList" class="space-y-2 max-h-60 overflow-y-auto no-scrollbar"></div>
+                    <h4 class="text-[9px] font-black uppercase tracking-widest opacity-40">Conversations</h4>
+                    <div id="historyList" class="space-y-2 max-h-60 overflow-y-auto pr-2 no-scrollbar">
+                        <!-- List populated by JS -->
+                        <p class="text-[9px] text-white/20 italic text-center py-4">Aucun historique</p>
+                    </div>
                 </div>
-                <div class="pt-4 border-t border-white/5 space-y-4">
-                    <textarea id="customDNA" placeholder="DNA de Thiab's..." class="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-3 text-[10px] text-white outline-none focus:border-purple-500 resize-none"></textarea>
-                    <button id="saveDNA" class="w-full py-2.5 bg-purple-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-purple-500 transition-all">Mettre à jour</button>
-                    <button id="logoutBtn" class="w-full py-4 text-[9px] font-black uppercase tracking-widest opacity-30 hover:opacity-100">Déconnexion</button>
+
+                <!-- Settings -->
+                <div class="space-y-4 pt-4 border-t border-white/5">
+                    <div class="space-y-2">
+                        <label class="text-[9px] font-black uppercase tracking-widest opacity-40">DNA Système</label>
+                        <textarea id="customDNA" placeholder="Règles de Thiab's..." class="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-3 text-[10px] text-white outline-none focus:border-purple-500 transition-all resize-none"></textarea>
+                        <button id="saveDNA" class="w-full py-2.5 bg-purple-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-purple-500 transition-all">Sauvegarder</button>
+                    </div>
+
+                    <div class="pt-4 space-y-3">
+                        <a id="supportMail" href="#" class="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/40 transition-all group">
+                            <span class="text-[9px] font-black uppercase tracking-widest">Support / Suppr. Compte</span>
+                            <i class="fas fa-envelope text-xs opacity-20 group-hover:opacity-100"></i>
+                        </a>
+                        <button id="logoutBtn" class="w-full py-4 text-[9px] font-black uppercase tracking-[0.2em] opacity-30 hover:opacity-100 transition-opacity">Déconnexion</button>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <header class="px-6 py-5 flex items-center justify-between border-b border-white/5 bg-black/40 backdrop-blur-2xl z-40">
+        <header class="px-6 py-5 flex items-center justify-between border-b border-white/5 bg-black/40 backdrop-blur-2xl shrink-0 z-40">
             <div class="flex items-center gap-4">
                 <i class="fas fa-star text-xl star-logo"></i>
                 <div>
                     <h2 class="text-sm font-black uppercase tracking-widest"><strong>Thiab's</strong></h2>
-                    <p class="text-[9px] font-bold text-white/30 uppercase">Membre <strong>LevelUp</strong></p>
+                    <p class="text-[9px] font-bold text-white/30 uppercase">Powered by <strong>LevelUp</strong></p>
                 </div>
             </div>
             <button id="openSidebar" class="w-10 h-10 rounded-xl flex flex-col items-center justify-center gap-1.5 hover:bg-white/5 transition-all">
@@ -155,245 +169,268 @@
         <main class="flex-1 overflow-y-auto px-6 py-10 no-scrollbar space-y-10" id="chatArea">
             <div class="max-w-2xl mx-auto space-y-8" id="conversationContainer"></div>
             <div id="aiTyping" class="max-w-2xl mx-auto hidden">
-                <div class="flex items-center gap-3"><i class="fas fa-star text-[10px] star-logo opacity-50"></i><div class="typing-dots flex gap-1"><span></span><span></span><span></span></div></div>
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-star text-[10px] star-logo opacity-50"></i>
+                    <div class="typing-dots flex gap-1"><span></span><span></span><span></span></div>
+                </div>
             </div>
         </main>
 
-        <footer class="px-4 py-6 border-t border-white/5 bg-[#020202]/90 backdrop-blur-3xl z-50">
-            <div class="max-w-2xl mx-auto flex gap-2">
-                <div class="flex-1 glass rounded-3xl p-1.5 flex items-end">
-                    <textarea id="userInput" placeholder="Dis-moi tout bro..." rows="1" autocomplete="off"></textarea>
+        <footer class="px-4 py-6 border-t border-white/5 bg-[#020202]/90 backdrop-blur-3xl shrink-0 z-50">
+            <div class="max-w-2xl mx-auto">
+                <div class="glass rounded-3xl p-1.5 flex items-end gap-2 focus-within:border-purple-500/40 transition-all shadow-2xl">
+                    <div class="flex-1 px-2"><textarea id="userInput" placeholder="Dis-moi tout bro..." rows="1" autocomplete="off"></textarea></div>
+                    <button id="sendBtn" class="w-12 h-12 rounded-2xl bg-white text-black flex items-center justify-center hover:bg-purple-500 hover:text-white transition-all shadow-lg"><i class="fas fa-chevron-up text-xs"></i></button>
                 </div>
-                <button id="sendBtn" class="w-12 h-12 rounded-2xl bg-white text-black flex items-center justify-center hover:bg-purple-500 hover:text-white transition-all"><i class="fas fa-chevron-up text-xs"></i></button>
             </div>
         </footer>
     </div>
 
     <script type="module">
-        const checkReady = setInterval(() => {
-            if (window.auth && window.db && window.onAuthStateChanged) {
-                clearInterval(checkReady);
-                initApp();
-            }
-        }, 100);
+        const { auth, db, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, firestoreUtils } = window;
+        const { collection, addDoc, query, orderBy, onSnapshot, getDocs, deleteDoc, doc, setDoc, getDoc, limit } = firestoreUtils;
 
-        function initApp() {
-            const { auth, db, firestoreUtils, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } = window;
-            const { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, setDoc, getDoc } = firestoreUtils;
+        const splashScreen = document.getElementById('splashScreen');
+        const authPage = document.getElementById('authPage');
+        const mainApp = document.getElementById('mainApp');
+        const conversationContainer = document.getElementById('conversationContainer');
+        const chatArea = document.getElementById('chatArea');
+        const userInput = document.getElementById('userInput');
+        const sidebar = document.getElementById('sidebar');
+        const appOverlay = document.getElementById('appOverlay');
+        const historyList = document.getElementById('historyList');
 
-            const splashScreen = document.getElementById('splashScreen');
-            const authPage = document.getElementById('authPage');
-            const mainApp = document.getElementById('mainApp');
-            const conversationContainer = document.getElementById('conversationContainer');
-            const chatArea = document.getElementById('chatArea');
-            const userInput = document.getElementById('userInput');
-            const sidebar = document.getElementById('sidebar');
-            const appOverlay = document.getElementById('appOverlay');
+        const MODEL = "gemini-2.5-flash-preview-09-2025";
+        const apiKey = "";
+        const appId = window.__app_id;
+        let userId = null;
+        let dnaPrompt = "";
+        let currentMessages = [];
 
-            const MODEL = "gemini-2.5-flash-preview-09-2025";
-            const appId = window.__app_id;
-            let userId = null;
-            let dnaPrompt = "";
-            let currentMessages = [];
-            let splashDone = false;
-
-            // ANIMATION INTRO
+        // Intro
+        window.onload = () => {
             const s1 = document.getElementById('splash1');
             const s2 = document.getElementById('splash2');
-            
             setTimeout(() => s1.classList.add('active'), 500);
             setTimeout(() => { s1.classList.remove('active'); s1.classList.add('exit'); }, 2000);
             setTimeout(() => s2.classList.add('active'), 2500);
-            setTimeout(() => { 
-                s2.classList.remove('active'); s2.classList.add('exit'); 
+            setTimeout(() => { s2.classList.remove('active'); s2.classList.add('exit'); }, 4000);
+            setTimeout(() => {
                 splashScreen.style.opacity = '0';
-                setTimeout(() => { 
-                    splashScreen.style.display = 'none'; 
-                    splashDone = true;
-                    checkViewStatus();
-                }, 800);
-            }, 4000);
-
-            function checkViewStatus() {
-                if (!auth.currentUser) {
+                setTimeout(() => {
+                    splashScreen.style.display = 'none';
                     authPage.classList.remove('hidden');
-                    mainApp.classList.add('hidden');
-                } else {
-                    authPage.classList.add('hidden');
-                    mainApp.classList.remove('hidden');
-                    mainApp.classList.add('flex');
+                }, 1000);
+            }, 5000);
+        };
+
+        // Auth
+        document.getElementById('anonLogin').onclick = () => signInAnonymously(auth);
+        document.getElementById('googleLogin').onclick = () => {
+            const provider = new GoogleAuthProvider();
+            signInWithPopup(auth, provider);
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                authPage.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                mainApp.classList.add('flex');
+
+                // Profile Info
+                if (user.displayName) {
+                    document.getElementById('userName').innerText = user.displayName;
+                    document.getElementById('userMail').innerText = user.email;
+                    document.getElementById('userAvatar').innerHTML = `<img src="${user.photoURL}" class="w-full h-full object-cover">`;
                 }
-            }
+                
+                // Support link
+                const mailSubject = encodeURIComponent(`Requête de support - ID: ${userId}`);
+                document.getElementById('supportMail').href = `mailto:levelup.iao@gmail.com?subject=${mailSubject}`;
 
-            // AUTH LOGIC
-            document.getElementById('googleLogin').onclick = async () => {
-                try {
-                    const provider = new GoogleAuthProvider();
-                    await signInWithPopup(auth, provider);
-                } catch (e) { console.error("Login Failed:", e); }
-            };
-
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    userId = user.uid;
-                    document.getElementById('userName').innerText = user.displayName || "Membre";
-                    document.getElementById('userMail').innerText = user.email || "Compte lié";
-                    if (user.photoURL) document.getElementById('userAvatar').innerHTML = `<img src="${user.photoURL}" class="w-full h-full object-cover">`;
-                    
-                    // On force l'affichage de l'app si connecté, même si le splash tourne encore
-                    if (splashDone) {
-                        authPage.classList.add('hidden');
-                        mainApp.classList.remove('hidden');
-                        mainApp.classList.add('flex');
-                    }
-
-                    const dnaDoc = await getDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"));
-                    if (dnaDoc.exists()) {
-                        dnaPrompt = dnaDoc.data().prompt;
-                        document.getElementById('customDNA').value = dnaPrompt;
-                    }
-                    setupHistoryListener();
-                } else {
-                    if (splashDone) {
-                        authPage.classList.remove('hidden');
-                        mainApp.classList.add('hidden');
-                    }
+                // DNA Load
+                const dnaDoc = await getDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"));
+                if (dnaDoc.exists()) {
+                    dnaPrompt = dnaDoc.data().prompt;
+                    document.getElementById('customDNA').value = dnaPrompt;
                 }
-            });
 
-            function setupHistoryListener() {
-                const q = query(collection(db, "artifacts", appId, "users", userId, "chats"), orderBy("timestamp", "asc"));
-                onSnapshot(q, (snap) => {
-                    const messages = [];
-                    let totalSize = 0;
-                    document.getElementById('historyList').innerHTML = '';
-
-                    snap.forEach(d => {
-                        const data = d.data();
-                        messages.push({id: d.id, ...data});
-                        totalSize += JSON.stringify(data).length;
-
-                        const item = document.createElement('div');
-                        item.className = "chat-item p-3 rounded-xl flex items-center justify-between cursor-pointer";
-                        item.innerHTML = `<div class="flex-1 truncate text-[9px] font-bold">${data.user}</div><i class="fas fa-trash text-[7px] opacity-20 hover:text-red-500 p-2"></i>`;
-                        item.onclick = (e) => {
-                            if (e.target.classList.contains('fa-trash')) {
-                                deleteDoc(doc(db, "artifacts", appId, "users", userId, "chats", d.id));
-                            } else {
-                                conversationContainer.innerHTML = '';
-                                displayUserMessage(data.user);
-                                displayAIMessage(data.ai, true);
-                                sidebar.classList.add('translate-x-full');
-                                appOverlay.classList.add('hidden');
-                            }
-                        };
-                        document.getElementById('historyList').appendChild(item);
-                    });
-
-                    const perc = Math.min((totalSize / 300000) * 100, 100);
-                    document.getElementById('storageBar').style.width = perc + '%';
-                    document.getElementById('storageLabel').innerText = Math.round(perc) + '%';
-
-                    if (messages.length === 0) {
-                        conversationContainer.innerHTML = '';
-                        displayAIMessage("Salut bro ! Je suis **Thiab's** IA, prête à t'aider. Dis-moi tout !", true);
-                    } else if (messages.length > currentMessages.length) {
-                        const last = messages[messages.length - 1];
-                        if (last.newlyAdded) displayAIMessage(last.ai, true);
-                        else refreshConversation(messages);
-                    }
-                    currentMessages = messages;
-                });
+                setupHistoryListener();
             }
+        });
 
-            function refreshConversation(msgs) {
-                conversationContainer.innerHTML = '';
-                msgs.forEach(m => { displayUserMessage(m.user); displayAIMessage(m.ai, false); });
-                chatArea.scrollTop = chatArea.scrollHeight;
-            }
+        // History Management
+        function setupHistoryListener() {
+            const q = query(collection(db, "artifacts", appId, "users", userId, "chats"), orderBy("timestamp", "asc"));
+            onSnapshot(q, (snap) => {
+                const messages = [];
+                let totalSize = 0;
+                historyList.innerHTML = '';
 
-            document.getElementById('openSidebar').onclick = () => {
-                sidebar.classList.remove('translate-x-full');
-                appOverlay.classList.remove('hidden');
-            };
-            document.getElementById('closeSidebar').onclick = () => {
-                sidebar.classList.add('translate-x-full');
-                appOverlay.classList.add('hidden');
-            };
-            appOverlay.onclick = () => {
-                sidebar.classList.add('translate-x-full');
-                appOverlay.classList.add('hidden');
-            };
+                snap.forEach(d => {
+                    const data = d.data();
+                    messages.push({id: d.id, ...data});
+                    totalSize += JSON.stringify(data).length; // Estimation en bytes
 
-            document.getElementById('saveDNA').onclick = async () => {
-                dnaPrompt = document.getElementById('customDNA').value;
-                await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { prompt: dnaPrompt });
-                document.getElementById('saveDNA').innerText = "✓ Enregistré";
-                setTimeout(() => document.getElementById('saveDNA').innerText = "Mettre à jour", 2000);
-            };
-
-            document.getElementById('logoutBtn').onclick = () => auth.signOut();
-
-            function displayUserMessage(text) {
-                const div = document.createElement('div');
-                div.className = "flex justify-end";
-                div.innerHTML = `<div class="bg-white/5 border border-white/10 px-6 py-3 rounded-2xl text-sm max-w-[88%]">${text}</div>`;
-                conversationContainer.appendChild(div);
-                chatArea.scrollTop = chatArea.scrollHeight;
-            }
-
-            function displayAIMessage(text, animate) {
-                const content = document.createElement('div');
-                content.className = "prose prose-invert prose-sm text-slate-300 max-w-[88%] mb-4";
-                conversationContainer.appendChild(content);
-                if (animate) {
-                    let i = 0;
-                    const interval = setInterval(() => {
-                        if (i < text.length) {
-                            content.innerHTML = marked.parse(text.substring(0, i + 1));
-                            i += 4; chatArea.scrollTop = chatArea.scrollHeight;
+                    // Sidebar List Item
+                    const item = document.createElement('div');
+                    item.className = "chat-item p-3 rounded-xl flex items-center justify-between group cursor-pointer animate-in fade-in";
+                    item.innerHTML = `
+                        <div class="flex-1 min-w-0 pr-2">
+                            <p class="text-[9px] font-bold text-white truncate">${data.user}</p>
+                            <p class="text-[7px] text-white/30 uppercase">${new Date(data.timestamp).toLocaleDateString()}</p>
+                        </div>
+                        <button class="delete-msg opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:text-red-300 transition-all">
+                            <i class="fas fa-trash-alt text-[8px]"></i>
+                        </button>
+                    `;
+                    item.onclick = (e) => {
+                        if (e.target.closest('.delete-msg')) {
+                            deleteDoc(doc(db, "artifacts", appId, "users", userId, "chats", d.id));
                         } else {
-                            content.innerHTML = marked.parse(text);
-                            clearInterval(interval);
+                            displaySpecificChat(data);
+                            closeSidebar();
                         }
-                    }, 10);
-                } else {
-                    content.innerHTML = marked.parse(text);
+                    };
+                    historyList.appendChild(item);
+                });
+
+                // Update Storage Bar (Firestore doc limit is ~1MB, let's set a safe app limit at 200KB for UX)
+                const limitBytes = 200000; 
+                const percentage = Math.min((totalSize / limitBytes) * 100, 100);
+                document.getElementById('storageBar').style.width = percentage + '%';
+                document.getElementById('storageLabel').innerText = Math.round(percentage) + '%';
+                if (percentage > 80) document.getElementById('storageBar').style.background = '#ef4444';
+
+                // Initial Message if empty
+                if (messages.length === 0) {
+                    conversationContainer.innerHTML = '';
+                    displayAIMessage("Salut bro ! Je suis **Thiab's** IA. Prêt à t'accompagner.", true);
+                } else if (messages.length > currentMessages.length) {
+                    const newMsg = messages[messages.length - 1];
+                    if (newMsg.newlyAdded) {
+                        displayAIMessage(newMsg.ai, true);
+                    } else {
+                        refreshAllMessages(messages);
+                    }
                 }
-            }
-
-            async function send() {
-                const val = userInput.value.trim();
-                if (!val || !userId) return;
-                userInput.value = ''; userInput.style.height = '44px';
-                displayUserMessage(val);
-                document.getElementById('aiTyping').classList.remove('hidden');
-                chatArea.scrollTop = chatArea.scrollHeight;
-
-                const corePrompt = `Tu es **Thiab's** IA, créée par **Thiab's** et développée par **LevelUp**. ADN : ${dnaPrompt}.`;
-
-                try {
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=`, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: val }] }], systemInstruction: { parts: [{ text: corePrompt }] } })
-                    });
-                    const data = await res.json();
-                    const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Erreur réseau bro.";
-                    document.getElementById('aiTyping').classList.add('hidden');
-                    await addDoc(collection(db, "artifacts", appId, "users", userId, "chats"), {
-                        user: val, ai: aiText, timestamp: Date.now(), newlyAdded: true
-                    });
-                } catch (e) {
-                    document.getElementById('aiTyping').classList.add('hidden');
-                    displayAIMessage("Erreur technique bro.", true);
-                }
-            }
-
-            userInput.oninput = function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; };
-            userInput.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
-            document.getElementById('sendBtn').onclick = send;
+                currentMessages = messages;
+            });
         }
+
+        function refreshAllMessages(msgs) {
+            conversationContainer.innerHTML = '';
+            msgs.forEach(m => {
+                displayUserMessage(m.user);
+                displayAIMessage(m.ai, false);
+            });
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function displaySpecificChat(data) {
+            conversationContainer.innerHTML = '';
+            displayUserMessage(data.user);
+            displayAIMessage(data.ai, true);
+        }
+
+        // UI Handlers
+        function openSidebar() {
+            sidebar.classList.remove('translate-x-full');
+            appOverlay.classList.remove('hidden');
+            appOverlay.classList.add('overlay-active');
+        }
+
+        function closeSidebar() {
+            sidebar.classList.add('translate-x-full');
+            appOverlay.classList.add('hidden');
+            appOverlay.classList.remove('overlay-active');
+        }
+
+        document.getElementById('openSidebar').onclick = openSidebar;
+        document.getElementById('closeSidebar').onclick = closeSidebar;
+        appOverlay.onclick = closeSidebar; // Fermeture au clic sur le chat
+
+        document.getElementById('logoutBtn').onclick = () => auth.signOut().then(() => location.reload());
+
+        document.getElementById('saveDNA').onclick = async () => {
+            const btn = document.getElementById('saveDNA');
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            dnaPrompt = document.getElementById('customDNA').value;
+            await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { prompt: dnaPrompt });
+            setTimeout(() => btn.innerText = "Sauvegarder", 2000);
+        };
+
+        // Messaging
+        function displayUserMessage(text) {
+            const div = document.createElement('div');
+            div.className = "flex justify-end w-full";
+            div.innerHTML = `<div class="bg-white/5 border border-white/10 px-6 py-3 rounded-2xl text-sm message-bubble text-white shadow-lg">${text}</div>`;
+            conversationContainer.appendChild(div);
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function displayAIMessage(text, animate) {
+            const wrap = document.createElement('div');
+            wrap.className = "flex flex-col gap-3 w-full";
+            const content = document.createElement('div');
+            content.className = "prose prose-invert prose-sm text-slate-300 max-w-full message-bubble";
+            wrap.appendChild(content);
+            conversationContainer.appendChild(wrap);
+            if (animate) streamText(content, text); else content.innerHTML = marked.parse(text);
+        }
+
+        function streamText(container, text) {
+            let i = 0; container.innerHTML = '';
+            const interval = setInterval(() => {
+                if (i < text.length) {
+                    container.innerHTML = marked.parse(text.substring(0, i + 1));
+                    i += 3; chatArea.scrollTop = chatArea.scrollHeight;
+                } else {
+                    container.innerHTML = marked.parse(text);
+                    clearInterval(interval); chatArea.scrollTop = chatArea.scrollHeight;
+                }
+            }, 5);
+        }
+
+        async function send() {
+            const val = userInput.value.trim();
+            if (!val || !userId) return;
+            userInput.value = ''; userInput.style.height = '44px';
+            displayUserMessage(val);
+            document.getElementById('aiTyping').classList.remove('hidden');
+            chatArea.scrollTop = chatArea.scrollHeight;
+
+            const mode = document.getElementById('systemMode')?.value || 'normal';
+            const corePrompt = `Tu es **Thiab's** IA. IDENTITÉ : Créée par **Thiab's**, développée par **LevelUp**. 
+            IMPORTANT : Écris toujours les noms **Thiab's** et **LevelUp** en gras.
+            DNA PRIORITAIRE : ${dnaPrompt}.
+            MODE : ${mode}`;
+
+            try {
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: [{ parts: [{ text: val }] }], systemInstruction: { parts: [{ text: corePrompt }] } })
+                });
+
+                const data = await res.json();
+                const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Erreur technique bro.";
+                document.getElementById('aiTyping').classList.add('hidden');
+
+                await addDoc(collection(db, "artifacts", appId, "users", userId, "chats"), {
+                    user: val, ai: aiText, timestamp: Date.now(), newlyAdded: true
+                });
+
+            } catch (e) {
+                document.getElementById('aiTyping').classList.add('hidden');
+                displayAIMessage("Bug réseau bro. Réessaie.", true);
+            }
+        }
+
+        userInput.oninput = function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; };
+        userInput.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
+        document.getElementById('sendBtn').onclick = send;
     </script>
 </body>
 </html>
