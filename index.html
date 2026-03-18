@@ -8,277 +8,180 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+        const firebaseConfig = JSON.parse(__firebase_config);
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        window.auth = auth;
+        window.db = db;
+        window.GoogleAuthProvider = GoogleAuthProvider;
+        window.signInWithPopup = signInWithPopup;
+        window.firestoreUtils = { collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, limit };
+        window.__app_id = typeof __app_id !== 'undefined' ? __app_id : "thiab-s-app-v3"; 
+    </script>
+
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         
-        :root {
-            --primary: #a855f7;
-            --dark: #020202;
-        }
+        :root { --primary: #a855f7; --dark: #020202; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--dark); color: #ffffff; height: 100dvh; margin: 0; display: flex; flex-direction: column; overflow: hidden; }
+        .bg-main { background: radial-gradient(circle at 50% 0%, #0d061a 0%, #020202 100%); }
 
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: var(--dark);
-            color: #ffffff;
-            height: 100dvh;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .bg-main {
-            background: radial-gradient(circle at 50% 0%, #0d061a 0%, #020202 100%);
-        }
-
-        /* --- CINEMATIC INTRO --- */
-        #splashScreen {
-            position: fixed;
-            inset: 0;
-            z-index: 9999;
-            background: black;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            flex-direction: column;
-            transition: opacity 1s ease-out;
-        }
-
-        .splash-text {
-            font-size: 1.8rem;
-            font-weight: 900;
-            letter-spacing: 0.6em;
-            text-transform: uppercase;
-            opacity: 0;
-            position: absolute;
-            transform: scale(0.85);
-            filter: blur(15px);
-            transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1);
-            text-align: center;
-        }
-
+        /* Cinematic Intro */
+        #splashScreen { position: fixed; inset: 0; z-index: 9999; background: black; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity 1s ease-out; }
+        .splash-text { font-size: 1.8rem; font-weight: 900; letter-spacing: 0.6em; text-transform: uppercase; opacity: 0; position: absolute; transform: scale(0.85); filter: blur(15px); transition: all 0.9s cubic-bezier(0.16, 1, 0.3, 1); text-align: center; }
         .splash-text.active { opacity: 1; transform: scale(1); filter: blur(0px); }
         .splash-text.exit { opacity: 0; transform: scale(1.2); filter: blur(30px); }
 
-        /* --- LANGUAGE SELECTOR --- */
-        #langSelector {
-            position: fixed;
-            inset: 0;
-            z-index: 8000;
-            background: black;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
-        }
-
-        .lang-card {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid rgba(255,255,255,0.1);
-            width: 100%;
-            max-width: 300px;
-            padding: 30px;
-            border-radius: 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .lang-card:hover {
-            transform: translateY(-10px);
-            background: rgba(168, 85, 247, 0.1);
-            border-color: var(--primary);
-        }
-
-        /* --- LOADING OVERLAY --- */
-        #loadingOverlay {
-            position: fixed;
-            inset: 0;
-            z-index: 6000;
-            background: black;
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .loader-bar-container {
-            width: 250px;
-            height: 2px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 30px;
-            position: relative;
-        }
-
-        .loader-bar-progress {
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            background: var(--primary);
-            width: 0%;
-            box-shadow: 0 0 15px var(--primary);
-            transition: width 0.3s ease;
-        }
-
-        /* --- INTERFACE --- */
-        .glass {
-            background: rgba(255, 255, 255, 0.02);
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-        }
-
-        #userInput {
-            background: transparent !important;
-            border: none !important;
-            color: white !important;
-            outline: none !important;
-            width: 100%;
-            padding: 12px;
-            font-size: 16px !important;
-            min-height: 44px;
-            max-height: 120px;
-            display: block;
-            resize: none;
-            overflow-y: hidden;
-        }
-
-        .message-bubble {
-            max-width: 88%;
-            animation: msgIn 0.4s cubic-bezier(0.1, 0.9, 0.2, 1);
-        }
+        /* Interface */
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .overlay-active { pointer-events: auto; background: rgba(0,0,0,0.4); }
+        
+        #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: -20px 0 50px rgba(0,0,0,0.5); }
+        
+        #userInput { background: transparent !important; border: none !important; color: white !important; outline: none !important; width: 100%; padding: 12px; font-size: 16px !important; min-height: 44px; max-height: 120px; display: block; resize: none; overflow-y: hidden; }
+        .message-bubble { max-width: 88%; animation: msgIn 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); }
         @keyframes msgIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
-        .star-logo {
-            animation: rotate360 8s linear infinite;
-            color: #a855f7;
-            filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.6));
-        }
-
+        .star-logo { animation: rotate360 8s linear infinite; color: #a855f7; filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.6)); }
         @keyframes rotate360 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        .typing-dots span {
-            width: 3px; height: 3px; background: #a855f7; border-radius: 50%;
-            display: inline-block; animation: typing 1.4s infinite;
-        }
-        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
-        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+        .typing-dots span { width: 3px; height: 3px; background: #a855f7; border-radius: 50%; display: inline-block; animation: typing 1.4s infinite; }
         @keyframes typing { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.3); } }
 
-        .btn-premium {
-            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.02));
-            border: 1px solid rgba(255,255,255,0.1);
-            transition: all 0.3s;
+        .chat-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s; }
+        .chat-item:hover { background: rgba(168, 85, 247, 0.1); border-color: var(--primary); }
+
+        .storage-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+        .storage-progress { height: 100%; background: var(--primary); transition: width 0.5s ease; }
+
+        .google-btn {
+            background: #ffffff;
+            color: #1f1f1f;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid #dadce0;
+        }
+        .google-btn:hover {
+            background: #f8f9fa;
+            box-shadow: 0 1px 3px rgba(60,64,67, 0.3), 0 4px 8px 3px rgba(60,64,67, 0.15);
+            transform: translateY(-1px);
         }
     </style>
 </head>
 <body class="bg-main">
 
-    <!-- 1. INITIAL SPLASH -->
+    <!-- SPLASH -->
     <div id="splashScreen">
         <div id="splash1" class="splash-text text-purple-500"><strong>Thiab's</strong> IA</div>
         <div id="splash2" class="splash-text text-white"><strong>LevelUp</strong></div>
     </div>
 
-    <!-- 2. LANG SELECTOR -->
-    <div id="langSelector">
-        <h2 class="text-xs font-black uppercase tracking-[0.5em] text-white/40 mb-12">Select Language</h2>
-        <div class="flex flex-col gap-6 w-full items-center">
-            <div id="btn-fr" class="lang-card">
-                <span class="text-2xl block mb-2">🇫🇷</span>
-                <span class="font-bold tracking-widest text-sm">FRANÇAIS</span>
-            </div>
-            <div id="btn-en" class="lang-card">
-                <span class="text-2xl block mb-2">🇺🇸</span>
-                <span class="font-bold tracking-widest text-sm">ENGLISH</span>
-            </div>
-        </div>
-    </div>
-
-    <!-- 3. LOGIN PAGE -->
+    <!-- AUTH PAGE -->
     <div id="authPage" class="hidden fixed inset-0 z-[5000] flex items-center justify-center p-8 bg-black">
         <div class="w-full max-w-sm text-center">
             <i class="fas fa-star text-5xl star-logo mb-10 block"></i>
-            <h1 class="text-2xl font-bold tracking-[0.4em] text-white uppercase mb-8"><strong>Thiab's</strong></h1>
-            <div class="space-y-4">
-                <input type="password" id="pinInput" placeholder="PASSCODE" 
-                    class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 text-center text-xl font-bold tracking-[0.5em] text-white outline-none focus:border-purple-500/50 transition-all">
-                <button id="unlockBtn" class="w-full bg-white text-black py-5 rounded-2xl font-black text-[10px] uppercase tracking-[0.2em] hover:bg-purple-500 hover:text-white transition-colors" data-i18n="connectBtn">Connecter</button>
-                <button id="getCodeBtn" class="w-full py-2 text-[9px] font-bold uppercase tracking-[0.2em] text-white/30 hover:text-white transition-colors" data-i18n="getCodeBtn">Obtenir mon code</button>
+            <h1 class="text-2xl font-bold tracking-[0.4em] text-white uppercase mb-12"><strong>Thiab's</strong></h1>
+            
+            <div class="space-y-6">
+                <p class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] mb-4">Accès sécurisé via</p>
+                <button id="googleLogin" class="google-btn w-full py-4 rounded-2xl flex items-center justify-center gap-4 text-sm tracking-wide shadow-sm">
+                    <svg width="20" height="20" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"/>
+                        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    Continuer avec Google
+                </button>
+                <p class="text-[8px] text-white/20 uppercase tracking-widest mt-8">Propulsé par <strong>LevelUp</strong></p>
             </div>
         </div>
     </div>
 
-    <!-- 4. POST-AUTH LOADING ANIMATION -->
-    <div id="loadingOverlay">
-        <div class="text-xl font-black uppercase tracking-[0.5em] text-purple-500"><strong>Thiab's</strong> IA</div>
-        <div class="loader-bar-container">
-            <div id="postAuthProgress" class="loader-bar-progress"></div>
-        </div>
-        <div id="loadingStatus" class="mt-6 text-[10px] font-bold uppercase tracking-[0.3em] text-white/30" data-i18n="loading">Chargement...</div>
-    </div>
-
-    <!-- 5. MAIN APP -->
+    <!-- MAIN APP -->
     <div id="mainApp" class="hidden flex-col h-full w-full relative">
-        <div id="sidebar" class="fixed inset-y-0 right-0 w-80 glass z-[3000] border-l border-white/10 p-8 flex flex-col transition-transform translate-x-full duration-500 no-scrollbar overflow-y-auto">
-            <div class="flex items-center justify-between mb-10">
-                <span class="text-[10px] font-black uppercase tracking-widest opacity-40" data-i18n="configTitle">Configuration</span>
-                <button id="closeSidebar" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/5"><i class="fas fa-times text-sm"></i></button>
+        <!-- Overlay -->
+        <div id="appOverlay" class="fixed inset-0 z-[2999] hidden transition-opacity"></div>
+
+        <div id="sidebar" class="fixed inset-y-0 right-0 w-[85%] md:w-80 glass z-[3000] border-l border-white/10 p-6 flex flex-col transition-transform translate-x-full no-scrollbar overflow-y-auto">
+            <div class="flex items-center justify-between mb-8">
+                <span class="text-[10px] font-black uppercase tracking-widest opacity-40">Menu</span>
+                <button id="closeSidebar" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5"><i class="fas fa-times text-xs"></i></button>
             </div>
-            <div class="space-y-8">
-                <div class="space-y-3">
-                    <h4 class="text-[9px] font-black uppercase tracking-widest opacity-40" data-i18n="langTitle">Langue du système</h4>
-                    <select id="appLangSetting" class="w-full bg-white/5 border border-white/10 rounded-xl p-4 text-xs text-white outline-none focus:border-purple-500">
-                        <option value="fr" class="bg-[#020202]">Français</option>
-                        <option value="en" class="bg-[#020202]">English</option>
-                    </select>
+
+            <!-- User Profile (Google Data) -->
+            <div id="userCard" class="p-4 rounded-2xl bg-white/5 border border-white/5 mb-8 flex items-center gap-4">
+                <div id="userAvatar" class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center overflow-hidden border border-white/10 shadow-inner">
+                    <i class="fas fa-user text-xs"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p id="userName" class="text-[10px] font-black uppercase truncate">Utilisateur</p>
+                    <p id="userMail" class="text-[9px] text-white/40 truncate">---</p>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                <!-- Storage Monitor -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center text-[9px] font-black uppercase tracking-widest opacity-40">
+                        <span>Espace Cloud</span>
+                        <span id="storageLabel">0%</span>
+                    </div>
+                    <div class="storage-bar"><div id="storageBar" class="storage-progress" style="width: 0%"></div></div>
                 </div>
 
-                <div class="p-5 rounded-2xl bg-white/5 border border-white/5">
-                    <h4 class="text-[9px] font-black uppercase tracking-widest text-purple-400 mb-4" data-i18n="statusTitle">Statut Utilisateur</h4>
-                    <p id="profId" class="text-[10px] font-mono text-white/40 truncate mb-1">ID: ---</p>
-                    <p class="text-[10px] font-bold text-green-400 uppercase" data-i18n="statusValue">Premium Authenticated</p>
-                </div>
-                
+                <!-- Chat History -->
                 <div class="space-y-3">
-                    <h4 class="text-[9px] font-black uppercase tracking-widest opacity-40">Personnalisation (DNA)</h4>
-                    <p class="text-[10px] text-white/40 leading-relaxed" data-i18n="dnaHelp">Ceci définit le comportement profond de **Thiab's**.</p>
-                    <textarea id="customDNA" placeholder="DNA de l'IA..." class="w-full h-32 bg-white/5 border border-white/10 rounded-xl p-4 text-xs text-white outline-none focus:border-purple-500 transition-all resize-none"></textarea>
-                    <button id="saveDNA" class="w-full py-3 bg-purple-600 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-purple-500 transition-all" data-i18n="saveBtn">Mettre à jour l'IA</button>
+                    <h4 class="text-[9px] font-black uppercase tracking-widest opacity-40">Historique des sessions</h4>
+                    <div id="historyList" class="space-y-2 max-h-60 overflow-y-auto pr-2 no-scrollbar">
+                        <p class="text-[9px] text-white/20 italic text-center py-4">Recherche des archives...</p>
+                    </div>
                 </div>
 
-                <div class="pt-6 border-t border-white/5 space-y-4">
-                    <button id="clearHistory" class="w-full flex items-center justify-center gap-3 p-4 rounded-xl btn-premium text-red-400">
-                        <i class="fas fa-trash-alt text-xs"></i>
-                        <span class="text-[10px] font-bold uppercase tracking-widest" data-i18n="clearBtn">Réinitialiser chat</span>
-                    </button>
-                    <button id="logoutBtn" class="w-full py-4 text-[10px] font-black uppercase tracking-[0.2em] opacity-30 hover:opacity-100 transition-opacity" data-i18n="logoutBtn">Terminer Session</button>
+                <!-- Settings -->
+                <div class="space-y-4 pt-4 border-t border-white/5">
+                    <div class="space-y-2">
+                        <label class="text-[9px] font-black uppercase tracking-widest opacity-40">DNA de <strong>Thiab's</strong></label>
+                        <textarea id="customDNA" placeholder="Ex: Sois très court dans tes réponses..." class="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-3 text-[10px] text-white outline-none focus:border-purple-500 transition-all resize-none"></textarea>
+                        <button id="saveDNA" class="w-full py-2.5 bg-purple-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-purple-500 transition-all">Mettre à jour</button>
+                    </div>
+
+                    <div class="pt-4 space-y-3">
+                        <a id="supportMail" href="#" class="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/40 transition-all group">
+                            <span class="text-[9px] font-black uppercase tracking-widest">Support & Compte</span>
+                            <i class="fas fa-envelope text-xs opacity-20 group-hover:opacity-100"></i>
+                        </a>
+                        <button id="logoutBtn" class="w-full py-4 text-[9px] font-black uppercase tracking-[0.2em] opacity-30 hover:opacity-100 transition-opacity">Déconnexion</button>
+                    </div>
                 </div>
             </div>
         </div>
 
+        <!-- Header -->
         <header class="px-6 py-5 flex items-center justify-between border-b border-white/5 bg-black/40 backdrop-blur-2xl shrink-0 z-40">
             <div class="flex items-center gap-4">
                 <i class="fas fa-star text-xl star-logo"></i>
                 <div>
                     <h2 class="text-sm font-black uppercase tracking-widest"><strong>Thiab's</strong></h2>
-                    <select id="systemMode" class="bg-transparent text-[9px] font-bold uppercase tracking-tighter text-white/40 outline-none cursor-pointer hover:text-white transition-colors">
-                        <option value="normal" class="bg-[#020202]">System: Normal</option>
-                        <option value="coach" class="bg-[#020202]">System: Coach</option>
-                        <option value="anti-procrastination" class="bg-[#020202]">System: Anti-Procrastination</option>
-                    </select>
+                    <p class="text-[9px] font-bold text-white/30 uppercase tracking-tighter">Membre <strong>LevelUp</strong></p>
                 </div>
             </div>
-            <button id="openSidebar" class="w-12 h-12 rounded-2xl flex flex-col items-center justify-center gap-1.5 hover:bg-white/5 transition-all">
-                <span class="w-5 h-0.5 bg-white rounded-full"></span>
-                <span class="w-5 h-0.5 bg-white rounded-full opacity-60"></span>
+            <button id="openSidebar" class="w-10 h-10 rounded-xl flex flex-col items-center justify-center gap-1.5 hover:bg-white/5 transition-all">
+                <span class="w-4 h-0.5 bg-white rounded-full"></span>
+                <span class="w-4 h-0.5 bg-white rounded-full opacity-60"></span>
             </button>
         </header>
 
+        <!-- Chat Area -->
         <main class="flex-1 overflow-y-auto px-6 py-10 no-scrollbar space-y-10" id="chatArea">
             <div class="max-w-2xl mx-auto space-y-8" id="conversationContainer"></div>
             <div id="aiTyping" class="max-w-2xl mx-auto hidden">
@@ -289,210 +192,193 @@
             </div>
         </main>
 
-        <footer class="px-4 py-6 pb-6 border-t border-white/5 bg-[#020202]/90 backdrop-blur-3xl shrink-0 z-50">
-            <div class="max-w-2xl mx-auto relative">
+        <!-- Footer -->
+        <footer class="px-4 py-6 border-t border-white/5 bg-[#020202]/90 backdrop-blur-3xl shrink-0 z-50">
+            <div class="max-w-2xl mx-auto">
                 <div class="glass rounded-3xl p-1.5 flex items-end gap-2 focus-within:border-purple-500/40 transition-all shadow-2xl">
-                    <div class="flex-1 px-2"><textarea id="userInput" data-placeholder="inputPlaceholder" rows="1" autocomplete="off"></textarea></div>
-                    <button id="sendBtn" class="w-12 h-12 rounded-2xl bg-white text-black flex items-center justify-center hover:bg-purple-500 hover:text-white transition-all"><i class="fas fa-chevron-up text-xs"></i></button>
+                    <div class="flex-1 px-2"><textarea id="userInput" placeholder="Dis-moi tout bro..." rows="1" autocomplete="off"></textarea></div>
+                    <button id="sendBtn" class="w-12 h-12 rounded-2xl bg-white text-black flex items-center justify-center hover:bg-purple-500 hover:text-white transition-all shadow-lg"><i class="fas fa-chevron-up text-xs"></i></button>
                 </div>
-                <div class="mt-4 text-center"><span class="text-[9px] font-black uppercase tracking-[0.4em] opacity-20"><strong>LevelUp</strong></span></div>
             </div>
         </footer>
     </div>
 
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        const { auth, db, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, firestoreUtils } = window;
+        const { collection, addDoc, query, orderBy, onSnapshot, getDocs, deleteDoc, doc, setDoc, getDoc, limit } = firestoreUtils;
 
-        const firebaseConfig = JSON.parse(__firebase_config);
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : "thiabs-app-v4";
-
-        // Elements
         const splashScreen = document.getElementById('splashScreen');
-        const langSelector = document.getElementById('langSelector');
         const authPage = document.getElementById('authPage');
-        const loadingOverlay = document.getElementById('loadingOverlay');
         const mainApp = document.getElementById('mainApp');
         const conversationContainer = document.getElementById('conversationContainer');
         const chatArea = document.getElementById('chatArea');
         const userInput = document.getElementById('userInput');
-        const appLangSetting = document.getElementById('appLangSetting');
-        const profIdDisplay = document.getElementById('profId');
+        const sidebar = document.getElementById('sidebar');
+        const appOverlay = document.getElementById('appOverlay');
+        const historyList = document.getElementById('historyList');
 
-        // State
         const MODEL = "gemini-2.5-flash-preview-09-2025";
-        const apiKey = ""; 
-        let user = null;
-        let currentMessages = [];
+        const apiKey = "";
+        const appId = window.__app_id;
+        let userId = null;
         let dnaPrompt = "";
-        let currentLang = "fr";
+        let currentMessages = [];
 
-        const i18n = {
-            fr: {
-                connectBtn: "Connecter",
-                getCodeBtn: "Obtenir mon code",
-                loading: "Chargement...",
-                configTitle: "Configuration",
-                langTitle: "Langue du système",
-                statusTitle: "Statut Utilisateur",
-                statusValue: "Premium Authenticated",
-                dnaHelp: "Ceci définit le comportement profond de **Thiab's**.",
-                saveBtn: "Mettre à jour l'IA",
-                clearBtn: "Réinitialiser chat",
-                logoutBtn: "Terminer Session",
-                inputPlaceholder: "Dis-moi tout bro...",
-                intro: "Salut bro ! Je suis **Thiab's** IA. Prêt à t'accompagner. Ajuste mes règles dans le DNA si besoin.",
-                quotaError: "Système saturé bro. Réessaie après.",
-                genError: "Bug technique bro. Réessaie."
-            },
-            en: {
-                connectBtn: "Connect",
-                getCodeBtn: "Get my code",
-                loading: "Loading...",
-                configTitle: "Settings",
-                langTitle: "System Language",
-                statusTitle: "User Status",
-                statusValue: "Premium Authenticated",
-                dnaHelp: "This defines **Thiab's** deep behavior.",
-                saveBtn: "Update IA",
-                clearBtn: "Clear History",
-                logoutBtn: "End Session",
-                inputPlaceholder: "Tell me everything bro...",
-                intro: "Hey bro! I'm **Thiab's** IA. Ready to help you. Adjust my rules in DNA settings.",
-                quotaError: "System saturated bro. Try later.",
-                genError: "Glitch bro. Try again."
-            }
-        };
-
-        function applyTranslations() {
-            const lang = i18n[currentLang];
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (lang[key]) {
-                    el.innerHTML = lang[key].replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-                }
-            });
-            document.querySelectorAll('[data-placeholder]').forEach(el => {
-                const key = el.getAttribute('data-placeholder');
-                if (lang[key]) el.placeholder = lang[key];
-            });
-        }
-
-        window.selectAppLang = (l) => {
-            currentLang = l;
-            appLangSetting.value = l;
-            applyTranslations();
-            langSelector.style.opacity = '0';
-            setTimeout(() => {
-                langSelector.style.display = 'none';
-                authPage.classList.remove('hidden');
-            }, 500);
-        };
-        
-        document.getElementById('btn-fr').onclick = () => window.selectAppLang('fr');
-        document.getElementById('btn-en').onclick = () => window.selectAppLang('en');
-
-        // Splash Sequence
-        window.addEventListener('load', () => {
+        // Animation Intro
+        window.onload = () => {
             const s1 = document.getElementById('splash1');
             const s2 = document.getElementById('splash2');
             setTimeout(() => s1.classList.add('active'), 500);
-            setTimeout(() => { s1.classList.remove('active'); s1.classList.add('exit'); }, 1800);
-            setTimeout(() => s2.classList.add('active'), 2200);
-            setTimeout(() => { s2.classList.remove('active'); s2.classList.add('exit'); }, 3500);
+            setTimeout(() => { s1.classList.remove('active'); s1.classList.add('exit'); }, 2000);
+            setTimeout(() => s2.classList.add('active'), 2500);
+            setTimeout(() => { s2.classList.remove('active'); s2.classList.add('exit'); }, 4000);
             setTimeout(() => {
                 splashScreen.style.opacity = '0';
                 setTimeout(() => {
                     splashScreen.style.display = 'none';
-                    langSelector.style.display = 'flex';
+                    authPage.classList.remove('hidden');
                 }, 1000);
-            }, 4500);
-        });
-
-        // Auth Process
-        document.getElementById('unlockBtn').onclick = async () => {
-            document.getElementById('unlockBtn').innerHTML = '<i class="fas fa-sync fa-spin"></i>';
-            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                await signInWithCustomToken(auth, __initial_auth_token);
-            } else {
-                await signInAnonymously(auth);
-            }
+            }, 5000);
         };
 
-        onAuthStateChanged(auth, async (u) => {
-            if (u) {
-                user = u;
-                profIdDisplay.innerText = `ID: ${user.uid}`;
-                authPage.classList.add('hidden');
-                loadingOverlay.style.display = 'flex';
-                
-                let progress = 0;
-                const interval = setInterval(() => {
-                    progress += 4;
-                    document.getElementById('postAuthProgress').style.width = progress + '%';
-                    if (progress >= 100) {
-                        clearInterval(interval);
-                        setTimeout(() => {
-                            loadingOverlay.style.opacity = '0';
-                            setTimeout(() => {
-                                loadingOverlay.style.display = 'none';
-                                mainApp.classList.remove('hidden');
-                                mainApp.classList.add('flex');
-                                setupRealtime();
-                            }, 500);
-                        }, 300);
-                    }
-                }, 30);
+        // Google Only Auth
+        document.getElementById('googleLogin').onclick = () => {
+            const btn = document.getElementById('googleLogin');
+            btn.classList.add('opacity-50', 'pointer-events-none');
+            const provider = new GoogleAuthProvider();
+            signInWithPopup(auth, provider).catch(e => {
+                btn.classList.remove('opacity-50', 'pointer-events-none');
+                console.error(e);
+            });
+        };
 
-                const dnaDoc = await getDoc(doc(db, "artifacts", appId, "users", user.uid, "settings", "dna"));
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                userId = user.uid;
+                authPage.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                mainApp.classList.add('flex');
+
+                // Profile Display
+                document.getElementById('userName').innerText = user.displayName || "Membre";
+                document.getElementById('userMail').innerText = user.email || "Compte lié";
+                if (user.photoURL) {
+                    document.getElementById('userAvatar').innerHTML = `<img src="${user.photoURL}" class="w-full h-full object-cover">`;
+                }
+                
+                // Mail Link
+                const mailSubject = encodeURIComponent(`Support Thiab's - ${user.email} (ID: ${userId})`);
+                document.getElementById('supportMail').href = `mailto:levelup.iao@gmail.com?subject=${mailSubject}`;
+
+                // DNA Load
+                const dnaRef = doc(db, "artifacts", appId, "users", userId, "settings", "dna");
+                const dnaDoc = await getDoc(dnaRef);
                 if (dnaDoc.exists()) {
                     dnaPrompt = dnaDoc.data().prompt;
                     document.getElementById('customDNA').value = dnaPrompt;
                 }
+
+                setupHistoryListener();
+            } else {
+                authPage.classList.remove('hidden');
+                mainApp.classList.add('hidden');
             }
         });
 
+        // Smart History & Storage
+        function setupHistoryListener() {
+            const q = query(collection(db, "artifacts", appId, "users", userId, "chats"), orderBy("timestamp", "asc"));
+            onSnapshot(q, (snap) => {
+                const messages = [];
+                let totalSize = 0;
+                historyList.innerHTML = '';
+
+                snap.forEach(d => {
+                    const data = d.data();
+                    messages.push({id: d.id, ...data});
+                    totalSize += JSON.stringify(data).length;
+
+                    const item = document.createElement('div');
+                    item.className = "chat-item p-3 rounded-xl flex items-center justify-between group cursor-pointer animate-in fade-in";
+                    item.innerHTML = `
+                        <div class="flex-1 min-w-0 pr-2">
+                            <p class="text-[9px] font-bold text-white truncate">${data.user}</p>
+                            <p class="text-[7px] text-white/30 uppercase">${new Date(data.timestamp).toLocaleDateString()}</p>
+                        </div>
+                        <button class="delete-msg opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:text-red-300 transition-all">
+                            <i class="fas fa-trash-alt text-[8px]"></i>
+                        </button>
+                    `;
+                    item.onclick = (e) => {
+                        if (e.target.closest('.delete-msg')) {
+                            deleteDoc(doc(db, "artifacts", appId, "users", userId, "chats", d.id));
+                        } else {
+                            displaySpecificChat(data);
+                            closeSidebar();
+                        }
+                    };
+                    historyList.appendChild(item);
+                });
+
+                // Capacity calculation (Safe limit ~300KB)
+                const capacityLimit = 300000;
+                const perc = Math.min((totalSize / capacityLimit) * 100, 100);
+                document.getElementById('storageBar').style.width = perc + '%';
+                document.getElementById('storageLabel').innerText = Math.round(perc) + '%';
+                if (perc > 85) document.getElementById('storageBar').style.background = '#f43f5e';
+
+                if (messages.length === 0) {
+                    conversationContainer.innerHTML = '';
+                    displayAIMessage("Salut bro ! Je suis **Thiab's** IA, développée par **LevelUp**. Ton compte Google est connecté, je suis prêt !", true);
+                } else if (messages.length > currentMessages.length) {
+                    const last = messages[messages.length - 1];
+                    if (last.newlyAdded) displayAIMessage(last.ai, true);
+                    else refreshConversation(messages);
+                }
+                currentMessages = messages;
+            });
+        }
+
+        function refreshConversation(msgs) {
+            conversationContainer.innerHTML = '';
+            msgs.forEach(m => { displayUserMessage(m.user); displayAIMessage(m.ai, false); });
+            chatArea.scrollTop = chatArea.scrollHeight;
+        }
+
+        function displaySpecificChat(data) {
+            conversationContainer.innerHTML = '';
+            displayUserMessage(data.user);
+            displayAIMessage(data.ai, true);
+        }
+
+        // Side Menu Logic
+        function openSidebar() {
+            sidebar.classList.remove('translate-x-full');
+            appOverlay.classList.remove('hidden');
+            appOverlay.classList.add('overlay-active');
+        }
+
+        function closeSidebar() {
+            sidebar.classList.add('translate-x-full');
+            appOverlay.classList.add('hidden');
+            appOverlay.classList.remove('overlay-active');
+        }
+
+        document.getElementById('openSidebar').onclick = openSidebar;
+        document.getElementById('closeSidebar').onclick = closeSidebar;
+        appOverlay.onclick = closeSidebar;
+
+        document.getElementById('logoutBtn').onclick = () => auth.signOut();
+
         document.getElementById('saveDNA').onclick = async () => {
-            if (!user) return;
             const btn = document.getElementById('saveDNA');
             btn.innerHTML = '<i class="fas fa-check"></i>';
             dnaPrompt = document.getElementById('customDNA').value;
-            await setDoc(doc(db, "artifacts", appId, "users", user.uid, "settings", "dna"), { prompt: dnaPrompt });
-            setTimeout(() => btn.innerText = i18n[currentLang].saveBtn, 2000);
+            await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { prompt: dnaPrompt });
+            setTimeout(() => btn.innerText = "Mettre à jour", 2000);
         };
 
-        function setupRealtime() {
-            if (!user) return;
-            const q = query(collection(db, "artifacts", appId, "users", user.uid, "chats"), orderBy("timestamp", "asc"));
-            onSnapshot(q, (snap) => {
-                const messages = [];
-                snap.forEach(d => messages.push({id: d.id, ...d.data()}));
-                
-                if (messages.length === 0) {
-                    displayAIMessage(i18n[currentLang].intro, true);
-                }
-
-                if (messages.length > currentMessages.length) {
-                    const latest = messages[messages.length - 1];
-                    if (latest.newlyAdded) {
-                        displayAIMessage(latest.ai, true);
-                    } else {
-                        conversationContainer.innerHTML = '';
-                        messages.forEach(m => {
-                            displayUserMessage(m.user);
-                            displayAIMessage(m.ai, false);
-                        });
-                    }
-                    currentMessages = messages;
-                    chatArea.scrollTop = chatArea.scrollHeight;
-                }
-            }, (err) => console.error("Firestore Error:", err));
-        }
-
+        // Chat Mechanics
         function displayUserMessage(text) {
             const div = document.createElement('div');
             div.className = "flex justify-end w-full";
@@ -516,71 +402,50 @@
             const interval = setInterval(() => {
                 if (i < text.length) {
                     container.innerHTML = marked.parse(text.substring(0, i + 1));
-                    i += 4; chatArea.scrollTop = chatArea.scrollHeight;
+                    i += 3; chatArea.scrollTop = chatArea.scrollHeight;
                 } else {
                     container.innerHTML = marked.parse(text);
                     clearInterval(interval); chatArea.scrollTop = chatArea.scrollHeight;
                 }
-            }, 10);
+            }, 5);
         }
 
         async function send() {
             const val = userInput.value.trim();
-            if (!val || !user) return;
+            if (!val || !userId) return;
             userInput.value = ''; userInput.style.height = '44px';
             displayUserMessage(val);
             document.getElementById('aiTyping').classList.remove('hidden');
             chatArea.scrollTop = chatArea.scrollHeight;
 
-            const mode = document.getElementById('systemMode').value;
-            const corePrompt = `Tu es **Thiab's** IA. Créée par **Thiab's**, développée par **LevelUp**. 
-            IMPORTANT : Mets toujours les noms **Thiab's** et **LevelUp** en gras.
-            LANGUE : ${currentLang === 'fr' ? 'Français' : 'Anglais'}.
-            DNA : ${dnaPrompt}.
-            MODE : ${mode}`;
+            const corePrompt = `Tu es **Thiab's** IA. IDENTITÉ : Créée par **Thiab's**, développée par **LevelUp**. 
+            IMPORTANT : Écris toujours les noms **Thiab's** et **LevelUp** en gras.
+            DNA UTILISATEUR : ${dnaPrompt}.`;
 
             try {
                 const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ 
-                        contents: [{ parts: [{ text: val }] }], 
-                        systemInstruction: { parts: [{ text: corePrompt }] } 
-                    })
+                    body: JSON.stringify({ contents: [{ parts: [{ text: val }] }], systemInstruction: { parts: [{ text: corePrompt }] } })
                 });
 
-                if (res.status === 429) throw new Error("quota");
                 const data = await res.json();
-                const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || i18n[currentLang].genError;
+                const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Erreur réseau bro.";
                 document.getElementById('aiTyping').classList.add('hidden');
 
-                await addDoc(collection(db, "artifacts", appId, "users", user.uid, "chats"), {
+                await addDoc(collection(db, "artifacts", appId, "users", userId, "chats"), {
                     user: val, ai: aiText, timestamp: Date.now(), newlyAdded: true
                 });
 
             } catch (e) {
                 document.getElementById('aiTyping').classList.add('hidden');
-                displayAIMessage(e.message === "quota" ? i18n[currentLang].quotaError : i18n[currentLang].genError, true);
+                displayAIMessage("Erreur technique bro. Vérifie ta connexion.", true);
             }
         }
 
-        // Event Listeners
         userInput.oninput = function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; };
         userInput.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
         document.getElementById('sendBtn').onclick = send;
-        document.getElementById('openSidebar').onclick = () => document.getElementById('sidebar').classList.remove('translate-x-full');
-        document.getElementById('closeSidebar').onclick = () => document.getElementById('sidebar').classList.add('translate-x-full');
-        document.getElementById('logoutBtn').onclick = () => auth.signOut().then(() => location.reload());
-        document.getElementById('appLangSetting').onchange = (e) => { currentLang = e.target.value; applyTranslations(); };
-        
-        document.getElementById('clearHistory').onclick = async () => {
-            if (!user) return;
-            const snap = await getDocs(collection(db, "artifacts", appId, "users", user.uid, "chats"));
-            for (const d of snap.docs) await deleteDoc(doc(db, "artifacts", appId, "users", user.uid, "chats", d.id));
-            conversationContainer.innerHTML = '';
-            document.getElementById('sidebar').classList.add('translate-x-full');
-            displayAIMessage(i18n[currentLang].intro, true);
-        };
     </script>
 </body>
 </html>
