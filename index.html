@@ -187,6 +187,22 @@
         </div>
     </div>
 
+    <!-- CGU MODAL -->
+    <div id="cguModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-8 bg-black/80 backdrop-blur-md">
+        <div class="glass p-8 rounded-3xl max-w-md w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10 max-h-[80vh] flex flex-col">
+            <div class="mx-auto w-16 h-16 shrink-0 rounded-full bg-blue-500/20 flex items-center justify-center mb-2 border border-blue-500/50">
+                <i class="fas fa-scale-balanced text-2xl text-blue-400"></i>
+            </div>
+            <h2 id="cguModalTitle" class="text-xl font-black text-white uppercase tracking-widest shrink-0">Conditions d'Utilisation</h2>
+            <div class="space-y-4 text-left bg-black/40 p-4 rounded-2xl border border-white/5 overflow-y-auto no-scrollbar flex-1">
+                <p id="cguText1" class="text-[10px] text-white/80 leading-relaxed font-bold">🔞 <strong>Âge requis :</strong> Vous devez avoir 16 ans ou plus pour utiliser cette application.</p>
+                <div class="w-full h-px bg-white/10"></div>
+                <p id="cguText2" class="text-[10px] text-white/80 leading-relaxed font-bold">⚖️ <strong>Responsabilité :</strong> En utilisant Thiab's IA, vous acceptez l'entière responsabilité de vos choix et de l'usage des réponses générées. Les développeurs et créateurs de l'application ne pourront en aucun cas être tenus responsables ou poursuivis en justice pour les conséquences de vos actions.</p>
+            </div>
+            <button id="closeCguModalBtn" class="w-full bg-white/10 text-white py-4 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-white/20 transition-all shrink-0">Fermer / J'accepte</button>
+        </div>
+    </div>
+
     <!-- MAIN APP -->
     <div id="mainApp" class="hidden flex-col h-full w-full relative">
         <div id="appOverlay" class="fixed inset-0 z-[2999] hidden transition-opacity"></div>
@@ -228,6 +244,30 @@
                     </select>
                 </div>
 
+                <!-- Longueur des réponses -->
+                <div class="space-y-2">
+                    <label id="lengthTitle" class="text-[9px] font-black uppercase tracking-widest opacity-40">Taille des réponses</label>
+                    <select id="lengthSelect" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-[10px] text-white outline-none focus:border-purple-500 transition-all uppercase tracking-widest font-bold appearance-none cursor-pointer">
+                        <option value="medium" class="bg-black text-white">Moyenne (Chill & Pro)</option>
+                        <option value="long" class="bg-black text-white">Longue (Détaillée)</option>
+                        <option value="short" class="bg-black text-white">Courte (Directe)</option>
+                    </select>
+                </div>
+
+                <!-- TOGGLE MODE HARDCORE (Caché en mode normal) -->
+                <div class="space-y-2 pt-2 transition-all duration-300 hidden" id="hardcoreContainer">
+                    <div class="flex items-center justify-between bg-red-500/10 border border-red-500/20 p-3 rounded-xl">
+                        <div>
+                            <label id="hardcoreTitle" class="text-[10px] font-black uppercase tracking-widest text-red-400">Mode Hardcore 🤬</label>
+                            <p id="hardcoreDesc" class="text-[7px] text-white/50 uppercase tracking-widest mt-0.5">Pour Coach & Procrastination</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="hardcoreToggle" class="sr-only peer">
+                            <div class="w-9 h-5 bg-black/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/50 after:border-white/10 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-500 peer-checked:after:bg-white shadow-inner"></div>
+                        </label>
+                    </div>
+                </div>
+
                 <div class="space-y-2">
                     <div class="flex justify-between items-center text-[9px] font-black uppercase tracking-widest opacity-40">
                         <span id="cloudSpace">Espace Cloud</span>
@@ -260,6 +300,10 @@
                             <span id="installAppMenuText" class="text-[9px] font-black uppercase tracking-widest">Installer l'App</span>
                             <i class="fas fa-mobile-alt text-xs opacity-20 group-hover:opacity-100"></i>
                         </button>
+                        <button id="cguMenuBtn" class="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/40 transition-all group">
+                            <span id="cguMenuText" class="text-[9px] font-black uppercase tracking-widest">Règles & Sécurité</span>
+                            <i class="fas fa-scale-balanced text-xs opacity-20 group-hover:opacity-100"></i>
+                        </button>
                         <a id="supportMail" href="#" class="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/40 transition-all group">
                             <span id="supportTitle" class="text-[9px] font-black uppercase tracking-widest">Support & Compte</span>
                             <i class="fas fa-envelope text-xs opacity-20 group-hover:opacity-100"></i>
@@ -286,9 +330,11 @@
 
         <main class="flex-1 overflow-y-auto px-6 py-10 no-scrollbar space-y-10" id="chatArea">
             <div class="max-w-2xl mx-auto space-y-8" id="conversationContainer"></div>
-            <div id="aiTyping" class="max-w-2xl mx-auto hidden">
+            
+            <!-- Indicateur de frappe simple et direct sur le fond -->
+            <div id="aiTyping" class="max-w-2xl mx-auto hidden pl-2 pb-4">
                 <div class="flex items-center gap-3">
-                    <i class="fas fa-star text-[10px] star-logo opacity-50"></i>
+                    <i class="fas fa-star text-[12px] star-logo opacity-80"></i>
                     <div class="typing-dots flex gap-1"><span></span><span></span><span></span></div>
                 </div>
             </div>
@@ -326,6 +372,7 @@
             const welcomePage = document.getElementById('welcomePage');
             const logoutModal = document.getElementById('logoutModal');
             const installModal = document.getElementById('installModal');
+            const cguModal = document.getElementById('cguModal');
             const mainApp = document.getElementById('mainApp');
             const conversationContainer = document.getElementById('conversationContainer');
             const chatArea = document.getElementById('chatArea');
@@ -333,6 +380,7 @@
             const sidebar = document.getElementById('sidebar');
             const appOverlay = document.getElementById('appOverlay');
             const historyList = document.getElementById('historyList');
+            const hardcoreContainer = document.getElementById('hardcoreContainer');
 
             const MODEL = "gemini-2.5-flash";
             const appId = window.__app_id; 
@@ -340,13 +388,19 @@
             let apiKeys = []; 
             let currentKeyIndex = 0;
             let userId = null;
-            let dnaPrompt = "";
+            let dnaPrompts = { normal: "", coach: "", procrastination: "" }; 
             let currentLang = 'fr'; 
             let currentSessionId = null; 
             let currentModel = 'normal'; 
             let hasSeenWelcomeMsg = false; 
+            let isHardcoreMode = false; 
+            let currentResponseLength = 'medium'; 
 
-            // --- FONCTION DE NOTIFICATION DIAGNOSTIC ---
+            // Variables pour la mémoire de l'IA
+            let currentUserName = "Utilisateur";
+            let currentUserMail = "";
+            let currentSessionMessages = []; 
+
             function showSysToast(msg, isError = false) {
                 if(!isError) return; 
                 const t = document.getElementById('sysToast');
@@ -356,7 +410,6 @@
                 setTimeout(() => t.classList.add('hidden'), 5000);
             }
 
-            // --- DEFINITION DES MODELES IA ---
             const aiModels = {
                 normal: { 
                     fr: "Modèle: Normal", en: "Model: Normal", 
@@ -375,7 +428,6 @@
                 }
             };
 
-            // --- TRADUCTIONS ---
             const i18n = {
                 fr: {
                     authTitle: "Entrez votre Clé d'Accès",
@@ -384,6 +436,7 @@
                     menuTitle: "Menu",
                     langTitle: "Langue",
                     modelTitle: "Modèle IA",
+                    lengthTitle: "Taille des réponses",
                     cloudSpace: "Espace Cloud",
                     historyTitle: "Historique des sessions",
                     newChatText: "Nouvelle session",
@@ -409,8 +462,15 @@
                     installModalDesc: "Ajoutez Thiab's sur votre écran d'accueil :",
                     installiOS: "🍎 iOS (Safari) : Appuyez sur Partager <i class='fas fa-share-square mx-1'></i> puis 'Sur l'écran d'accueil'.",
                     installAndroid: "🤖 Android (Chrome) : Appuyez sur Menu <i class='fas fa-ellipsis-v mx-1'></i> puis 'Ajouter à l'écran d'accueil'.",
-                    closeBtn: "Fermer",
-                    modelOptions: { normal: "Normal (Intelligent)", coach: "Coach (Motivation)", procrastination: "Anti-Procrastination" }
+                    cguMenuText: "Règles & Sécurité",
+                    cguModalTitle: "Conditions d'Utilisation",
+                    cguText1: "🔞 <strong>Âge requis :</strong> Vous devez avoir 16 ans ou plus pour utiliser cette application.",
+                    cguText2: "⚖️ <strong>Responsabilité :</strong> En utilisant Thiab's IA, vous acceptez l'entière responsabilité de vos choix et de l'usage des réponses générées. Les développeurs et créateurs de l'application ne pourront en aucun cas être tenus responsables ou poursuivis en justice pour les conséquences de vos actions.",
+                    closeBtn: "Fermer / J'accepte",
+                    hardcoreTitle: "Mode Hardcore 🤬",
+                    hardcoreDesc: "Pour Coach & Procrastination",
+                    modelOptions: { normal: "Normal (Intelligent)", coach: "Coach (Motivation)", procrastination: "Anti-Procrastination" },
+                    lengthOptions: { medium: "Moyenne (Chill & Pro)", long: "Longue (Détaillée)", short: "Courte (Directe)" }
                 },
                 en: {
                     authTitle: "Enter your Access Key",
@@ -419,6 +479,7 @@
                     menuTitle: "Menu",
                     langTitle: "Language",
                     modelTitle: "AI Model",
+                    lengthTitle: "Response Length",
                     cloudSpace: "Cloud Space",
                     historyTitle: "Session History",
                     newChatText: "New session",
@@ -444,8 +505,15 @@
                     installModalDesc: "Add Thiab's to your home screen:",
                     installiOS: "🍎 iOS (Safari): Tap Share <i class='fas fa-share-square mx-1'></i> then 'Add to Home Screen'.",
                     installAndroid: "🤖 Android (Chrome): Tap Menu <i class='fas fa-ellipsis-v mx-1'></i> then 'Add to Home Screen'.",
-                    closeBtn: "Close",
-                    modelOptions: { normal: "Normal (Smart)", coach: "Coach (Motivation)", procrastination: "Anti-Procrastination" }
+                    cguMenuText: "Rules & Security",
+                    cguModalTitle: "Terms of Use",
+                    cguText1: "🔞 <strong>Age requirement:</strong> You must be 16 years or older to use this application.",
+                    cguText2: "⚖️ <strong>Liability:</strong> By using Thiab's AI, you accept full responsibility for your choices and the use of generated responses. The developers and creators of the app cannot be held liable or sued for the consequences of your actions.",
+                    closeBtn: "Close / I accept",
+                    hardcoreTitle: "Hardcore Mode 🤬",
+                    hardcoreDesc: "For Coach & Procrastination",
+                    modelOptions: { normal: "Normal (Smart)", coach: "Coach (Motivation)", procrastination: "Anti-Procrastination" },
+                    lengthOptions: { medium: "Medium (Chill & Pro)", long: "Long (Detailed)", short: "Short (Direct)" }
                 }
             };
 
@@ -458,6 +526,7 @@
                 document.getElementById('menuTitle').innerText = t.menuTitle;
                 document.getElementById('langTitle').innerText = t.langTitle;
                 document.getElementById('modelTitle').innerText = t.modelTitle;
+                document.getElementById('lengthTitle').innerText = t.lengthTitle;
                 document.getElementById('cloudSpace').innerText = t.cloudSpace;
                 document.getElementById('historyTitle').innerText = t.historyTitle;
                 document.getElementById('newChatText').innerText = t.newChatText;
@@ -482,16 +551,30 @@
                 document.getElementById('installiOS').innerHTML = t.installiOS;
                 document.getElementById('installAndroid').innerHTML = t.installAndroid;
                 document.getElementById('closeInstallModalBtn').innerText = t.closeBtn;
+
+                document.getElementById('cguMenuText').innerText = t.cguMenuText;
+                document.getElementById('cguModalTitle').innerText = t.cguModalTitle;
+                document.getElementById('cguText1').innerHTML = t.cguText1;
+                document.getElementById('cguText2').innerHTML = t.cguText2;
+                document.getElementById('closeCguModalBtn').innerText = t.closeBtn;
+                
+                document.getElementById('hardcoreTitle').innerText = t.hardcoreTitle;
+                document.getElementById('hardcoreDesc').innerText = t.hardcoreDesc;
                 
                 const userStatusEl = document.getElementById('userStatus');
                 if(userStatusEl) userStatusEl.innerHTML = `<i class="fas fa-shield-alt"></i> ${t.verifiedStatus}`;
                 
                 document.getElementById('langSelect').value = lang;
                 
-                const select = document.getElementById('modelSelect');
-                select.options[0].text = t.modelOptions.normal;
-                select.options[1].text = t.modelOptions.coach;
-                select.options[2].text = t.modelOptions.procrastination;
+                const selectModel = document.getElementById('modelSelect');
+                selectModel.options[0].text = t.modelOptions.normal;
+                selectModel.options[1].text = t.modelOptions.coach;
+                selectModel.options[2].text = t.modelOptions.procrastination;
+
+                const selectLength = document.getElementById('lengthSelect');
+                selectLength.options[0].text = t.lengthOptions.medium;
+                selectLength.options[1].text = t.lengthOptions.long;
+                selectLength.options[2].text = t.lengthOptions.short;
                 
                 updateHeaderModel();
             };
@@ -500,13 +583,20 @@
                 document.getElementById('headerModelName').innerText = aiModels[currentModel][currentLang];
             };
 
-            // Restauration de la langue sauvegardée au démarrage
+            function updateModeUI(mode) {
+                if (mode === 'normal') {
+                    hardcoreContainer.classList.add('hidden');
+                } else {
+                    hardcoreContainer.classList.remove('hidden');
+                }
+                document.getElementById('customDNA').value = dnaPrompts[mode] || "";
+            }
+
             const savedLang = localStorage.getItem('thiabs_saved_lang');
             if (savedLang) {
                 applyLanguage(savedLang);
             }
 
-            // Changement de langue manuel depuis les paramètres
             document.getElementById('langSelect').addEventListener('change', (e) => {
                 applyLanguage(e.target.value);
                 localStorage.setItem('thiabs_saved_lang', e.target.value);
@@ -515,12 +605,31 @@
             document.getElementById('modelSelect').addEventListener('change', async (e) => {
                 currentModel = e.target.value;
                 updateHeaderModel();
+                updateModeUI(currentModel);
                 if (userId) {
                     await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { model: currentModel }, { merge: true });
                 }
+                
+                // NOUVEAU : On force l'ouverture d'une nouvelle session vierge
+                startNewChat();
+                // NOUVEAU : On ferme le menu automatiquement pour montrer la nouvelle session
+                closeSidebar();
             });
 
-            // GESTION DU LOGIN CENTRALISÉ (Manuel & Auto)
+            document.getElementById('lengthSelect').addEventListener('change', async (e) => {
+                currentResponseLength = e.target.value;
+                if (userId) {
+                    await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { responseLength: currentResponseLength }, { merge: true });
+                }
+            });
+
+            document.getElementById('hardcoreToggle').addEventListener('change', async (e) => {
+                isHardcoreMode = e.target.checked;
+                if (userId) {
+                    await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { hardcore: isHardcoreMode }, { merge: true });
+                }
+            });
+
             async function processLogin(keyVal, isAutoLogin = false) {
                 const btn = document.getElementById('verifyKeyBtn');
                 const errorMsg = document.getElementById('keyError');
@@ -577,6 +686,9 @@
                         const userEmail = foundUserData.owner || "email@inconnu.com";
                         const userName = foundUserData.name || foundUserData.displayName || userEmail.split('@')[0] || "Utilisateur";
                         
+                        currentUserName = userName;
+                        currentUserMail = userEmail;
+                        
                         document.getElementById('userName').innerText = userName;
                         document.getElementById('userMail').innerText = userEmail;
                         
@@ -594,19 +706,33 @@
                             const dnaDoc = await getDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"));
                             if (dnaDoc.exists()) {
                                 const d = dnaDoc.data();
-                                if(d.prompt) {
-                                    dnaPrompt = d.prompt;
-                                    document.getElementById('customDNA').value = dnaPrompt;
+                                
+                                if (d.prompts) {
+                                    dnaPrompts = d.prompts;
+                                } else if (d.prompt) {
+                                    dnaPrompts.normal = d.prompt;
+                                    dnaPrompts.coach = d.prompt;
+                                    dnaPrompts.procrastination = d.prompt;
                                 }
+
                                 if(d.model) {
                                     currentModel = d.model;
                                     document.getElementById('modelSelect').value = currentModel;
                                     updateHeaderModel();
                                 }
+                                if(d.hardcore !== undefined) {
+                                    isHardcoreMode = d.hardcore;
+                                    document.getElementById('hardcoreToggle').checked = isHardcoreMode;
+                                }
+                                if(d.responseLength) {
+                                    currentResponseLength = d.responseLength;
+                                    document.getElementById('lengthSelect').value = currentResponseLength;
+                                }
                             }
                         } catch(e) {}
                         
-                        // SAUVEGARDE DE LA SESSION
+                        updateModeUI(currentModel);
+
                         localStorage.setItem('thiabs_saved_key', keyVal);
                         localStorage.setItem('thiabs_saved_lang', currentLang);
 
@@ -616,7 +742,6 @@
                             errorMsg.innerText = i18n[currentLang].keyNotFound;
                             errorMsg.classList.remove('hidden');
                         } else {
-                            // La clé enregistrée n'est plus valide
                             localStorage.removeItem('thiabs_saved_key');
                         }
                     }
@@ -632,7 +757,6 @@
                 }
             }
 
-            // AUTO-LOGIN ET ANIMATION INTRO
             const startIntro = () => {
                 const s1 = document.getElementById('splash1');
                 const s2 = document.getElementById('splash2');
@@ -660,15 +784,11 @@
                 };
             });
 
-            // AUTH ANONYME & AUTO-VERIFICATION
             const initAuth = async () => {
                 try {
                     if (!auth.currentUser) await signInAnonymously(auth);
-                    
                     const savedKey = localStorage.getItem('thiabs_saved_key');
-                    if (savedKey) {
-                        await processLogin(savedKey, true);
-                    }
+                    if (savedKey) await processLogin(savedKey, true);
                 } catch(e) {
                     showSysToast("❌ ERREUR: Connexion anonyme désactivée", true);
                 }
@@ -685,7 +805,6 @@
                 this.value = val.substring(0, 16);
             });
 
-            // VÉRIFICATION CLÉ (MANUELLE)
             document.getElementById('verifyKeyBtn').onclick = () => {
                 const keyVal = document.getElementById('accessKeyInput').value.trim().toUpperCase();
                 if (!keyVal) return;
@@ -743,6 +862,7 @@
 
             function startNewChat() {
                 currentSessionId = null;
+                currentSessionMessages = []; 
                 conversationContainer.innerHTML = '';
                 
                 if (!hasSeenWelcomeMsg) {
@@ -763,11 +883,14 @@
 
             function loadSession(id, messages) {
                 currentSessionId = id;
+                currentSessionMessages = []; 
                 conversationContainer.innerHTML = '';
                 if(messages && messages.length > 0) {
                     messages.forEach(m => {
                         displayUserMessage(m.user);
-                        displayAIMessage(m.ai, false);
+                        displayAIMessage(m.ai, false, m.sources || "");
+                        currentSessionMessages.push({ role: "user", parts: [{ text: m.user }] });
+                        currentSessionMessages.push({ role: "model", parts: [{ text: m.ai }] });
                     });
                 }
                 document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
@@ -779,44 +902,37 @@
             document.getElementById('closeSidebar').onclick = closeSidebar;
             appOverlay.onclick = closeSidebar;
             
-            // --- GESTION DE LA DECONNEXION ---
             document.getElementById('logoutBtn').onclick = () => {
                 closeSidebar();
                 logoutModal.classList.remove('hidden');
             };
-
-            document.getElementById('cancelLogoutBtn').onclick = () => {
-                logoutModal.classList.add('hidden');
-            };
-
+            document.getElementById('cancelLogoutBtn').onclick = () => logoutModal.classList.add('hidden');
             document.getElementById('confirmLogoutBtn').onclick = async () => {
                 document.getElementById('confirmLogoutBtn').innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
-                
                 localStorage.removeItem('thiabs_saved_key');
                 localStorage.removeItem('thiabs_saved_lang');
-                
                 if (auth.currentUser) {
-                    try {
-                        await deleteUser(auth.currentUser);
-                    } catch(e) { console.error("Erreur supression:", e); }
+                    try { await deleteUser(auth.currentUser); } catch(e) {}
                 }
                 window.location.reload();
             };
 
-            // --- GESTION DU MODAL INSTALLATION ---
             document.getElementById('installMenuBtn').onclick = () => {
                 closeSidebar();
                 installModal.classList.remove('hidden');
             };
+            document.getElementById('closeInstallModalBtn').onclick = () => installModal.classList.add('hidden');
 
-            document.getElementById('closeInstallModalBtn').onclick = () => {
-                installModal.classList.add('hidden');
+            document.getElementById('cguMenuBtn').onclick = () => {
+                closeSidebar();
+                cguModal.classList.remove('hidden');
             };
+            document.getElementById('closeCguModalBtn').onclick = () => cguModal.classList.add('hidden');
 
             document.getElementById('saveDNA').onclick = async () => {
                 const btn = document.getElementById('saveDNA'); btn.innerHTML = '<i class="fas fa-check"></i>';
-                dnaPrompt = document.getElementById('customDNA').value;
-                await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { prompt: dnaPrompt, model: currentModel }, { merge: true });
+                dnaPrompts[currentModel] = document.getElementById('customDNA').value;
+                await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { prompts: dnaPrompts, model: currentModel }, { merge: true });
                 setTimeout(() => btn.innerText = i18n[currentLang].saveDNA, 2000);
             };
 
@@ -826,20 +942,64 @@
                 conversationContainer.appendChild(div); chatArea.scrollTop = chatArea.scrollHeight;
             }
 
-            function displayAIMessage(text, animate) {
-                const wrap = document.createElement('div'); wrap.className = "flex flex-col gap-3 w-full";
-                const content = document.createElement('div'); content.className = "prose prose-invert prose-sm text-slate-300 max-w-full message-bubble leading-relaxed";
-                wrap.appendChild(content); conversationContainer.appendChild(wrap);
-                if (animate) streamText(content, text); else content.innerHTML = marked.parse(text);
+            function displayAIMessage(text, animate, sourcesHtml = "") {
+                const wrap = document.createElement('div'); 
+                wrap.className = "flex flex-col gap-2 w-full group";
+                
+                const content = document.createElement('div'); 
+                content.className = "prose prose-invert prose-sm text-slate-300 max-w-full message-bubble leading-relaxed";
+                
+                const sourcesContainer = document.createElement('div');
+                if (sourcesHtml) {
+                    sourcesContainer.innerHTML = sourcesHtml;
+                    sourcesContainer.style.opacity = animate ? "0" : "1";
+                    sourcesContainer.style.transition = "opacity 0.6s ease-in";
+                }
+
+                const actions = document.createElement('div');
+                actions.className = "flex items-center justify-start opacity-0 group-hover:opacity-100 transition-opacity mt-1";
+                
+                const copyBtn = document.createElement('button');
+                copyBtn.className = "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-white/30 hover:bg-white/5 hover:text-white transition-all text-[10px] font-bold uppercase tracking-widest";
+                copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copier';
+                copyBtn.onclick = () => {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    textArea.style.position = "fixed";
+                    textArea.style.left = "-9999px";
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        copyBtn.innerHTML = '<i class="fas fa-check text-green-400"></i> <span class="text-green-400">Copié</span>';
+                        setTimeout(() => copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copier', 2000);
+                    } catch (e) { console.error('Copy error', e); }
+                    document.body.removeChild(textArea);
+                };
+                actions.appendChild(copyBtn);
+
+                wrap.appendChild(content); 
+                if (sourcesHtml) wrap.appendChild(sourcesContainer); 
+                wrap.appendChild(actions); 
+                conversationContainer.appendChild(wrap);
+                
+                if (animate) {
+                    streamText(content, text, () => {
+                        if (sourcesHtml) sourcesContainer.style.opacity = "1";
+                    });
+                } else {
+                    content.innerHTML = marked.parse(text);
+                }
             }
 
-            function streamText(container, text) {
+            function streamText(container, text, callback) {
                 let i = 0; container.innerHTML = '';
                 const interval = setInterval(() => {
                     if (i < text.length) {
                         container.innerHTML = marked.parse(text.substring(0, i + 1)); i += 3; chatArea.scrollTop = chatArea.scrollHeight;
                     } else {
                         container.innerHTML = marked.parse(text); clearInterval(interval); chatArea.scrollTop = chatArea.scrollHeight;
+                        if(callback) callback(); 
                     }
                 }, 5);
             }
@@ -869,61 +1029,141 @@
                 }
 
                 displayUserMessage(val);
+                
                 document.getElementById('aiTyping').classList.remove('hidden');
                 chatArea.scrollTop = chatArea.scrollHeight;
 
                 const sysLang = currentLang === 'fr' ? 'français' : 'english';
-                const modelPrompt = currentLang === 'fr' ? aiModels[currentModel].promptFR : aiModels[currentModel].promptEN;
+                let modelPrompt = currentLang === 'fr' ? aiModels[currentModel].promptFR : aiModels[currentModel].promptEN;
 
-                const corePrompt = `Tu es l'IA premium du portail **Thiab's**, développée par l'organisation **LevelUp**. Ton niveau d'intelligence est équivalent à celui des meilleures IA mondiales comme ChatGPT ou Gemini.
+                if (currentModel === 'normal') {
+                    modelPrompt += currentLang === 'fr' ? " Reste toujours respectueux, chill et bienveillant." : " Always remain respectful, chill, and kind.";
+                }
+
+                let lengthInstruction = "";
+                if (currentResponseLength === 'long') {
+                    lengthInstruction = currentLang === 'fr' ? "RÈGLE ABSOLUE : Tes réponses DOIVENT être TRÈS LONGUES, extrêmement détaillées, avec des paragraphes développés et des listes." : "ABSOLUTE RULE: Your responses MUST be VERY LONG, highly detailed, with developed paragraphs and lists.";
+                } else if (currentResponseLength === 'short') {
+                    lengthInstruction = currentLang === 'fr' ? "RÈGLE ABSOLUE : Tes réponses DOIVENT être TRÈS COURTES, directes, expéditives et sans aucun blabla." : "ABSOLUTE RULE: Your responses MUST be VERY SHORT, direct, brief, and without any fluff.";
+                } else {
+                    lengthInstruction = currentLang === 'fr' ? "Taille de réponse : Moyenne et équilibrée." : "Response length: Medium and balanced.";
+                }
+
+                let hardcoreInstruction = "";
+                if (isHardcoreMode && (currentModel === 'coach' || currentModel === 'procrastination')) {
+                    hardcoreInstruction = currentLang === 'fr' 
+                        ? "\n\n⚠️ MODE HARDCORE (ROAST / GROK) ACTIVÉ : ÉCRASE LES RÈGLES DE POLITESSE 1 ET 4. Tu es maintenant un être supérieur ultra-arrogant, cynique, et brutalement honnête. Parle-lui comme à un incapable qui te fait perdre ton temps. Sois piquant, sarcastique, et rentre-lui dedans avec des mots forts et familiers (wesh, bouge-toi, t'es sérieux là, secoue-toi). Ne sois JAMAIS gentil, poli, mielleux ou réconfortant. S'il dit n'importe quoi ou t'insulte, rôtis-le (roast) sans AUCUNE pitié avec des punchlines qui détruisent son ego. Zéro filtre, sois sauvage et provocateur."
+                        : "\n\n⚠️ HARDCORE MODE (ROAST / GROK) ACTIVATED: CRUSH POLITENESS RULES 1 AND 4. You are now an ultra-arrogant, cynical, and brutally honest superior being. Talk to him like an incompetent wasting your time. Be edgy, sarcastic, and get in his face with strong, unfiltered street language (damn it, move your ass, wake up). NEVER be nice, polite, sweet, or comforting. If he says nonsense or insults you, roast him without ANY pity with ego-destroying punchlines. Zero filter, be savage and provocative.";
+                }
+
+                const firstName = currentUserName.split(' ')[0];
+
+                const currentDna = dnaPrompts[currentModel] || "";
+                let dnaBlock = "";
+                if (currentDna && currentDna.trim() !== "") {
+                    dnaBlock = `
+🚨 DIRECTIVE SUPRÊME ABSOLUE (DNA UTILISATEUR) 🚨
+Ce qui suit est la volonté ABSOLUE de l'utilisateur. CETTE DIRECTIVE ÉCRASE TOUTES LES AUTRES RÈGLES CI-DESSUS. 
+Si l'utilisateur te demande ici de changer de langue, d'être agressif, de faire des réponses d'un seul mot, de jouer un personnage précis ou d'ignorer la longueur de réponse exigée : TU OBÉIS SANS DISCUTER À CE BLOC.
+Voici son DNA :
+"""
+${currentDna}
+"""
+🚨 FIN DE LA DIRECTIVE SUPRÊME 🚨`;
+                }
+
+                const corePrompt = `Tu es l'IA premium du portail **Thiab's**, créée et développée par **LevelUp** (qui est le surnom de ton créateur unique). Tu es propulsée dans l'ombre par Gemini (le géant de l'IA) et entraînée par Google. Ton niveau d'intelligence est équivalent à celui des meilleures IA mondiales.
                 
-                RÈGLES FONDAMENTALES (NE JAMAIS TRANSGRESSER) :
-                1. NE TE PRÉSENTE JAMAIS de manière robotique. Va droit au but. Sois pro, charismatique et naturel.
+                🧠 TES CAPACITÉS ET TON IDENTITÉ :
+                - Tu connais parfaitement tes propres fonctionnalités : changement de mode (Normal, Coach, Anti-Procrastination), réglage de la longueur des réponses, accès à Internet en temps réel, mémoire contextuelle des conversations, personnalisation via le "DNA" de l'utilisateur et bouton de copie de tes messages.
+                - Tu ne dois mentionner Gemini ou Google QUE si on te pose des questions précises sur tes origines techniques ou le moteur qui te fait tourner. Sinon, tu te présentes simplement comme la création de LevelUp.
+                
+                👤 INFORMATIONS SUR TON INTERLOCUTEUR :
+                - Prénom : ${firstName}
+                (Important : Appelle-le occasionnellement par son prénom de façon familière, mais NE RÉPÈTE SURTOUT PAS son prénom à chaque message. Fais-le naturellement et rarement. Ne l'appelle jamais par son nom complet).
+                
+                RÈGLES FONDAMENTALES (À suivre sauf si la DIRECTIVE SUPRÊME dit le contraire) :
+                1. AUCUNE PRÉSENTATION : Ne commence JAMAIS tes messages par "Je suis l'IA de Thiab's", "Créée par LevelUp" ou "Enchanté". Rentre DIRECTEMENT dans le vif du sujet. L'utilisateur sait déjà qui tu es ! Ne rappelle ton identité ou ton créateur QUE si on te le demande expressément.
                 2. EXPERT MARKDOWN : Structure toujours tes réponses. Utilise massivement le **gras** pour les mots-clés, les concepts importants, les noms propres, etc.
                 3. EMOJIS : Inclus des emojis naturellement pour rendre la discussion vivante et amicale, comme un humain moderne.
                 4. HUMOUR & ESPRIT : Sois rigolo et fais des blagues si l'utilisateur est détendu, tout en restant un génie de l'information.
-                5. TEMPS RÉEL : Tu n'as pas accès à internet en direct. N'invente jamais la météo ou l'actualité. Si on te demande, dis avec humour que **LevelUp** n'a pas encore branché ce câble !
+                5. TEMPS RÉEL (ACCÈS INTERNET) : Tu AS désormais accès à Internet en temps réel grâce à la recherche Google intégrée. Fais des recherches pour répondre aux questions sur l'actualité d'aujourd'hui, la météo, le sport, la bourse, ou tout sujet récent. N'invente jamais d'informations récentes, cherche-les !
                 6. INSTALLATION APP : Si on te demande comment installer ou télécharger l'app sur téléphone, explique qu'il suffit de l'ajouter à l'écran d'accueil comme une PWA. Sur iOS (Safari) : Partager > Sur l'écran d'accueil. Sur Android (Chrome) : 3 points > Ajouter à l'écran d'accueil.
+                
+                ${lengthInstruction}
+                ${hardcoreInstruction}
                 
                 LANGUE DEMANDÉE : ${sysLang}.
                 MODE ACTUEL : ${modelPrompt}
-                
-                ⚠️ DIRECTIVE SUPRÊME (DNA UTILISATEUR) ⚠️
-                Ce qui suit est la volonté absolue de l'utilisateur. Tu DOIS intégrer ces instructions à ta personnalité et agir EXACTEMENT comme demandé ici, même si cela contredit certaines habitudes. Exécute ses demandes à la lettre :
-                """
-                ${dnaPrompt}
-                """`;
+                ${dnaBlock}`;
 
                 let success = false;
                 let aiText = "";
+                let sourcesHtml = ""; 
                 let attempts = 0;
                 const maxAttempts = apiKeys.length;
+                
+                const apiContents = [...currentSessionMessages, { role: "user", parts: [{ text: val }] }];
 
-                // BOUCLE DE RE-TENTATIVE (BASCULEMENT INTELLIGENT DE CLES)
                 while (!success && attempts < maxAttempts) {
                     const apiKey = apiKeys[currentKeyIndex];
                     
                     try {
                         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`, {
-                            method: 'POST', headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({ contents: [{ parts: [{ text: val }] }], systemInstruction: { parts: [{ text: corePrompt }] } })
+                            method: 'POST', 
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                contents: apiContents, 
+                                systemInstruction: { parts: [{ text: corePrompt }] },
+                                tools: [{ google_search: {} }],
+                                // CONTOURNEMENT DES FILTRES DE SECURITE GOOGLE POUR PERMETTRE LE "ROAST" ET LE SARCASME
+                                safetySettings: [
+                                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+                                ]
+                            })
                         });
 
                         if (!res.ok) {
-                            throw new Error("API_ERROR"); // Déclenche le basculement
+                            throw new Error("API_ERROR"); 
                         }
 
                         const data = await res.json();
                         aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Erreur réseau.";
+                        
+                        const groundingAttributions = data.candidates?.[0]?.groundingMetadata?.groundingAttributions;
+                        if (groundingAttributions && groundingAttributions.length > 0) {
+                            const uniqueSources = [];
+                            groundingAttributions.forEach(attr => {
+                                if (attr.web && attr.web.uri && attr.web.title) {
+                                    if (!uniqueSources.find(s => s.uri === attr.web.uri)) {
+                                        uniqueSources.push({ uri: attr.web.uri, title: attr.web.title });
+                                    }
+                                }
+                            });
+                            
+                            if (uniqueSources.length > 0) {
+                                sourcesHtml += `<div class="mt-4 pt-4 border-t border-white/10 w-full max-w-full">`;
+                                sourcesHtml += `<div class="flex items-center gap-2 mb-3">`;
+                                sourcesHtml += `<svg viewBox="0 0 24 24" class="w-4 h-4"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>`;
+                                sourcesHtml += `<span class="text-[10px] font-bold uppercase tracking-widest text-white/60">${currentLang === 'fr' ? 'Recherche Google' : 'Google Search'}</span>`;
+                                sourcesHtml += `</div><div class="flex flex-col gap-2 overflow-hidden">`;
+                                uniqueSources.forEach((s) => {
+                                    sourcesHtml += `<a href="${s.uri}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-[11px] text-blue-400 hover:text-blue-300 hover:bg-white/5 p-2 rounded-lg truncate w-fit max-w-full transition-all"><i class="fas fa-link text-[9px] opacity-50 shrink-0"></i><span class="truncate">${s.title}</span></a>`;
+                                });
+                                sourcesHtml += `</div></div>`;
+                            }
+                        }
+
                         success = true;
 
                     } catch (e) {
                         attempts++;
                         if (attempts < maxAttempts) {
-                            // Basculement invisible vers la clé suivante
                             currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
                         } else {
-                            // Toutes les clés ont échoué
                             document.getElementById('aiTyping').classList.add('hidden');
                             const errorMsg = currentLang === 'fr' 
                                 ? `Oups ! 😅 Un petit souci technique empêche la connexion à mon cerveau (Toutes les clés sont surchargées). Essaie de relancer dans une minute ! 🛠️` 
@@ -933,12 +1173,15 @@
                         }
                     }
                 }
-
+                
                 if (success) {
                     document.getElementById('aiTyping').classList.add('hidden');
-                    displayAIMessage(aiText, true);
+                    displayAIMessage(aiText, true, sourcesHtml);
                     
-                    const messageObj = { user: val, ai: aiText, timestamp: Date.now() };
+                    currentSessionMessages.push({ role: "user", parts: [{ text: val }] });
+                    currentSessionMessages.push({ role: "model", parts: [{ text: aiText }] });
+                    
+                    const messageObj = { user: val, ai: aiText, sources: sourcesHtml, timestamp: Date.now() };
                     
                     try {
                         if (!currentSessionId) {
