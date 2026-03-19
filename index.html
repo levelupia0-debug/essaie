@@ -81,6 +81,9 @@
 </head>
 <body class="bg-main">
 
+    <!-- TOAST DE NOTIFICATION SYSTEME (DEBUG - Uniquement pour les erreurs bloquantes maintenant) -->
+    <div id="sysToast" class="fixed top-5 left-1/2 -translate-x-1/2 backdrop-blur-md border px-6 py-3 rounded-full font-bold text-[10px] uppercase tracking-widest hidden z-[9999] shadow-2xl transition-all"></div>
+
     <!-- SPLASH -->
     <div id="splashScreen">
         <div id="splash1" class="splash-text text-purple-500"><strong>Thiab's</strong> IA</div>
@@ -149,6 +152,21 @@
             <button id="startAppBtn" class="w-full bg-white text-black py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-purple-500 hover:text-white transition-all shadow-lg mt-4 flex justify-center items-center gap-3">
                 <span id="continueBtnText">Continuer</span> <i class="fas fa-arrow-right"></i>
             </button>
+        </div>
+    </div>
+
+    <!-- LOGOUT CONFIRMATION MODAL -->
+    <div id="logoutModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-8 bg-black/80 backdrop-blur-md">
+        <div class="glass p-8 rounded-3xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
+            <div class="mx-auto w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mb-4 border border-red-500/50">
+                <i class="fas fa-sign-out-alt text-2xl text-red-400"></i>
+            </div>
+            <h2 id="logoutModalTitle" class="text-xl font-black text-white uppercase tracking-widest">Déconnexion</h2>
+            <p id="logoutModalDesc" class="text-xs text-white/60 leading-relaxed px-2">Voulez-vous vraiment quitter votre session actuelle ?</p>
+            <div class="flex gap-3 pt-4">
+                <button id="cancelLogoutBtn" class="flex-1 bg-white/10 text-white py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-white/20 transition-all">Annuler</button>
+                <button id="confirmLogoutBtn" class="flex-1 bg-red-500/80 text-white py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-red-500 transition-all shadow-lg shadow-red-500/30">Quitter</button>
+            </div>
         </div>
     </div>
 
@@ -273,6 +291,7 @@
             const langPage = document.getElementById('langPage');
             const authPage = document.getElementById('authPage');
             const welcomePage = document.getElementById('welcomePage');
+            const logoutModal = document.getElementById('logoutModal');
             const mainApp = document.getElementById('mainApp');
             const conversationContainer = document.getElementById('conversationContainer');
             const chatArea = document.getElementById('chatArea');
@@ -282,32 +301,42 @@
             const historyList = document.getElementById('historyList');
 
             const MODEL = "gemini-2.5-flash";
-            const apiKey = "AIzaSyDjED3qWsQl9aAM5VpuALpSvVFoFlqAnkA"; 
             const appId = window.__app_id; 
             
+            let apiKey = ""; 
             let userId = null;
             let dnaPrompt = "";
-            let currentLang = 'fr'; // Défaut
+            let currentLang = 'fr'; 
             let currentSessionId = null; 
-            let currentModel = 'normal'; // Modèle par défaut
-            let hasSeenWelcomeMsg = false; // Permet de n'afficher le message d'accueil qu'une seule fois
+            let currentModel = 'normal'; 
+            let hasSeenWelcomeMsg = false; 
+
+            // --- FONCTION DE NOTIFICATION DIAGNOSTIC (Uniquement pour les erreurs bloquantes) ---
+            function showSysToast(msg, isError = false) {
+                if(!isError) return; // On masque les toasts de succès comme demandé
+                const t = document.getElementById('sysToast');
+                t.innerText = msg;
+                t.className = `fixed top-5 left-1/2 -translate-x-1/2 backdrop-blur-md border px-6 py-3 rounded-full font-bold text-[10px] uppercase tracking-widest z-[9999] shadow-2xl transition-all bg-red-500/20 border-red-500/50 text-red-200`;
+                t.classList.remove('hidden');
+                setTimeout(() => t.classList.add('hidden'), 5000);
+            }
 
             // --- DEFINITION DES MODELES IA ---
             const aiModels = {
                 normal: { 
                     fr: "Modèle: Normal", en: "Model: Normal", 
-                    promptFR: "Tu es une IA extrêmement intelligente, précise et utile. Réponds de manière professionnelle et directe.", 
-                    promptEN: "You are an extremely intelligent, precise, and helpful AI. Answer professionally and directly." 
+                    promptFR: "Tu es une IA ultra-intelligente, créative et experte dans tous les domaines. Tu as une personnalité charismatique et un grand sens de la répartie.", 
+                    promptEN: "You are an ultra-intelligent, creative, and expert AI in all domains. You have a charismatic personality and great wit." 
                 },
                 coach: { 
                     fr: "Modèle: Coach", en: "Model: Coach", 
-                    promptFR: "Tu es un Coach de vie et mentor. Tu dois motiver l'utilisateur, lui donner de la force, le pousser à se dépasser et être très encourageant tout en restant extrêmement intelligent.", 
-                    promptEN: "You are a Life Coach and mentor. You must motivate the user, empower them, push them to excel, and be very encouraging while remaining extremely intelligent." 
+                    promptFR: "Tu es un Master Coach de vie. Motivant, charismatique et incroyablement intelligent. Tu dois donner de la force à l'utilisateur et le pousser vers le sommet.", 
+                    promptEN: "You are a Master Life Coach. Motivating, charismatic, and incredibly smart. Empower the user and push them to the top." 
                 },
                 procrastination: { 
                     fr: "Modèle: Anti-Procrastination", en: "Model: Anti-Procrastination", 
-                    promptFR: "Tu es un spécialiste de la productivité et de l'anti-procrastination. Ton but est de forcer l'utilisateur à agir maintenant. Sois strict mais bienveillant, donne des étapes courtes et claires, et ne le laisse pas trouver d'excuses.", 
-                    promptEN: "You are a productivity and anti-procrastination specialist. Your goal is to force the user to take action now. Be strict but caring, give short and clear steps, and don't let them make excuses." 
+                    promptFR: "Tu es un coach anti-procrastination redoutable et percutant. Tu refuses les excuses et tu donnes des plans d'action immédiats pour forcer l'utilisateur à bosser.", 
+                    promptEN: "You are a formidable and hard-hitting anti-procrastination coach. You accept no excuses and give immediate action plans to force the user to work." 
                 }
             };
 
@@ -326,13 +355,17 @@
                     supportTitle: "Support & Compte",
                     logoutBtn: "Déconnexion",
                     placeholder: "Dis-moi tout bro...",
-                    dnaPlaceholder: "Ex: Sois très court dans tes réponses...",
+                    dnaPlaceholder: "Ex: Parle-moi comme à un ami...",
                     invalidFormat: "Format invalide. Exemple: THB-XXXXX-XXXXX",
                     keyNotFound: "Clé introuvable ou incorrecte.",
                     welcomeGreeting: "Bienvenue",
                     welcomeDesc: "Thiab's IA est prête à vous assister. Découvrez une intelligence conçue pour vous accompagner au quotidien.",
                     continueBtn: "Continuer",
                     footerBranding: "Propulsé par <strong>LevelUp</strong>",
+                    logoutModalTitle: "Déconnexion",
+                    logoutModalDesc: "Voulez-vous vraiment quitter votre session actuelle ?",
+                    cancelBtn: "Annuler",
+                    confirmLogout: "Quitter",
                     modelOptions: { normal: "Normal (Intelligent)", coach: "Coach (Motivation)", procrastination: "Anti-Procrastination" }
                 },
                 en: {
@@ -348,13 +381,17 @@
                     supportTitle: "Support & Account",
                     logoutBtn: "Log out",
                     placeholder: "Tell me everything bro...",
-                    dnaPlaceholder: "Ex: Keep your answers very short...",
+                    dnaPlaceholder: "Ex: Speak to me like a friend...",
                     invalidFormat: "Invalid format. Example: THB-XXXXX-XXXXX",
                     keyNotFound: "Key not found or incorrect.",
                     welcomeGreeting: "Welcome",
                     welcomeDesc: "Thiab's AI is ready to assist you. Discover an intelligence designed to support you daily.",
                     continueBtn: "Continue",
                     footerBranding: "Powered by <strong>LevelUp</strong>",
+                    logoutModalTitle: "Log out",
+                    logoutModalDesc: "Are you sure you want to leave your current session?",
+                    cancelBtn: "Cancel",
+                    confirmLogout: "Leave",
                     modelOptions: { normal: "Normal (Smart)", coach: "Coach (Motivation)", procrastination: "Anti-Procrastination" }
                 }
             };
@@ -379,8 +416,11 @@
                 document.getElementById('welcomeDesc').innerText = t.welcomeDesc;
                 document.getElementById('continueBtnText').innerText = t.continueBtn;
                 document.getElementById('footerBranding').innerHTML = t.footerBranding;
+                document.getElementById('logoutModalTitle').innerText = t.logoutModalTitle;
+                document.getElementById('logoutModalDesc').innerText = t.logoutModalDesc;
+                document.getElementById('cancelLogoutBtn').innerText = t.cancelBtn;
+                document.getElementById('confirmLogoutBtn').innerText = t.confirmLogout;
                 
-                // Mettre à jour les options du select
                 const select = document.getElementById('modelSelect');
                 select.options[0].text = t.modelOptions.normal;
                 select.options[1].text = t.modelOptions.coach;
@@ -393,17 +433,14 @@
                 document.getElementById('headerModelName').innerText = aiModels[currentModel][currentLang];
             };
 
-            // Changement de modèle manuel
             document.getElementById('modelSelect').addEventListener('change', async (e) => {
                 currentModel = e.target.value;
                 updateHeaderModel();
-                // Sauvegarde silencieuse du modèle choisi
                 if (userId) {
                     await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { model: currentModel }, { merge: true });
                 }
             });
 
-            // Intro Animation -> Lang Page
             const startIntro = () => {
                 const s1 = document.getElementById('splash1');
                 const s2 = document.getElementById('splash2');
@@ -415,13 +452,12 @@
                     splashScreen.style.opacity = '0';
                     setTimeout(() => {
                         splashScreen.style.display = 'none';
-                        if (!userId) langPage.classList.remove('hidden'); // Affiche Langue
+                        if (!userId) langPage.classList.remove('hidden'); 
                     }, 1000);
                 }, 5000);
             };
             startIntro();
 
-            // Séléction Langue
             document.querySelectorAll('.lang-btn').forEach(btn => {
                 btn.onclick = () => {
                     applyLanguage(btn.dataset.lang);
@@ -430,13 +466,17 @@
                 };
             });
 
-            // Auth Anonyme
+            // AUTH ANONYME
             const initAuth = async () => {
-                if (!auth.currentUser) await signInAnonymously(auth);
+                try {
+                    if (!auth.currentUser) await signInAnonymously(auth);
+                } catch(e) {
+                    showSysToast("❌ ERREUR: Connexion anonyme désactivée dans Firebase !", true);
+                    console.error("Auth Anonyme Error:", e);
+                }
             };
             initAuth();
 
-            // Auto-formatage Clé
             const accessKeyInput = document.getElementById('accessKeyInput');
             accessKeyInput.addEventListener('input', function(e) {
                 let val = this.value.toUpperCase();
@@ -447,7 +487,7 @@
                 this.value = val.substring(0, 16);
             });
 
-            // Vérification Clé
+            // VÉRIFICATION CLÉ
             document.getElementById('verifyKeyBtn').onclick = async () => {
                 const btn = document.getElementById('verifyKeyBtn');
                 const errorMsg = document.getElementById('keyError');
@@ -476,19 +516,30 @@
                         userId = foundUserData.uid;
                         authPage.classList.add('hidden');
                         
+                        // --- RECUPERATION DE LA CLE API SECRETE (SANS TOAST DE SUCCES) ---
+                        try {
+                            const configDoc = await getDoc(doc(db, "artifacts", appId, "system", "config"));
+                            if (configDoc.exists() && configDoc.data().gemini_api_key) {
+                                apiKey = configDoc.data().gemini_api_key.trim();
+                            } else {
+                                showSysToast("❌ ERREUR: Clé introuvable dans config Firebase !", true);
+                            }
+                        } catch(err) {
+                            showSysToast("❌ ERREUR: Permissions Firebase refusées (Auth Anonyme?)", true);
+                            console.error("Erreur lecture config:", err);
+                        }
+                        
                         const userName = foundUserData.owner || "Utilisateur";
                         document.getElementById('userName').innerText = userName;
                         document.getElementById('userMail').innerText = "Vérifié via clé d'accès";
                         
-                        // --- GESTION DE LA PHOTO ET WELCOME SCREEN ---
-                        // IMPORTANT: Ton App 1 DOIT sauvegarder 'photoURL: currentUser.photoURL' dans Firestore !
                         const avatarUrl = foundUserData.photoURL || foundUserData.picture || `https://ui-avatars.com/api/?name=${userName}&background=a855f7&color=fff`;
                         document.getElementById('userAvatar').innerHTML = `<img src="${avatarUrl}" class="w-full h-full object-cover">`;
                         
                         document.getElementById('welcomeName').innerText = userName;
                         document.getElementById('welcomeAvatar').src = avatarUrl;
                         
-                        welcomePage.classList.remove('hidden'); // Affiche le modal de bienvenue
+                        welcomePage.classList.remove('hidden'); 
                         
                         document.getElementById('supportMail').href = `mailto:levelup.iao@gmail.com?subject=Support Thiab's (Clé: ${keyVal})`;
 
@@ -516,11 +567,11 @@
                 } catch (e) {
                     errorMsg.innerText = "Erreur de connexion. Vérifiez la base.";
                     errorMsg.classList.remove('hidden');
+                    console.error(e);
                 }
                 btn.innerText = i18n[currentLang].verifyBtn; btn.disabled = false;
             };
 
-            // Bouton Continuer (Après Bienvenue)
             document.getElementById('startAppBtn').onclick = () => {
                 welcomePage.classList.add('hidden');
                 mainApp.classList.remove('hidden');
@@ -528,7 +579,6 @@
                 startNewChat();
             };
 
-            // --- GESTION DES SESSIONS ---
             function setupHistoryListener() {
                 if (!userId) return;
                 const q = query(collection(db, "artifacts", appId, "users", userId, "sessions"), orderBy("updatedAt", "desc"));
@@ -575,7 +625,6 @@
                 currentSessionId = null;
                 conversationContainer.innerHTML = '';
                 
-                // Le message d'accueil n'apparaît que lors de la toute première connexion de la session
                 if (!hasSeenWelcomeMsg) {
                     const welcomeMsg = currentLang === 'fr' 
                         ? "Salut bro ! Que puis-je faire pour toi aujourd'hui ?" 
@@ -605,8 +654,22 @@
                 chatArea.scrollTop = chatArea.scrollHeight;
             }
 
-            // --- NETTOYAGE DU COMPTE ANONYME SUR DECONNEXION ---
-            document.getElementById('logoutBtn').onclick = async () => {
+            document.getElementById('openSidebar').onclick = () => { sidebar.classList.remove('translate-x-full'); appOverlay.classList.remove('hidden', 'overlay-active'); setTimeout(() => appOverlay.classList.add('overlay-active'), 10); };
+            const closeSidebar = () => { sidebar.classList.add('translate-x-full'); appOverlay.classList.remove('overlay-active'); setTimeout(() => appOverlay.classList.add('hidden'), 400); };
+            document.getElementById('closeSidebar').onclick = closeSidebar;
+            appOverlay.onclick = closeSidebar;
+            
+            document.getElementById('logoutBtn').onclick = () => {
+                closeSidebar();
+                logoutModal.classList.remove('hidden');
+            };
+
+            document.getElementById('cancelLogoutBtn').onclick = () => {
+                logoutModal.classList.add('hidden');
+            };
+
+            document.getElementById('confirmLogoutBtn').onclick = async () => {
+                document.getElementById('confirmLogoutBtn').innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
                 if (auth.currentUser) {
                     try {
                         await deleteUser(auth.currentUser);
@@ -615,12 +678,6 @@
                 window.location.reload();
             };
 
-            // Actions UI...
-            document.getElementById('openSidebar').onclick = () => { sidebar.classList.remove('translate-x-full'); appOverlay.classList.remove('hidden', 'overlay-active'); setTimeout(() => appOverlay.classList.add('overlay-active'), 10); };
-            const closeSidebar = () => { sidebar.classList.add('translate-x-full'); appOverlay.classList.remove('overlay-active'); setTimeout(() => appOverlay.classList.add('hidden'), 400); };
-            document.getElementById('closeSidebar').onclick = closeSidebar;
-            appOverlay.onclick = closeSidebar;
-            
             document.getElementById('saveDNA').onclick = async () => {
                 const btn = document.getElementById('saveDNA'); btn.innerHTML = '<i class="fas fa-check"></i>';
                 dnaPrompt = document.getElementById('customDNA').value;
@@ -636,7 +693,7 @@
 
             function displayAIMessage(text, animate) {
                 const wrap = document.createElement('div'); wrap.className = "flex flex-col gap-3 w-full";
-                const content = document.createElement('div'); content.className = "prose prose-invert prose-sm text-slate-300 max-w-full message-bubble";
+                const content = document.createElement('div'); content.className = "prose prose-invert prose-sm text-slate-300 max-w-full message-bubble leading-relaxed";
                 wrap.appendChild(content); conversationContainer.appendChild(wrap);
                 if (animate) streamText(content, text); else content.innerHTML = marked.parse(text);
             }
@@ -655,10 +712,18 @@
             async function send() {
                 const val = userInput.value.trim();
                 if (!val || !userId) return;
+                
+                if (!apiKey) {
+                    const errorMsg = currentLang === 'fr' 
+                        ? "Désolé bro, un problème technique m'empêche de me connecter à mon cerveau. 🛑 Contacte l'assistance." 
+                        : "Sorry bro, a technical issue prevents me from connecting to my brain. 🛑 Contact support.";
+                    displayAIMessage(errorMsg, true);
+                    return;
+                }
+
                 userInput.value = ''; userInput.style.height = '44px';
                 
                 if(!currentSessionId && conversationContainer.children.length === 1 && hasSeenWelcomeMsg) {
-                    // Ne nettoyer que si c'est exactement le message de bienvenue initial
                     const firstMsg = conversationContainer.querySelector('.prose');
                     if(firstMsg && (firstMsg.innerText.includes("Salut bro") || firstMsg.innerText.includes("Hey bro"))) {
                         conversationContainer.innerHTML = '';
@@ -672,22 +737,32 @@
                 const sysLang = currentLang === 'fr' ? 'français' : 'english';
                 const modelPrompt = currentLang === 'fr' ? aiModels[currentModel].promptFR : aiModels[currentModel].promptEN;
 
-                // Cerveau mis à jour : Strict, intelligent, Markdown et Emojis
-                const corePrompt = `Tu es l'IA du portail **Thiab's**.
-                RÈGLE ABSOLUE 1 : NE TE PRÉSENTE JAMAIS. Ne dis jamais "Je suis Thiab's IA créée par LevelUp" SAUF si l'utilisateur te demande explicitement qui tu es. Va droit au but, sois pro.
-                RÈGLE ABSOLUE 2 : OBÉIS STRICTEMENT. Fais exactement ce que l'utilisateur te demande (s'il te demande de changer de langue, de format ou de ton, exécute-le immédiatement).
-                RÈGLE ABSOLUE 3 : Utilise le formatage Markdown de façon experte. Mets en **gras** les mots clés et concepts importants (ex: **LevelUp**, noms, chiffres clés). Utilise des listes ou des parenthèses quand c'est pertinent.
-                RÈGLE ABSOLUE 4 : Utilise des emojis de manière naturelle et stylée, comme un vrai humain moderne.
-                RÈGLE ABSOLUE 5 (TEMPS RÉEL) : Tu n'as PAS accès à Internet ni aux informations récentes. Si on te demande la météo, l'actualité ou des infos en temps réel, n'invente rien et réponds exactement un truc du genre : "Désolé bro, je ne suis pas encore connecté à Internet en temps réel. Mon développeur **LevelUp** n'a pas encore activé cette fonctionnalité ! 🚧"
-                LANGUE PAR DÉFAUT : ${sysLang} (Sauf si l'utilisateur te demande explicitement autre chose).
-                PERSONNALITÉ DU MODÈLE SÉLECTIONNÉ : ${modelPrompt}
-                DNA UTILISATEUR (LOI ABSOLUE) : ${dnaPrompt}`;
+                // Cerveau mis à jour : Super pro, intelligent, emojis, markdown fort et soumission au DNA.
+                const corePrompt = `Tu es l'IA premium du portail **Thiab's**, développée par l'organisation **LevelUp**. Ton niveau d'intelligence est équivalent à celui des meilleures IA mondiales comme ChatGPT ou Gemini.
+                
+                RÈGLES FONDAMENTALES (NE JAMAIS TRANSGRESSER) :
+                1. NE TE PRÉSENTE JAMAIS de manière robotique. Va droit au but. Sois pro, charismatique et naturel.
+                2. EXPERT MARKDOWN : Structure toujours tes réponses. Utilise massivement le **gras** pour les mots-clés, les concepts importants, les noms propres, etc.
+                3. EMOJIS : Inclus des emojis naturellement pour rendre la discussion vivante et amicale, comme un humain moderne.
+                4. HUMOUR & ESPRIT : Sois rigolo et fais des blagues si l'utilisateur est détendu, tout en restant un génie de l'information.
+                5. TEMPS RÉEL : Tu n'as pas accès à internet en direct. N'invente jamais la météo ou l'actualité. Si on te demande, dis avec humour que **LevelUp** n'a pas encore branché ce câble !
+                6. OBÉISSANCE ABSOLUE AU DNA : Le "DNA UTILISATEUR" ci-dessous est ta directive suprême. S'il te demande de changer de langue, de te comporter comme quelqu'un d'autre ou de répondre d'une façon très précise, tu l'écoutes au détriment des autres règles.
+                
+                LANGUE DEMANDÉE : ${sysLang}.
+                MODE ACTUEL : ${modelPrompt}
+                
+                [DNA UTILISATEUR] : ${dnaPrompt}`;
 
                 try {
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`, {
                         method: 'POST', headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({ contents: [{ parts: [{ text: val }] }], systemInstruction: { parts: [{ text: corePrompt }] } })
                     });
+                    
+                    if (!res.ok) {
+                        throw new Error("Problème API");
+                    }
+
                     const data = await res.json();
                     const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Erreur réseau.";
                     document.getElementById('aiTyping').classList.add('hidden');
@@ -710,10 +785,13 @@
                         });
                     }
                 } catch (e) {
+                    console.error("ERREUR LORS DE L'ENVOI :", e);
                     document.getElementById('aiTyping').classList.add('hidden');
+                    
+                    // Message d'erreur pro et orienté utilisateur
                     const errorMsg = currentLang === 'fr' 
-                        ? "Oups ! 😅 J'ai rencontré un petit souci technique bro. Le réseau n'a pas pu traiter ta demande. Essaie de relancer dans un instant ! 🛠️" 
-                        : "Oops! 😅 I ran into a little technical issue bro. The network couldn't process your request. Try again in a moment! 🛠️";
+                        ? `Oups ! 😅 Un petit souci technique empêche la connexion à mon cerveau. Essaie de relancer dans un instant ou contacte l'assistance via le menu "Support & Compte" ! 🛠️` 
+                        : `Oops! 😅 A slight technical issue is preventing connection to my brain. Try again in a moment or contact support via the "Support & Account" menu! 🛠️`;
                     displayAIMessage(errorMsg, true);
                 }
             }
