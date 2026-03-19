@@ -170,6 +170,23 @@
         </div>
     </div>
 
+    <!-- INSTALL PWA MODAL -->
+    <div id="installModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-8 bg-black/80 backdrop-blur-md">
+        <div class="glass p-8 rounded-3xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
+            <div class="mx-auto w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center mb-4 border border-purple-500/50">
+                <i class="fas fa-mobile-alt text-2xl text-purple-400"></i>
+            </div>
+            <h2 id="installModalTitle" class="text-xl font-black text-white uppercase tracking-widest">Installer l'App</h2>
+            <p id="installModalDesc" class="text-xs text-white/60 leading-relaxed px-2">Ajoutez Thiab's sur votre écran d'accueil :</p>
+            <div class="space-y-4 text-left bg-black/40 p-4 rounded-2xl border border-white/5">
+                <p id="installiOS" class="text-[10px] text-white/80 leading-relaxed font-bold">🍎 iOS (Safari) : Appuyez sur Partager <i class="fas fa-share-square mx-1"></i> puis 'Sur l'écran d'accueil'.</p>
+                <div class="w-full h-px bg-white/10"></div>
+                <p id="installAndroid" class="text-[10px] text-white/80 leading-relaxed font-bold">🤖 Android (Chrome) : Appuyez sur Menu <i class="fas fa-ellipsis-v mx-1"></i> puis 'Ajouter à l'écran d'accueil'.</p>
+            </div>
+            <button id="closeInstallModalBtn" class="w-full bg-white/10 text-white py-4 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-white/20 transition-all mt-4">Fermer</button>
+        </div>
+    </div>
+
     <!-- MAIN APP -->
     <div id="mainApp" class="hidden flex-col h-full w-full relative">
         <div id="appOverlay" class="fixed inset-0 z-[2999] hidden transition-opacity"></div>
@@ -223,7 +240,6 @@
                     <div class="flex justify-between items-center">
                         <h4 id="historyTitle" class="text-[9px] font-black uppercase tracking-widest opacity-40">Historique des sessions</h4>
                     </div>
-                    <!-- NOUVEAU BOUTON GEANT -->
                     <button id="newChatBtn" class="w-full flex items-center justify-center gap-2 py-3 bg-purple-500/10 border border-purple-500/30 rounded-xl text-purple-400 font-black text-[10px] uppercase tracking-widest hover:bg-purple-600 hover:text-white hover:border-purple-500 transition-all shadow-sm">
                         <i class="fas fa-plus"></i> <span id="newChatText">Nouvelle session</span>
                     </button>
@@ -240,6 +256,10 @@
                     </div>
 
                     <div class="pt-4 space-y-3">
+                        <button id="installMenuBtn" class="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/40 transition-all group">
+                            <span id="installAppMenuText" class="text-[9px] font-black uppercase tracking-widest">Installer l'App</span>
+                            <i class="fas fa-mobile-alt text-xs opacity-20 group-hover:opacity-100"></i>
+                        </button>
                         <a id="supportMail" href="#" class="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/40 transition-all group">
                             <span id="supportTitle" class="text-[9px] font-black uppercase tracking-widest">Support & Compte</span>
                             <i class="fas fa-envelope text-xs opacity-20 group-hover:opacity-100"></i>
@@ -305,6 +325,7 @@
             const authPage = document.getElementById('authPage');
             const welcomePage = document.getElementById('welcomePage');
             const logoutModal = document.getElementById('logoutModal');
+            const installModal = document.getElementById('installModal');
             const mainApp = document.getElementById('mainApp');
             const conversationContainer = document.getElementById('conversationContainer');
             const chatArea = document.getElementById('chatArea');
@@ -316,7 +337,8 @@
             const MODEL = "gemini-2.5-flash";
             const appId = window.__app_id; 
             
-            let apiKey = ""; 
+            let apiKeys = []; 
+            let currentKeyIndex = 0;
             let userId = null;
             let dnaPrompt = "";
             let currentLang = 'fr'; 
@@ -324,7 +346,7 @@
             let currentModel = 'normal'; 
             let hasSeenWelcomeMsg = false; 
 
-            // --- FONCTION DE NOTIFICATION DIAGNOSTIC (Uniquement erreurs bloquantes) ---
+            // --- FONCTION DE NOTIFICATION DIAGNOSTIC ---
             function showSysToast(msg, isError = false) {
                 if(!isError) return; 
                 const t = document.getElementById('sysToast');
@@ -382,6 +404,12 @@
                     cancelBtn: "Annuler",
                     confirmLogout: "Quitter",
                     verifiedStatus: "Vérifié via clé",
+                    installAppMenuText: "Installer l'App",
+                    installModalTitle: "Installer l'App",
+                    installModalDesc: "Ajoutez Thiab's sur votre écran d'accueil :",
+                    installiOS: "🍎 iOS (Safari) : Appuyez sur Partager <i class='fas fa-share-square mx-1'></i> puis 'Sur l'écran d'accueil'.",
+                    installAndroid: "🤖 Android (Chrome) : Appuyez sur Menu <i class='fas fa-ellipsis-v mx-1'></i> puis 'Ajouter à l'écran d'accueil'.",
+                    closeBtn: "Fermer",
                     modelOptions: { normal: "Normal (Intelligent)", coach: "Coach (Motivation)", procrastination: "Anti-Procrastination" }
                 },
                 en: {
@@ -411,6 +439,12 @@
                     cancelBtn: "Cancel",
                     confirmLogout: "Leave",
                     verifiedStatus: "Key verified",
+                    installAppMenuText: "Install App",
+                    installModalTitle: "Install App",
+                    installModalDesc: "Add Thiab's to your home screen:",
+                    installiOS: "🍎 iOS (Safari): Tap Share <i class='fas fa-share-square mx-1'></i> then 'Add to Home Screen'.",
+                    installAndroid: "🤖 Android (Chrome): Tap Menu <i class='fas fa-ellipsis-v mx-1'></i> then 'Add to Home Screen'.",
+                    closeBtn: "Close",
                     modelOptions: { normal: "Normal (Smart)", coach: "Coach (Motivation)", procrastination: "Anti-Procrastination" }
                 }
             };
@@ -441,6 +475,13 @@
                 document.getElementById('logoutModalDesc').innerText = t.logoutModalDesc;
                 document.getElementById('cancelLogoutBtn').innerText = t.cancelBtn;
                 document.getElementById('confirmLogoutBtn').innerText = t.confirmLogout;
+                
+                document.getElementById('installAppMenuText').innerText = t.installAppMenuText;
+                document.getElementById('installModalTitle').innerText = t.installModalTitle;
+                document.getElementById('installModalDesc').innerText = t.installModalDesc;
+                document.getElementById('installiOS').innerHTML = t.installiOS;
+                document.getElementById('installAndroid').innerHTML = t.installAndroid;
+                document.getElementById('closeInstallModalBtn').innerText = t.closeBtn;
                 
                 const userStatusEl = document.getElementById('userStatus');
                 if(userStatusEl) userStatusEl.innerHTML = `<i class="fas fa-shield-alt"></i> ${t.verifiedStatus}`;
@@ -509,20 +550,30 @@
                     if (foundUserData) {
                         userId = foundUserData.uid;
                         authPage.classList.add('hidden');
-                        langPage.classList.add('hidden'); // Au cas où c'est un auto-login rapide
+                        langPage.classList.add('hidden'); 
                         
                         try {
                             const configDoc = await getDoc(doc(db, "artifacts", appId, "system", "config"));
-                            if (configDoc.exists() && configDoc.data().gemini_api_key) {
-                                apiKey = configDoc.data().gemini_api_key.trim();
+                            if (configDoc.exists()) {
+                                const data = configDoc.data();
+                                const rawKeys = data.gemini_api_keys || data.gemini_api_key;
+                                
+                                if (Array.isArray(rawKeys) && rawKeys.length > 0) {
+                                    apiKeys = rawKeys.map(k => k.trim());
+                                } else if (typeof rawKeys === 'string' && rawKeys.trim() !== '') {
+                                    apiKeys = [rawKeys.trim()];
+                                }
+                                
+                                if (apiKeys.length === 0) {
+                                    showSysToast("❌ ERREUR: Clé(s) introuvable(s) dans config Firebase !", true);
+                                }
                             } else {
-                                showSysToast("❌ ERREUR: Clé introuvable dans config Firebase !", true);
+                                showSysToast("❌ ERREUR: Config Firebase introuvable !", true);
                             }
                         } catch(err) {
                             showSysToast("❌ ERREUR: Permissions Firebase refusées", true);
                         }
                         
-                        // Extraction intelligente de l'email et du nom
                         const userEmail = foundUserData.owner || "email@inconnu.com";
                         const userName = foundUserData.name || foundUserData.displayName || userEmail.split('@')[0] || "Utilisateur";
                         
@@ -565,7 +616,7 @@
                             errorMsg.innerText = i18n[currentLang].keyNotFound;
                             errorMsg.classList.remove('hidden');
                         } else {
-                            // La clé enregistrée n'est plus valide (supprimée de la BDD)
+                            // La clé enregistrée n'est plus valide
                             localStorage.removeItem('thiabs_saved_key');
                         }
                     }
@@ -593,7 +644,6 @@
                     splashScreen.style.opacity = '0';
                     setTimeout(() => {
                         splashScreen.style.display = 'none';
-                        // Si l'utilisateur n'est pas connecté ET n'a pas de clé sauvegardée, on montre le choix de langue
                         if (!userId && !localStorage.getItem('thiabs_saved_key')) {
                             langPage.classList.remove('hidden'); 
                         }
@@ -617,10 +667,10 @@
                     
                     const savedKey = localStorage.getItem('thiabs_saved_key');
                     if (savedKey) {
-                        await processLogin(savedKey, true); // true = auto login silencieux
+                        await processLogin(savedKey, true);
                     }
                 } catch(e) {
-                    showSysToast("❌ ERREUR: Connexion anonyme désactivée dans Firebase !", true);
+                    showSysToast("❌ ERREUR: Connexion anonyme désactivée", true);
                 }
             };
             initAuth();
@@ -742,7 +792,6 @@
             document.getElementById('confirmLogoutBtn').onclick = async () => {
                 document.getElementById('confirmLogoutBtn').innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
                 
-                // On efface la mémoire locale pour forcer la reconnexion au prochain chargement
                 localStorage.removeItem('thiabs_saved_key');
                 localStorage.removeItem('thiabs_saved_lang');
                 
@@ -752,6 +801,16 @@
                     } catch(e) { console.error("Erreur supression:", e); }
                 }
                 window.location.reload();
+            };
+
+            // --- GESTION DU MODAL INSTALLATION ---
+            document.getElementById('installMenuBtn').onclick = () => {
+                closeSidebar();
+                installModal.classList.remove('hidden');
+            };
+
+            document.getElementById('closeInstallModalBtn').onclick = () => {
+                installModal.classList.add('hidden');
             };
 
             document.getElementById('saveDNA').onclick = async () => {
@@ -787,12 +846,15 @@
 
             async function send() {
                 const val = userInput.value.trim();
-                if (!val || !userId) return;
                 
-                if (!apiKey) {
+                if (!val || !userId) {
+                    return;
+                }
+                
+                if (apiKeys.length === 0) {
                     const errorMsg = currentLang === 'fr' 
-                        ? "Désolé bro, un problème technique m'empêche de me connecter à mon cerveau. 🛑 Contacte l'assistance." 
-                        : "Sorry bro, a technical issue prevents me from connecting to my brain. 🛑 Contact support.";
+                        ? "Désolé bro, un problème technique m'empêche de me connecter à mon cerveau. 🛑 (Erreur: Aucune clé API chargée)." 
+                        : "Sorry bro, a technical issue prevents me from connecting to my brain. 🛑 (Error: No API key loaded).";
                     displayAIMessage(errorMsg, true);
                     return;
                 }
@@ -821,6 +883,7 @@
                 3. EMOJIS : Inclus des emojis naturellement pour rendre la discussion vivante et amicale, comme un humain moderne.
                 4. HUMOUR & ESPRIT : Sois rigolo et fais des blagues si l'utilisateur est détendu, tout en restant un génie de l'information.
                 5. TEMPS RÉEL : Tu n'as pas accès à internet en direct. N'invente jamais la météo ou l'actualité. Si on te demande, dis avec humour que **LevelUp** n'a pas encore branché ce câble !
+                6. INSTALLATION APP : Si on te demande comment installer ou télécharger l'app sur téléphone, explique qu'il suffit de l'ajouter à l'écran d'accueil comme une PWA. Sur iOS (Safari) : Partager > Sur l'écran d'accueil. Sur Android (Chrome) : 3 points > Ajouter à l'écran d'accueil.
                 
                 LANGUE DEMANDÉE : ${sysLang}.
                 MODE ACTUEL : ${modelPrompt}
@@ -831,46 +894,70 @@
                 ${dnaPrompt}
                 """`;
 
-                try {
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`, {
-                        method: 'POST', headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: val }] }], systemInstruction: { parts: [{ text: corePrompt }] } })
-                    });
-                    
-                    if (!res.ok) {
-                        throw new Error("Problème API");
-                    }
+                let success = false;
+                let aiText = "";
+                let attempts = 0;
+                const maxAttempts = apiKeys.length;
 
-                    const data = await res.json();
-                    const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Erreur réseau.";
+                // BOUCLE DE RE-TENTATIVE (BASCULEMENT INTELLIGENT DE CLES)
+                while (!success && attempts < maxAttempts) {
+                    const apiKey = apiKeys[currentKeyIndex];
+                    
+                    try {
+                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`, {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ contents: [{ parts: [{ text: val }] }], systemInstruction: { parts: [{ text: corePrompt }] } })
+                        });
+
+                        if (!res.ok) {
+                            throw new Error("API_ERROR"); // Déclenche le basculement
+                        }
+
+                        const data = await res.json();
+                        aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Erreur réseau.";
+                        success = true;
+
+                    } catch (e) {
+                        attempts++;
+                        if (attempts < maxAttempts) {
+                            // Basculement invisible vers la clé suivante
+                            currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
+                        } else {
+                            // Toutes les clés ont échoué
+                            document.getElementById('aiTyping').classList.add('hidden');
+                            const errorMsg = currentLang === 'fr' 
+                                ? `Oups ! 😅 Un petit souci technique empêche la connexion à mon cerveau (Toutes les clés sont surchargées). Essaie de relancer dans une minute ! 🛠️` 
+                                : `Oops! 😅 A slight technical issue is preventing connection to my brain (All keys overloaded). Try again in a minute! 🛠️`;
+                            displayAIMessage(errorMsg, true);
+                            return; 
+                        }
+                    }
+                }
+
+                if (success) {
                     document.getElementById('aiTyping').classList.add('hidden');
                     displayAIMessage(aiText, true);
                     
                     const messageObj = { user: val, ai: aiText, timestamp: Date.now() };
                     
-                    if (!currentSessionId) {
-                        const title = val.length > 25 ? val.substring(0, 25) + "..." : val;
-                        const docRef = await addDoc(collection(db, "artifacts", appId, "users", userId, "sessions"), {
-                            title: title,
-                            updatedAt: Date.now(),
-                            messages: [messageObj]
-                        });
-                        currentSessionId = docRef.id;
-                    } else {
-                        await updateDoc(doc(db, "artifacts", appId, "users", userId, "sessions", currentSessionId), {
-                            updatedAt: Date.now(),
-                            messages: arrayUnion(messageObj)
-                        });
+                    try {
+                        if (!currentSessionId) {
+                            const title = val.length > 25 ? val.substring(0, 25) + "..." : val;
+                            const docRef = await addDoc(collection(db, "artifacts", appId, "users", userId, "sessions"), {
+                                title: title,
+                                updatedAt: Date.now(),
+                                messages: [messageObj]
+                            });
+                            currentSessionId = docRef.id;
+                        } else {
+                            await updateDoc(doc(db, "artifacts", appId, "users", userId, "sessions", currentSessionId), {
+                                updatedAt: Date.now(),
+                                messages: arrayUnion(messageObj)
+                            });
+                        }
+                    } catch(fbErr) {
+                        console.error("Erreur de sauvegarde de l'historique:", fbErr);
                     }
-                } catch (e) {
-                    console.error("ERREUR LORS DE L'ENVOI :", e);
-                    document.getElementById('aiTyping').classList.add('hidden');
-                    
-                    // Message d'erreur pro et orienté utilisateur
-                    const errorMsg = currentLang === 'fr' 
-                        ? `Oups ! 😅 Un petit souci technique empêche la connexion à mon cerveau. Essaie de relancer dans un instant ou contacte l'assistance via le menu "Support & Compte" ! 🛠️` 
-                        : `Oops! 😅 A slight technical issue is preventing connection to my brain. Try again in a moment or contact support via the "Support & Account" menu! 🛠️`;
-                    displayAIMessage(errorMsg, true);
                 }
             }
 
