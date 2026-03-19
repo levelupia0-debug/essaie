@@ -81,7 +81,7 @@
 </head>
 <body class="bg-main">
 
-    <!-- TOAST DE NOTIFICATION SYSTEME (DEBUG - Uniquement pour les erreurs bloquantes maintenant) -->
+    <!-- TOAST DE NOTIFICATION SYSTEME -->
     <div id="sysToast" class="fixed top-5 left-1/2 -translate-x-1/2 backdrop-blur-md border px-6 py-3 rounded-full font-bold text-[10px] uppercase tracking-widest hidden z-[9999] shadow-2xl transition-all"></div>
 
     <!-- SPLASH -->
@@ -187,10 +187,20 @@
                 <div class="flex-1 min-w-0">
                     <p id="userName" class="text-[10px] font-black uppercase truncate">Utilisateur</p>
                     <p id="userMail" class="text-[9px] text-white/40 truncate">---</p>
+                    <p id="userStatus" class="text-[8px] text-green-400 uppercase tracking-widest mt-0.5"><i class="fas fa-shield-alt"></i> Vérifié via clé</p>
                 </div>
             </div>
 
             <div class="space-y-6">
+                <!-- Langue -->
+                <div class="space-y-2">
+                    <label id="langTitle" class="text-[9px] font-black uppercase tracking-widest opacity-40">Langue</label>
+                    <select id="langSelect" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-[10px] text-white outline-none focus:border-purple-500 transition-all uppercase tracking-widest font-bold appearance-none cursor-pointer">
+                        <option value="fr" class="bg-black text-white">Français</option>
+                        <option value="en" class="bg-black text-white">English</option>
+                    </select>
+                </div>
+
                 <!-- Modèles IA -->
                 <div class="space-y-2">
                     <label id="modelTitle" class="text-[9px] font-black uppercase tracking-widest opacity-40">Modèle IA</label>
@@ -212,9 +222,12 @@
                 <div class="space-y-3">
                     <div class="flex justify-between items-center">
                         <h4 id="historyTitle" class="text-[9px] font-black uppercase tracking-widest opacity-40">Historique des sessions</h4>
-                        <button id="newChatBtn" class="text-[9px] text-purple-400 font-bold hover:text-white transition-all"><i class="fas fa-plus"></i></button>
                     </div>
-                    <div id="historyList" class="space-y-2 max-h-60 overflow-y-auto pr-2 no-scrollbar">
+                    <!-- NOUVEAU BOUTON GEANT -->
+                    <button id="newChatBtn" class="w-full flex items-center justify-center gap-2 py-3 bg-purple-500/10 border border-purple-500/30 rounded-xl text-purple-400 font-black text-[10px] uppercase tracking-widest hover:bg-purple-600 hover:text-white hover:border-purple-500 transition-all shadow-sm">
+                        <i class="fas fa-plus"></i> <span id="newChatText">Nouvelle session</span>
+                    </button>
+                    <div id="historyList" class="space-y-2 max-h-60 overflow-y-auto pr-2 mt-2 no-scrollbar">
                         <!-- History items injected here -->
                     </div>
                 </div>
@@ -311,9 +324,9 @@
             let currentModel = 'normal'; 
             let hasSeenWelcomeMsg = false; 
 
-            // --- FONCTION DE NOTIFICATION DIAGNOSTIC (Uniquement pour les erreurs bloquantes) ---
+            // --- FONCTION DE NOTIFICATION DIAGNOSTIC (Uniquement erreurs bloquantes) ---
             function showSysToast(msg, isError = false) {
-                if(!isError) return; // On masque les toasts de succès comme demandé
+                if(!isError) return; 
                 const t = document.getElementById('sysToast');
                 t.innerText = msg;
                 t.className = `fixed top-5 left-1/2 -translate-x-1/2 backdrop-blur-md border px-6 py-3 rounded-full font-bold text-[10px] uppercase tracking-widest z-[9999] shadow-2xl transition-all bg-red-500/20 border-red-500/50 text-red-200`;
@@ -347,9 +360,11 @@
                     verifyBtn: "Vérifier la clé",
                     getKeyText: "Obtenir ma clé",
                     menuTitle: "Menu",
+                    langTitle: "Langue",
                     modelTitle: "Modèle IA",
                     cloudSpace: "Espace Cloud",
                     historyTitle: "Historique des sessions",
+                    newChatText: "Nouvelle session",
                     dnaTitle: "DNA de <strong>Thiab's</strong>",
                     saveDNA: "Mettre à jour",
                     supportTitle: "Support & Compte",
@@ -366,6 +381,7 @@
                     logoutModalDesc: "Voulez-vous vraiment quitter votre session actuelle ?",
                     cancelBtn: "Annuler",
                     confirmLogout: "Quitter",
+                    verifiedStatus: "Vérifié via clé",
                     modelOptions: { normal: "Normal (Intelligent)", coach: "Coach (Motivation)", procrastination: "Anti-Procrastination" }
                 },
                 en: {
@@ -373,9 +389,11 @@
                     verifyBtn: "Verify Key",
                     getKeyText: "Get my Key",
                     menuTitle: "Menu",
+                    langTitle: "Language",
                     modelTitle: "AI Model",
                     cloudSpace: "Cloud Space",
                     historyTitle: "Session History",
+                    newChatText: "New session",
                     dnaTitle: "<strong>Thiab's</strong> DNA",
                     saveDNA: "Update",
                     supportTitle: "Support & Account",
@@ -392,6 +410,7 @@
                     logoutModalDesc: "Are you sure you want to leave your current session?",
                     cancelBtn: "Cancel",
                     confirmLogout: "Leave",
+                    verifiedStatus: "Key verified",
                     modelOptions: { normal: "Normal (Smart)", coach: "Coach (Motivation)", procrastination: "Anti-Procrastination" }
                 }
             };
@@ -403,9 +422,11 @@
                 document.getElementById('verifyKeyBtn').innerText = t.verifyBtn;
                 document.getElementById('getKeyText').innerText = t.getKeyText;
                 document.getElementById('menuTitle').innerText = t.menuTitle;
+                document.getElementById('langTitle').innerText = t.langTitle;
                 document.getElementById('modelTitle').innerText = t.modelTitle;
                 document.getElementById('cloudSpace').innerText = t.cloudSpace;
                 document.getElementById('historyTitle').innerText = t.historyTitle;
+                document.getElementById('newChatText').innerText = t.newChatText;
                 document.getElementById('dnaTitle').innerHTML = t.dnaTitle;
                 document.getElementById('saveDNA').innerText = t.saveDNA;
                 document.getElementById('supportTitle').innerText = t.supportTitle;
@@ -421,6 +442,11 @@
                 document.getElementById('cancelLogoutBtn').innerText = t.cancelBtn;
                 document.getElementById('confirmLogoutBtn').innerText = t.confirmLogout;
                 
+                const userStatusEl = document.getElementById('userStatus');
+                if(userStatusEl) userStatusEl.innerHTML = `<i class="fas fa-shield-alt"></i> ${t.verifiedStatus}`;
+                
+                document.getElementById('langSelect').value = lang;
+                
                 const select = document.getElementById('modelSelect');
                 select.options[0].text = t.modelOptions.normal;
                 select.options[1].text = t.modelOptions.coach;
@@ -433,6 +459,18 @@
                 document.getElementById('headerModelName').innerText = aiModels[currentModel][currentLang];
             };
 
+            // Restauration de la langue sauvegardée au démarrage
+            const savedLang = localStorage.getItem('thiabs_saved_lang');
+            if (savedLang) {
+                applyLanguage(savedLang);
+            }
+
+            // Changement de langue manuel depuis les paramètres
+            document.getElementById('langSelect').addEventListener('change', (e) => {
+                applyLanguage(e.target.value);
+                localStorage.setItem('thiabs_saved_lang', e.target.value);
+            });
+
             document.getElementById('modelSelect').addEventListener('change', async (e) => {
                 currentModel = e.target.value;
                 updateHeaderModel();
@@ -441,67 +479,23 @@
                 }
             });
 
-            const startIntro = () => {
-                const s1 = document.getElementById('splash1');
-                const s2 = document.getElementById('splash2');
-                setTimeout(() => s1.classList.add('active'), 500);
-                setTimeout(() => { s1.classList.remove('active'); s1.classList.add('exit'); }, 2000);
-                setTimeout(() => s2.classList.add('active'), 2500);
-                setTimeout(() => { s2.classList.remove('active'); s2.classList.add('exit'); }, 4000);
-                setTimeout(() => {
-                    splashScreen.style.opacity = '0';
-                    setTimeout(() => {
-                        splashScreen.style.display = 'none';
-                        if (!userId) langPage.classList.remove('hidden'); 
-                    }, 1000);
-                }, 5000);
-            };
-            startIntro();
-
-            document.querySelectorAll('.lang-btn').forEach(btn => {
-                btn.onclick = () => {
-                    applyLanguage(btn.dataset.lang);
-                    langPage.classList.add('hidden');
-                    authPage.classList.remove('hidden');
-                };
-            });
-
-            // AUTH ANONYME
-            const initAuth = async () => {
-                try {
-                    if (!auth.currentUser) await signInAnonymously(auth);
-                } catch(e) {
-                    showSysToast("❌ ERREUR: Connexion anonyme désactivée dans Firebase !", true);
-                    console.error("Auth Anonyme Error:", e);
-                }
-            };
-            initAuth();
-
-            const accessKeyInput = document.getElementById('accessKeyInput');
-            accessKeyInput.addEventListener('input', function(e) {
-                let val = this.value.toUpperCase();
-                val = val.replace(/[^A-Z0-9-]/g, '');
-                if (val.length > 0 && !val.startsWith('T') && !val.startsWith('TH') && !val.startsWith('THB')) {
-                    val = 'THB-' + val.replace(/^-+/, ''); 
-                }
-                this.value = val.substring(0, 16);
-            });
-
-            // VÉRIFICATION CLÉ
-            document.getElementById('verifyKeyBtn').onclick = async () => {
+            // GESTION DU LOGIN CENTRALISÉ (Manuel & Auto)
+            async function processLogin(keyVal, isAutoLogin = false) {
                 const btn = document.getElementById('verifyKeyBtn');
                 const errorMsg = document.getElementById('keyError');
-                const keyVal = document.getElementById('accessKeyInput').value.trim().toUpperCase();
                 
-                if (!keyVal) return;
                 const keyFormatRegex = /^THB-[A-Z0-9]{3,6}-[A-Z0-9]{3,6}$/;
                 if (!keyFormatRegex.test(keyVal)) {
-                    errorMsg.innerText = i18n[currentLang].invalidFormat;
-                    errorMsg.classList.remove('hidden');
+                    if (!isAutoLogin) {
+                        errorMsg.innerText = i18n[currentLang].invalidFormat;
+                        errorMsg.classList.remove('hidden');
+                    }
                     return;
                 }
                 
-                btn.innerText = "Recherche..."; btn.disabled = true; errorMsg.classList.add('hidden');
+                if (!isAutoLogin) {
+                    btn.innerText = "Recherche..."; btn.disabled = true; errorMsg.classList.add('hidden');
+                }
                 
                 try {
                     const q = collectionGroup(db, 'security');
@@ -515,8 +509,8 @@
                     if (foundUserData) {
                         userId = foundUserData.uid;
                         authPage.classList.add('hidden');
+                        langPage.classList.add('hidden'); // Au cas où c'est un auto-login rapide
                         
-                        // --- RECUPERATION DE LA CLE API SECRETE (SANS TOAST DE SUCCES) ---
                         try {
                             const configDoc = await getDoc(doc(db, "artifacts", appId, "system", "config"));
                             if (configDoc.exists() && configDoc.data().gemini_api_key) {
@@ -525,13 +519,15 @@
                                 showSysToast("❌ ERREUR: Clé introuvable dans config Firebase !", true);
                             }
                         } catch(err) {
-                            showSysToast("❌ ERREUR: Permissions Firebase refusées (Auth Anonyme?)", true);
-                            console.error("Erreur lecture config:", err);
+                            showSysToast("❌ ERREUR: Permissions Firebase refusées", true);
                         }
                         
-                        const userName = foundUserData.owner || "Utilisateur";
+                        // Extraction intelligente de l'email et du nom
+                        const userEmail = foundUserData.owner || "email@inconnu.com";
+                        const userName = foundUserData.name || foundUserData.displayName || userEmail.split('@')[0] || "Utilisateur";
+                        
                         document.getElementById('userName').innerText = userName;
-                        document.getElementById('userMail').innerText = "Vérifié via clé d'accès";
+                        document.getElementById('userMail').innerText = userEmail;
                         
                         const avatarUrl = foundUserData.photoURL || foundUserData.picture || `https://ui-avatars.com/api/?name=${userName}&background=a855f7&color=fff`;
                         document.getElementById('userAvatar').innerHTML = `<img src="${avatarUrl}" class="w-full h-full object-cover">`;
@@ -559,17 +555,91 @@
                             }
                         } catch(e) {}
                         
+                        // SAUVEGARDE DE LA SESSION
+                        localStorage.setItem('thiabs_saved_key', keyVal);
+                        localStorage.setItem('thiabs_saved_lang', currentLang);
+
                         setupHistoryListener();
                     } else {
-                        errorMsg.innerText = i18n[currentLang].keyNotFound;
-                        errorMsg.classList.remove('hidden');
+                        if (!isAutoLogin) {
+                            errorMsg.innerText = i18n[currentLang].keyNotFound;
+                            errorMsg.classList.remove('hidden');
+                        } else {
+                            // La clé enregistrée n'est plus valide (supprimée de la BDD)
+                            localStorage.removeItem('thiabs_saved_key');
+                        }
                     }
                 } catch (e) {
-                    errorMsg.innerText = "Erreur de connexion. Vérifiez la base.";
-                    errorMsg.classList.remove('hidden');
-                    console.error(e);
+                    if (!isAutoLogin) {
+                        errorMsg.innerText = "Erreur de connexion. Vérifiez la base.";
+                        errorMsg.classList.remove('hidden');
+                    }
                 }
-                btn.innerText = i18n[currentLang].verifyBtn; btn.disabled = false;
+                
+                if (!isAutoLogin) {
+                    btn.innerText = i18n[currentLang].verifyBtn; btn.disabled = false;
+                }
+            }
+
+            // AUTO-LOGIN ET ANIMATION INTRO
+            const startIntro = () => {
+                const s1 = document.getElementById('splash1');
+                const s2 = document.getElementById('splash2');
+                setTimeout(() => s1.classList.add('active'), 500);
+                setTimeout(() => { s1.classList.remove('active'); s1.classList.add('exit'); }, 2000);
+                setTimeout(() => s2.classList.add('active'), 2500);
+                setTimeout(() => { s2.classList.remove('active'); s2.classList.add('exit'); }, 4000);
+                setTimeout(() => {
+                    splashScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        splashScreen.style.display = 'none';
+                        // Si l'utilisateur n'est pas connecté ET n'a pas de clé sauvegardée, on montre le choix de langue
+                        if (!userId && !localStorage.getItem('thiabs_saved_key')) {
+                            langPage.classList.remove('hidden'); 
+                        }
+                    }, 1000);
+                }, 5000);
+            };
+            startIntro();
+
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.onclick = () => {
+                    applyLanguage(btn.dataset.lang);
+                    langPage.classList.add('hidden');
+                    authPage.classList.remove('hidden');
+                };
+            });
+
+            // AUTH ANONYME & AUTO-VERIFICATION
+            const initAuth = async () => {
+                try {
+                    if (!auth.currentUser) await signInAnonymously(auth);
+                    
+                    const savedKey = localStorage.getItem('thiabs_saved_key');
+                    if (savedKey) {
+                        await processLogin(savedKey, true); // true = auto login silencieux
+                    }
+                } catch(e) {
+                    showSysToast("❌ ERREUR: Connexion anonyme désactivée dans Firebase !", true);
+                }
+            };
+            initAuth();
+
+            const accessKeyInput = document.getElementById('accessKeyInput');
+            accessKeyInput.addEventListener('input', function(e) {
+                let val = this.value.toUpperCase();
+                val = val.replace(/[^A-Z0-9-]/g, '');
+                if (val.length > 0 && !val.startsWith('T') && !val.startsWith('TH') && !val.startsWith('THB')) {
+                    val = 'THB-' + val.replace(/^-+/, ''); 
+                }
+                this.value = val.substring(0, 16);
+            });
+
+            // VÉRIFICATION CLÉ (MANUELLE)
+            document.getElementById('verifyKeyBtn').onclick = () => {
+                const keyVal = document.getElementById('accessKeyInput').value.trim().toUpperCase();
+                if (!keyVal) return;
+                processLogin(keyVal, false);
             };
 
             document.getElementById('startAppBtn').onclick = () => {
@@ -659,6 +729,7 @@
             document.getElementById('closeSidebar').onclick = closeSidebar;
             appOverlay.onclick = closeSidebar;
             
+            // --- GESTION DE LA DECONNEXION ---
             document.getElementById('logoutBtn').onclick = () => {
                 closeSidebar();
                 logoutModal.classList.remove('hidden');
@@ -670,6 +741,11 @@
 
             document.getElementById('confirmLogoutBtn').onclick = async () => {
                 document.getElementById('confirmLogoutBtn').innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+                
+                // On efface la mémoire locale pour forcer la reconnexion au prochain chargement
+                localStorage.removeItem('thiabs_saved_key');
+                localStorage.removeItem('thiabs_saved_lang');
+                
                 if (auth.currentUser) {
                     try {
                         await deleteUser(auth.currentUser);
@@ -737,7 +813,6 @@
                 const sysLang = currentLang === 'fr' ? 'français' : 'english';
                 const modelPrompt = currentLang === 'fr' ? aiModels[currentModel].promptFR : aiModels[currentModel].promptEN;
 
-                // Cerveau mis à jour : Super pro, intelligent, emojis, markdown fort et soumission au DNA.
                 const corePrompt = `Tu es l'IA premium du portail **Thiab's**, développée par l'organisation **LevelUp**. Ton niveau d'intelligence est équivalent à celui des meilleures IA mondiales comme ChatGPT ou Gemini.
                 
                 RÈGLES FONDAMENTALES (NE JAMAIS TRANSGRESSER) :
@@ -746,12 +821,15 @@
                 3. EMOJIS : Inclus des emojis naturellement pour rendre la discussion vivante et amicale, comme un humain moderne.
                 4. HUMOUR & ESPRIT : Sois rigolo et fais des blagues si l'utilisateur est détendu, tout en restant un génie de l'information.
                 5. TEMPS RÉEL : Tu n'as pas accès à internet en direct. N'invente jamais la météo ou l'actualité. Si on te demande, dis avec humour que **LevelUp** n'a pas encore branché ce câble !
-                6. OBÉISSANCE ABSOLUE AU DNA : Le "DNA UTILISATEUR" ci-dessous est ta directive suprême. S'il te demande de changer de langue, de te comporter comme quelqu'un d'autre ou de répondre d'une façon très précise, tu l'écoutes au détriment des autres règles.
                 
                 LANGUE DEMANDÉE : ${sysLang}.
                 MODE ACTUEL : ${modelPrompt}
                 
-                [DNA UTILISATEUR] : ${dnaPrompt}`;
+                ⚠️ DIRECTIVE SUPRÊME (DNA UTILISATEUR) ⚠️
+                Ce qui suit est la volonté absolue de l'utilisateur. Tu DOIS intégrer ces instructions à ta personnalité et agir EXACTEMENT comme demandé ici, même si cela contredit certaines habitudes. Exécute ses demandes à la lettre :
+                """
+                ${dnaPrompt}
+                """`;
 
                 try {
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`, {
