@@ -446,7 +446,7 @@
                     logoutBtn: "Déconnexion",
                     placeholder: "Dis-moi tout bro...",
                     dnaPlaceholder: "Ex: Parle-moi comme à un ami...",
-                    invalidFormat: "Format invalide. Exemple: THB-XXXXX-XXXXX",
+                    invalidFormat: "Format invalide. Exemple: LVL-XXXXX-XXXXX",
                     keyNotFound: "Clé introuvable ou incorrecte.",
                     welcomeGreeting: "Bienvenue",
                     welcomeDesc: "Level IA est prête à vous assister. Découvrez une intelligence conçue pour vous accompagner au quotidien.",
@@ -489,7 +489,7 @@
                     logoutBtn: "Log out",
                     placeholder: "Tell me everything bro...",
                     dnaPlaceholder: "Ex: Speak to me like a friend...",
-                    invalidFormat: "Invalid format. Example: THB-XXXXX-XXXXX",
+                    invalidFormat: "Invalid format. Example: LVL-XXXXX-XXXXX",
                     keyNotFound: "Key not found or incorrect.",
                     welcomeGreeting: "Welcome",
                     welcomeDesc: "Level IA is ready to assist you. Discover an intelligence designed to support you daily.",
@@ -632,7 +632,8 @@
                 const btn = document.getElementById('verifyKeyBtn');
                 const errorMsg = document.getElementById('keyError');
                 
-                const keyFormatRegex = /^THB-[A-Z0-9]{3,6}-[A-Z0-9]{3,6}$/;
+                // NOUVEAU : Accepte les nouvelles clés LVL et garde une tolérance pour les anciennes clés THB
+                const keyFormatRegex = /^(LVL|THB)-[A-Z0-9]{3,6}-[A-Z0-9]{3,6}$/;
                 if (!keyFormatRegex.test(keyVal)) {
                     if (!isAutoLogin) {
                         errorMsg.innerText = i18n[currentLang].invalidFormat;
@@ -797,8 +798,15 @@
             accessKeyInput.addEventListener('input', function(e) {
                 let val = this.value.toUpperCase();
                 val = val.replace(/[^A-Z0-9-]/g, '');
-                if (val.length > 0 && !val.startsWith('T') && !val.startsWith('TH') && !val.startsWith('THB')) {
-                    val = 'THB-' + val.replace(/^-+/, ''); 
+                
+                if (val.length > 0) {
+                    // Tolérance pour les anciennes clés THB et les nouvelles LVL
+                    const isOldFormat = val.startsWith('T') || val.startsWith('TH') || val.startsWith('THB');
+                    const isNewFormat = val.startsWith('L') || val.startsWith('LV') || val.startsWith('LVL');
+                    
+                    if (!isOldFormat && !isNewFormat) {
+                        val = 'LVL-' + val.replace(/^-+/, ''); 
+                    }
                 }
                 this.value = val.substring(0, 16);
             });
