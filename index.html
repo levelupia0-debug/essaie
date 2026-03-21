@@ -70,6 +70,7 @@
         html { 
             background-color: var(--dark); 
             overscroll-behavior: none;
+            height: 100%;
         }
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
@@ -80,18 +81,22 @@
             flex-direction: column; 
             overflow: hidden; 
             overscroll-behavior: none; 
+            /* LA CORRECTION MAGIQUE POUR DESCENDRE L'APPLICATION */
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             width: 100%;
             height: 100%;
         }
 
-        /* 🚨 LA MAGIE APPLE EST ICI : Règle les marges en haut (batterie) et en bas 🚨 */
-        .safe-pt { padding-top: max(1.25rem, env(safe-area-inset-top, 0px)) !important; }
-        .safe-pb { padding-bottom: max(1rem, env(safe-area-inset-bottom, 0px)) !important; }
+        /* 🚨 ESPACEMENTS PARFAITS POUR DÉCOLLER DU HAUT ET DU BAS 🚨 */
+        .safe-pt { padding-top: calc(1.5rem + env(safe-area-inset-top, 0px)) !important; }
+        .safe-pb { padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px)) !important; }
         .safe-sidebar { 
-            padding-top: max(1.5rem, env(safe-area-inset-top, 0px)) !important; 
-            padding-bottom: max(1.5rem, env(safe-area-inset-bottom, 0px)) !important; 
+            padding-top: calc(1.5rem + env(safe-area-inset-top, 0px)) !important; 
+            padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)) !important; 
         }
         
         .bg-main { background: radial-gradient(circle at 50% 0%, #0d061a 0%, #020202 100%); }
@@ -632,7 +637,7 @@
         </div>
 
         <!-- RESTAURATION DU HEADER -->
-        <header class="px-6 pb-5 flex items-center justify-between border-b border-white/5 bg-black/40 backdrop-blur-2xl shrink-0 z-40 safe-pt">
+        <header class="px-6 pb-4 flex items-center justify-between border-b border-white/5 bg-black/40 backdrop-blur-2xl shrink-0 z-40 safe-pt">
             <div class="flex items-center gap-4">
                 <i class="fas fa-star text-xl star-logo"></i>
                 <div>
@@ -657,8 +662,8 @@
             </div>
         </main>
 
-        <!-- RESTAURATION DU FOOTER (CLAVIER) -->
-        <footer class="px-4 pt-4 border-t border-white/5 bg-[#020202]/90 backdrop-blur-3xl shrink-0 z-50 relative safe-pb">
+        <!-- FOOTER OPTIMISÉ POUR ÊTRE AU PLUS PRÈS DU DOIGT -->
+        <footer class="px-3 pt-2 border-t border-white/5 bg-[#020202]/90 backdrop-blur-3xl shrink-0 z-50 relative safe-pb">
             <div class="max-w-2xl mx-auto relative">
                 
                 <!-- PREVIEW ATTACHMENT -->
@@ -702,9 +707,6 @@
 
                     <div class="flex-1 px-2"><textarea id="userInput" placeholder="Dis-moi tout bro..." rows="1" autocomplete="off"></textarea></div>
                     <button id="sendBtn" class="w-12 h-12 rounded-2xl bg-white text-black flex items-center justify-center hover:bg-purple-500 hover:text-white transition-all shadow-lg shrink-0"><i class="fas fa-chevron-up text-xs"></i></button>
-                </div>
-                <div class="text-center mt-3">
-                    <p id="footerBranding" class="text-[8px] font-bold text-white/30 uppercase tracking-[0.3em]">Propulsé par <strong>LevelUp</strong></p>
                 </div>
             </div>
         </footer>
