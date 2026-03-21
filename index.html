@@ -388,19 +388,60 @@
         </div>
     </div>
 
-    <!-- CONSOLE DEV MODAL -->
-    <div id="consoleModal" class="hidden fixed inset-0 z-[7000] flex items-center justify-center p-4 md:p-8 bg-black/90 backdrop-blur-md">
-        <div class="glass p-4 rounded-3xl w-full max-w-3xl h-[85vh] flex flex-col border-white/10 shadow-[0_0_50px_rgba(34,197,94,0.15)]">
-            <div class="flex justify-between items-center mb-4 px-2 shrink-0">
-                <h2 class="text-sm font-black text-white uppercase tracking-widest"><i class="fas fa-terminal text-green-400 mr-2"></i> Console Système</h2>
-                <div class="flex gap-4">
-                    <button id="copyTokenBtn" class="text-[10px] text-blue-400 hover:text-blue-300 uppercase font-bold tracking-widest transition-all"><i class="fas fa-copy mr-1"></i> Token FCM</button>
-                    <button id="clearConsoleBtn" class="text-[10px] text-white/40 hover:text-white uppercase font-bold tracking-widest transition-all"><i class="fas fa-trash-alt mr-1"></i> Vider</button>
-                    <button id="closeConsoleBtn" class="text-white/40 hover:text-white"><i class="fas fa-times text-lg"></i></button>
+    <!-- PIN MODAL (DEV) -->
+    <div id="pinModal" class="hidden fixed inset-0 z-[7000] flex items-center justify-center p-8 bg-black/90 backdrop-blur-md">
+        <div class="glass p-8 rounded-3xl max-w-xs w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-[0_0_50px_rgba(168,85,247,0.15)] border-purple-500/30">
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="text-sm font-black text-white uppercase tracking-widest"><i class="fas fa-lock text-purple-400 mr-2"></i> Accès Dev</h2>
+                <button id="closePinBtn" class="text-white/40 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            <p id="pinModalDesc" class="text-[10px] text-white/60 font-bold leading-relaxed">⚠️ Accès restreint. Seul le développeur a l'autorisation d'accéder à cette interface. Entrez le code PIN.</p>
+            <input type="password" id="pinInput" placeholder="••••" maxlength="4" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-center text-2xl tracking-[0.5em] font-mono text-white outline-none focus:border-purple-500 transition-all">
+            <button id="submitPinBtn" class="w-full bg-purple-600 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-purple-500 transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)]">Valider</button>
+        </div>
+    </div>
+
+    <!-- NOUVEAU CONSOLE DEV MODAL (DASHBOARD PRO) -->
+    <div id="consoleModal" class="hidden fixed inset-0 z-[8000] flex items-center justify-center p-2 md:p-6 bg-black/90 backdrop-blur-xl">
+        <div class="bg-[#080808] border border-white/10 rounded-3xl w-full max-w-5xl h-[95vh] md:h-[90vh] flex flex-col shadow-2xl overflow-hidden relative ring-1 ring-white/5">
+            
+            <!-- HEADER CONSOLE -->
+            <div class="px-5 py-4 border-b border-white/10 flex flex-wrap items-center justify-between bg-white/5 shrink-0 gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center border border-purple-500/30 shadow-inner">
+                        <i class="fas fa-server text-purple-400 text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-sm font-black text-white uppercase tracking-widest leading-tight">Centre de Contrôle</h2>
+                        <p class="text-[9px] text-purple-400 font-mono tracking-widest opacity-80">LEVEL IA // DIAGNOSTICS</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="copyTokenBtn" class="px-3 py-2 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30 text-[10px] uppercase font-bold hover:bg-blue-500/40 transition-all flex items-center gap-2"><i class="fas fa-key"></i> <span class="hidden sm:inline">Token FCM</span></button>
+                    <button id="clearConsoleBtn" class="px-3 py-2 rounded-lg bg-white/10 text-white/60 border border-white/10 text-[10px] uppercase font-bold hover:text-white hover:bg-white/20 transition-all flex items-center gap-2"><i class="fas fa-broom"></i> <span class="hidden sm:inline">Vider</span></button>
+                    <button id="closeConsoleBtn" class="w-10 h-10 rounded-lg bg-red-500/20 text-red-400 flex items-center justify-center hover:bg-red-500/40 border border-red-500/30 transition-all"><i class="fas fa-times"></i></button>
                 </div>
             </div>
-            <div id="consoleOutput" class="flex-1 overflow-y-auto bg-[#050505] rounded-2xl p-4 font-mono text-[10px] sm:text-[11px] text-green-400 space-y-2 border border-white/5 break-words shadow-inner">
-                <div class="text-white/30 text-center pb-2 border-b border-white/5">--- Système de Logs Initialisé ---</div>
+
+            <!-- FILTRES & STATUS -->
+            <div class="px-5 py-3 border-b border-white/5 bg-black flex flex-wrap items-center justify-between gap-4 shrink-0 overflow-x-auto no-scrollbar">
+                <div class="flex gap-2" id="consoleFilters">
+                    <button class="console-filter active px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest bg-white text-black transition-all" data-filter="all">Tout</button>
+                    <button class="console-filter px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all" data-filter="error">Erreurs</button>
+                    <button class="console-filter px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/20 transition-all" data-filter="warn">Alertes</button>
+                    <button class="console-filter px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition-all" data-filter="log">Infos</button>
+                </div>
+                
+                <div class="flex items-center gap-5 text-[9px] font-bold uppercase tracking-widest bg-white/5 px-4 py-2 rounded-lg border border-white/10">
+                    <div class="flex items-center gap-2"><span id="ind-net" class="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></span> Réseau</div>
+                    <div class="flex items-center gap-2"><span id="ind-pwa" class="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-[0_0_8px_#eab308]"></span> PWA</div>
+                    <div class="flex items-center gap-2"><span id="ind-db" class="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-[0_0_8px_#eab308]"></span> Firebase</div>
+                </div>
+            </div>
+
+            <!-- OUTPUT AREA -->
+            <div id="consoleOutput" class="flex-1 overflow-y-auto p-4 space-y-3 bg-[#030303] custom-scrollbar pb-20">
+                <div class="text-white/30 text-center py-4 border-b border-white/5 text-[10px] uppercase tracking-widest font-black">--- Système de Logs Démarré ---</div>
             </div>
         </div>
     </div>
@@ -629,34 +670,68 @@
     </div>
 
     <script type="module">
-        // INTERCEPTION GLOBALE DE LA CONSOLE
+        // INTERCEPTION GLOBALE DE LA CONSOLE (AMELIOREE)
         const originalLog = console.log;
         const originalWarn = console.warn;
         const originalError = console.error;
         window._logHistory = [];
+        let currentConsoleFilter = 'all';
         
         function safeStringify(arg) {
             if (arg instanceof Error) return arg.stack || arg.message;
             if (typeof arg === 'object') {
-                try { return JSON.stringify(arg); } catch(e) { return String(arg); }
+                try { return JSON.stringify(arg, null, 2); } catch(e) { return String(arg); }
             }
             return String(arg);
         }
 
         function pushToVisualConsole(type, args) {
             const msg = Array.from(args).map(safeStringify).join(' ');
-            window._logHistory.push({ type, msg });
+            window._logHistory.push({ type, msg, time: new Date() });
             
             const output = document.getElementById('consoleOutput');
             if (output) {
                 const el = document.createElement('div');
-                const time = new Date().toLocaleTimeString();
-                el.className = 'py-1 border-b border-white/5 leading-relaxed';
-                if (type === 'error') el.innerHTML = `<span class="text-red-500 font-bold">[${time}] ERR:</span> <span class="text-red-300 ml-1">${msg}</span>`;
-                else if (type === 'warn') el.innerHTML = `<span class="text-yellow-500 font-bold">[${time}] WRN:</span> <span class="text-yellow-200 ml-1">${msg}</span>`;
-                else el.innerHTML = `<span class="text-blue-400 font-bold">[${time}] LOG:</span> <span class="text-green-300 ml-1">${msg}</span>`;
+                const timeStr = new Date().toLocaleTimeString();
+                el.className = `log-entry log-${type} p-3 rounded-xl border font-mono text-[10px] break-words flex items-start gap-3 animate-in fade-in slide-in-from-bottom-2`;
+                
+                let icon = '', bgClass = '', textClass = '', badge = '';
+                if (type === 'error') {
+                    icon = '<i class="fas fa-times-circle text-red-500 text-sm mt-0.5"></i>';
+                    bgClass = 'bg-red-500/10 border-red-500/30';
+                    textClass = 'text-red-200';
+                    badge = '<span class="bg-red-500 text-white px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider shadow-[0_0_8px_rgba(239,68,68,0.5)]">ERROR</span>';
+                } else if (type === 'warn') {
+                    icon = '<i class="fas fa-exclamation-triangle text-yellow-500 text-sm mt-0.5"></i>';
+                    bgClass = 'bg-yellow-500/10 border-yellow-500/30';
+                    textClass = 'text-yellow-200';
+                    badge = '<span class="bg-yellow-500 text-black px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider">WARN</span>';
+                } else {
+                    icon = '<i class="fas fa-info-circle text-blue-500 text-sm mt-0.5"></i>';
+                    bgClass = 'bg-blue-500/5 border-blue-500/20';
+                    textClass = 'text-blue-100';
+                    badge = '<span class="bg-blue-500/40 text-blue-200 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider">INFO</span>';
+                }
+
+                el.className += ` ${bgClass}`;
+                if (currentConsoleFilter !== 'all' && currentConsoleFilter !== type) el.classList.add('hidden');
+
+                el.innerHTML = `
+                    <div class="shrink-0 flex items-center justify-center">${icon}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1.5">
+                            ${badge}
+                            <span class="text-white/40 text-[9px] font-bold">[${timeStr}]</span>
+                        </div>
+                        <div class="${textClass} leading-relaxed whitespace-pre-wrap">${msg}</div>
+                    </div>
+                `;
+
                 output.appendChild(el);
-                output.scrollTop = output.scrollHeight;
+                
+                // Auto-scroll
+                const isScrolledToBottom = output.scrollHeight - output.clientHeight <= output.scrollTop + 50;
+                if(isScrolledToBottom) output.scrollTop = output.scrollHeight;
             }
         }
 
@@ -696,6 +771,7 @@
             const reportModal = document.getElementById('reportModal');
             const notifModal = document.getElementById('notifModal');
             const consoleModal = document.getElementById('consoleModal');
+            const pinModal = document.getElementById('pinModal');
             const mainApp = document.getElementById('mainApp');
             const conversationContainer = document.getElementById('conversationContainer');
             const chatArea = document.getElementById('chatArea');
@@ -749,16 +825,26 @@
                 .then((reg) => {
                     reg.update(); // ⚡ FORCE LA MISE A JOUR DU CACHE
                     console.log('✅ [PWA] Service Worker actif', reg.scope);
+                    document.getElementById('ind-pwa').className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"; // Vert
                 })
-                .catch((err) => console.error('❌ [PWA] Erreur SW', err));
+                .catch((err) => {
+                    console.error('❌ [PWA] Erreur SW', err);
+                    document.getElementById('ind-pwa').className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; // Rouge
+                });
             } else if ('serviceWorker' in navigator) {
                 console.log('⚠️ [PWA] SW ignoré sur ce protocole (' + window.location.protocol + ')');
+                document.getElementById('ind-pwa').className = "w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-[0_0_8px_#eab308]"; // Jaune
             }
+
+            // Gestion Status Réseau (Indicateurs Dev)
+            window.addEventListener('online', () => document.getElementById('ind-net').className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]");
+            window.addEventListener('offline', () => document.getElementById('ind-net').className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]");
+            if(!navigator.onLine) document.getElementById('ind-net').className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]";
 
             // PWA Installation & Device Detection
             const ua = navigator.userAgent || navigator.vendor || window.opera;
             const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
-            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || !!window.navigator.standalone;
             let deferredPrompt;
 
             console.log(`[PWA DIAGNOSTIC] Appareil iOS ? ${isIOS}`);
@@ -835,6 +921,7 @@
                     promoDesc: "Pour une expérience fluide, un accès ultra-rapide et recevoir des notifications, installe l'application Level IA sur ton appareil dès maintenant.",
                     promoInstallText: "Installer l'App", promoSkipText: "Continuer sur le web",
                     consoleMenuText: "Console Dev",
+                    pinModalDesc: "⚠️ Accès restreint. Seul le développeur a l'autorisation d'accéder à cette interface. Entrez le code PIN.",
                     lengthOptions: { medium: "Moyenne (Chill & Pro)", long: "Longue (Détaillée)", short: "Courte (Directe)" }
                 },
                 en: {
@@ -863,6 +950,7 @@
                     promoDesc: "For a smooth, fast experience and to receive notifications, install the Level IA application on your device right now.",
                     promoInstallText: "Install App", promoSkipText: "Continue on web",
                     consoleMenuText: "Dev Console",
+                    pinModalDesc: "⚠️ Restricted access. Only the developer is authorized to access this interface. Enter PIN.",
                     lengthOptions: { medium: "Medium (Chill & Pro)", long: "Long (Detailed)", short: "Short (Direct)" }
                 }
             };
@@ -945,6 +1033,7 @@
                 setSafeText('promoInstallText', t.promoInstallText);
                 setSafeText('promoSkipText', t.promoSkipText);
                 setSafeText('consoleMenuText', t.consoleMenuText);
+                setSafeText('pinModalDesc', t.pinModalDesc);
                 
                 const userStatusEl = document.getElementById('userStatus');
                 if(userStatusEl) userStatusEl.innerHTML = `<i class="fas fa-shield-alt"></i> ${t.verifiedStatus}`;
@@ -1215,6 +1304,7 @@
                     if (foundUserData) {
                         console.log("✅ [DEBUG] Clé valide trouvée pour l'utilisateur:", foundUserData.uid);
                         userId = foundUserData.uid;
+                        document.getElementById('ind-db').className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"; // DB Connectée (Vert)
                         authPage.classList.add('hidden');
                         langPage.classList.add('hidden'); 
                         promoInstallModal.classList.add('hidden');
@@ -1287,6 +1377,7 @@
                         setupHistoryListener();
                     } else {
                         console.warn("❌ [DEBUG] Clé introuvable dans la base de données.");
+                        document.getElementById('ind-db').className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; // DB Rouge
                         if (!isAutoLogin) {
                             document.getElementById('keyErrorMain').innerText = currentLang === 'fr' ? "Code d'accès incorrect ou expiré." : "Access code incorrect or expired.";
                             errorDetailsSpan.innerText = "[DEBUG] Clé non trouvée en base de données.";
@@ -1299,6 +1390,7 @@
                     }
                 } catch (e) {
                     console.error("🚨 [ERREUR CRITIQUE DE CONNEXION FIREBASE] :", e);
+                    document.getElementById('ind-db').className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; // DB Rouge
                     if (!isAutoLogin) {
                         document.getElementById('keyErrorMain').innerText = "Erreur de connexion (Base de données).";
                         errorDetailsSpan.innerText = `Détails: ${e.message || e.code}`;
@@ -1584,11 +1676,64 @@
             document.getElementById('openFeedbackBtn').onclick = () => { closeSidebar(); feedbackModal.classList.remove('hidden'); };
             document.getElementById('closeFeedbackBtn').onclick = () => feedbackModal.classList.add('hidden');
             
-            // Gestion de la Console Dev
-            document.getElementById('openConsoleBtn').onclick = () => { closeSidebar(); consoleModal.classList.remove('hidden'); };
+            // FILTRES DE LA CONSOLE DEV
+            document.querySelectorAll('.console-filter').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    // Reset styling
+                    document.querySelectorAll('.console-filter').forEach(b => {
+                        b.classList.remove('active', 'bg-white', 'text-black');
+                        if (b.dataset.filter === 'error') b.className = "console-filter px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all";
+                        if (b.dataset.filter === 'warn') b.className = "console-filter px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/20 transition-all";
+                        if (b.dataset.filter === 'log') b.className = "console-filter px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition-all";
+                        if (b.dataset.filter === 'all') b.className = "console-filter px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-white/50 border border-white/20 hover:bg-white/10 transition-all";
+                    });
+
+                    // Active styling
+                    const target = e.target;
+                    target.className = "console-filter active px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all";
+                    
+                    currentConsoleFilter = target.dataset.filter;
+                    
+                    // Filter logs
+                    document.querySelectorAll('.log-entry').forEach(log => {
+                        if (currentConsoleFilter === 'all' || log.classList.contains(`log-${currentConsoleFilter}`)) {
+                            log.classList.remove('hidden');
+                        } else {
+                            log.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            // Gestion de la Console Dev avec Code PIN
+            document.getElementById('openConsoleBtn').onclick = () => { 
+                closeSidebar(); 
+                document.getElementById('pinInput').value = '';
+                pinModal.classList.remove('hidden'); 
+            };
+            
+            document.getElementById('closePinBtn').onclick = () => pinModal.classList.add('hidden');
+            
+            document.getElementById('submitPinBtn').onclick = () => {
+                if (document.getElementById('pinInput').value === '1994') {
+                    pinModal.classList.add('hidden');
+                    consoleModal.classList.remove('hidden');
+                    // Scroll au fond à l'ouverture
+                    const out = document.getElementById('consoleOutput');
+                    out.scrollTop = out.scrollHeight;
+                } else {
+                    showSysToast(currentLang === 'fr' ? "Code PIN incorrect 🔒" : "Incorrect PIN 🔒", true);
+                    document.getElementById('pinInput').value = '';
+                }
+            };
+            
+            document.getElementById('pinInput').onkeydown = (e) => { 
+                if(e.key === 'Enter') document.getElementById('submitPinBtn').click(); 
+            };
+
             document.getElementById('closeConsoleBtn').onclick = () => consoleModal.classList.add('hidden');
             document.getElementById('clearConsoleBtn').onclick = () => { 
-                document.getElementById('consoleOutput').innerHTML = '<div class="text-white/30 text-center pb-2 border-b border-white/5">--- Système de Logs Initialisé ---</div>'; 
+                document.getElementById('consoleOutput').innerHTML = '<div class="text-white/30 text-center py-4 border-b border-white/5 text-[10px] uppercase tracking-widest font-black">--- Système de Logs Démarré ---</div>'; 
                 window._logHistory = []; 
                 // Réinitialise le mur de promotion pour tester
                 localStorage.removeItem('thiabs_skipped_install');
