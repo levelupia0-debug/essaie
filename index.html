@@ -12,7 +12,7 @@
     
     <!-- Ajout du favicon Étoile Violette -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'><path fill='%23a855f7' d='M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z'/></svg>" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'><path fill='%23a855f7' d='M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z'/></svg>">
+    <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Star_icon_violet.svg/512px-Star_icon_violet.svg.png">
 
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -739,6 +739,17 @@
             // Notifications State
             let userNotifs = { enabled: false, exerciseTime: "08:00", lastQuotaNotif: "", lastExerciseNotif: "", fcmToken: "" };
 
+            const isSupportedProtocol = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+            // Enregistrement PWA OBLIGATOIRE (Dès le chargement)
+            if ('serviceWorker' in navigator && isSupportedProtocol) {
+                navigator.serviceWorker.register('./firebase-messaging-sw.js')
+                .then((reg) => console.log('✅ [PWA] Service Worker actif', reg.scope))
+                .catch((err) => console.error('❌ [PWA] Erreur SW', err));
+            } else if ('serviceWorker' in navigator) {
+                console.log('⚠️ [PWA] SW ignoré sur ce protocole (' + window.location.protocol + ')');
+            }
+
             // PWA Installation & Device Detection
             const ua = navigator.userAgent || navigator.vendor || window.opera;
             const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
@@ -783,7 +794,7 @@
                     thiabsModeTitle: "Mode Thiab's 🌟", thiabsModeDesc: "Activer le développement personnel",
                     langTitle: "Langue", modelTitle: "Modèle IA", lengthTitle: "Taille des réponses", cloudSpace: "Espace Cloud", historyTitle: "Historique des sessions", newChatText: "Nouvelle session",
                     dnaTitle: "DNA de <strong id='dnaAppBrand'>{app}</strong>", saveDNA: "Mettre à jour", supportTitle: "Support & Compte", logoutBtn: "Déconnexion", placeholder: "Dis-moi tout bro...", dnaPlaceholder: "Ex: Parle-moi comme à un ami...",
-                    invalidFormat: "Format invalide. Exemple: LVL-XXXXX-XXXXX", keyNotFound: "Clé introuvable ou incorrecte.", welcomeGreeting: "Bienvenue", welcomeDesc: "Prêt à vous assister. Découvrez une intelligence conçue pour vous accompagner au quotidien.", continueBtn: "Continuer", footerBranding: "Propulsé par <strong>LevelUp</strong>",
+                    invalidFormat: "Format invalide. Exemple: LVL-XXXXX-XXXXX", keyNotFound: "Clé introuvable ou incorrecte.", welcomeGreeting: "Bienvenue", welcomeDesc: "Prêt à vous assister. Découvrez une intelligence conçu pour vous accompagner au quotidien.", continueBtn: "Continuer", footerBranding: "Propulsé par <strong>LevelUp</strong>",
                     logoutModalTitle: "Déconnexion", logoutModalDesc: "Voulez-vous vraiment quitter votre session actuelle ?", cancelBtn: "Annuler", confirmLogout: "Quitter", verifiedStatus: "Vérifié via clé",
                     installAppMenuText: "Installer l'App", installModalTitle: "Installer l'App", installModalDesc: "Ajoutez l'application sur votre écran d'accueil :",
                     installiOS: "🍎 iOS (Safari) : Appuyez sur Partager <i class='fas fa-share-square mx-1'></i> puis 'Sur l'écran d'accueil'.", installAndroid: "🤖 Android (Chrome) : Appuyez sur Menu <i class='fas fa-ellipsis-v mx-1'></i> puis 'Ajouter à l'écran d'accueil'.",
@@ -1263,7 +1274,7 @@
                             errorMsg.classList.remove('hidden');
                         } else {
                             localStorage.removeItem('thiabs_saved_key');
-                            checkPromoInstall();
+                            showPromoOrAuth();
                         }
                     }
                 } catch (e) {
@@ -1274,7 +1285,7 @@
                         errorDetailsSpan.classList.remove('hidden');
                         errorMsg.classList.remove('hidden');
                     } else {
-                        checkPromoInstall();
+                        showPromoOrAuth();
                     }
                 }
                 
@@ -1283,12 +1294,12 @@
                 }
             }
 
-            const checkPromoInstall = () => {
-                if (!userId && !isStandalone && !localStorage.getItem('thiabs_skipped_install') && !localStorage.getItem('thiabs_saved_key')) {
-                    langPage.classList.add('hidden');
+            const showPromoOrAuth = () => {
+                langPage.classList.add('hidden');
+                if (!isStandalone && !localStorage.getItem('thiabs_skipped_install')) {
                     promoInstallModal.classList.remove('hidden');
-                } else if (!userId && !localStorage.getItem('thiabs_saved_key')) {
-                    langPage.classList.remove('hidden');
+                } else {
+                    authPage.classList.remove('hidden');
                 }
             };
 
@@ -1306,7 +1317,7 @@
                         splashScreen.style.display = 'none';
                         const savedKey = localStorage.getItem('thiabs_saved_key');
                         if (!savedKey) {
-                            checkPromoInstall();
+                            langPage.classList.remove('hidden');
                         }
                     }, 400); 
                 }, 3000);
@@ -1316,8 +1327,7 @@
             document.querySelectorAll('.lang-btn').forEach(btn => {
                 btn.onclick = () => {
                     applyLanguage(btn.dataset.lang);
-                    langPage.classList.add('hidden');
-                    authPage.classList.remove('hidden');
+                    showPromoOrAuth();
                 };
             });
 
@@ -1512,8 +1522,11 @@
                     try {
                         const permission = await Notification.requestPermission();
                         if (permission === 'granted') {
-                            const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js', { scope: './' });
-                            await registration.update();
+                            let registration = undefined;
+                            if ('serviceWorker' in navigator && isSupportedProtocol) {
+                                registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js', { scope: './' });
+                                await registration.update();
+                            }
                             const currentToken = await getToken(messaging, { vapidKey: vapidKey, serviceWorkerRegistration: registration });
                             if (currentToken) {
                                 userNotifs.fcmToken = currentToken;
