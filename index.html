@@ -66,7 +66,34 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         
         :root { --primary: #a855f7; --dark: #020202; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: var(--dark); color: #ffffff; height: 100dvh; margin: 0; display: flex; flex-direction: column; overflow: hidden; }
+        
+        /* CORRECTION DU BLANC EN BAS ET DU REBOND SUR MOBILE (PWA) */
+        html { 
+            background-color: var(--dark) !important; 
+            overscroll-behavior: none; 
+            height: -webkit-fill-available; /* Magie pour bloquer l'écran sur iOS */
+        }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--dark) !important; 
+            color: #ffffff; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+            overscroll-behavior: none; 
+            min-height: 100vh;
+            min-height: -webkit-fill-available; /* Tue la bande blanche en bas */
+        }
+
+        /* CLASSES MAGIQUES POUR L'ENCOCHE ET LA BARRE DU BAS IOS (PWA) */
+        .safe-top { padding-top: calc(1rem + env(safe-area-inset-top, 40px)) !important; }
+        .safe-bottom { padding-bottom: calc(1rem + env(safe-area-inset-bottom, 30px)) !important; }
+        .safe-sidebar { 
+            padding-top: calc(1.5rem + env(safe-area-inset-top, 40px)) !important; 
+            padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 30px)) !important; 
+        }
+        
         .bg-main { background: radial-gradient(circle at 50% 0%, #0d061a 0%, #020202 100%); }
 
         #splashScreen { position: fixed; inset: 0; z-index: 9999; background: black; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity 0.4s ease-out; }
@@ -461,7 +488,8 @@
     <div id="mainApp" class="hidden flex-col h-full w-full relative">
         <div id="appOverlay" class="fixed inset-0 z-[2999] hidden transition-opacity"></div>
 
-        <div id="sidebar" class="fixed inset-y-0 right-0 w-[85%] md:w-80 glass z-[3000] border-l border-white/10 p-6 flex flex-col transition-transform translate-x-full no-scrollbar overflow-y-auto">
+        <!-- CORRECTION DU MENU LATÉRAL POUR L'ENCOCHE -->
+        <div id="sidebar" class="fixed inset-y-0 right-0 w-[85%] md:w-80 glass z-[3000] border-l border-white/10 px-6 flex flex-col transition-transform translate-x-full no-scrollbar overflow-y-auto safe-sidebar">
             <div class="flex items-center justify-between mb-8">
                 <span id="menuTitle" class="text-[10px] font-black uppercase tracking-widest opacity-40">Menu</span>
                 <button id="closeSidebar" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5"><i class="fas fa-times text-xs"></i></button>
@@ -603,7 +631,8 @@
             </div>
         </div>
 
-        <header class="px-6 py-5 flex items-center justify-between border-b border-white/5 bg-black/40 backdrop-blur-2xl shrink-0 z-40">
+        <!-- CORRECTION DU HEADER (POUR NE PAS TOUCHER L'HEURE/LA BATTERIE) -->
+        <header class="px-6 pb-5 flex items-center justify-between border-b border-white/5 bg-black/40 backdrop-blur-2xl shrink-0 z-40 safe-top">
             <div class="flex items-center gap-4">
                 <i class="fas fa-star text-xl star-logo"></i>
                 <div>
@@ -628,7 +657,8 @@
             </div>
         </main>
 
-        <footer class="px-4 py-4 border-t border-white/5 bg-[#020202]/90 backdrop-blur-3xl shrink-0 z-50 relative">
+        <!-- CORRECTION DU FOOTER (POUR NE PAS TOUCHER LA BARRE D'ACCUEIL EN BAS) -->
+        <footer class="px-4 pt-4 border-t border-white/5 bg-[#020202]/90 backdrop-blur-3xl shrink-0 z-50 relative safe-bottom">
             <div class="max-w-2xl mx-auto relative">
                 
                 <!-- PREVIEW ATTACHMENT -->
