@@ -7,14 +7,10 @@
   "theme_color": "#a855f7",
   "icons": [
     {
-      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Star_icon_violet.svg/192px-Star_icon_violet.svg.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Star_icon_violet.svg/512px-Star_icon_violet.svg.png",
-      "sizes": "512x512",
-      "type": "image/png"
+      "src": "./icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }
