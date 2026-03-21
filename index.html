@@ -756,10 +756,24 @@
             const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
             let deferredPrompt;
 
+            console.log(`[PWA DIAGNOSTIC] Appareil iOS ? ${isIOS}`);
+            console.log(`[PWA DIAGNOSTIC] Mode Installé (Standalone) ? ${isStandalone}`);
+            console.log(`[PWA DIAGNOSTIC] Drapeau "Ignorer Install" activé ? ${localStorage.getItem('thiabs_skipped_install') === 'true'}`);
+
             window.addEventListener('beforeinstallprompt', (e) => {
                 e.preventDefault();
                 deferredPrompt = e;
+                console.log("✅ [PWA SUCCÈS] L'événement 'beforeinstallprompt' est déclenché. Le navigateur reconnaît officiellement l'app comme installable !");
             });
+
+            // Diagnostic après 5 secondes
+            setTimeout(() => {
+                if (!deferredPrompt && !isStandalone && !isIOS && isSupportedProtocol) {
+                    console.warn("⚠️ [PWA ATTENTION] L'installation n'a pas été validée par le navigateur.");
+                    console.warn("👉 Cause n°1 : Le fichier manifest.json contient une erreur ou les images (liens Wikipedia) sont inaccessibles.");
+                    console.warn("👉 Cause n°2 : Le fichier firebase-messaging-sw.js n'a pas d'événement 'fetch'.");
+                }
+            }, 5000);
 
             marked.setOptions({ breaks: true });
 
@@ -1274,7 +1288,7 @@
                             errorMsg.classList.remove('hidden');
                         } else {
                             localStorage.removeItem('thiabs_saved_key');
-                            showPromoOrAuth();
+                            checkPromoInstall();
                         }
                     }
                 } catch (e) {
@@ -1285,7 +1299,7 @@
                         errorDetailsSpan.classList.remove('hidden');
                         errorMsg.classList.remove('hidden');
                     } else {
-                        showPromoOrAuth();
+                        checkPromoInstall();
                     }
                 }
                 
@@ -1294,12 +1308,17 @@
                 }
             }
 
-            const showPromoOrAuth = () => {
+            const checkPromoInstall = () => {
                 langPage.classList.add('hidden');
-                if (!isStandalone && !localStorage.getItem('thiabs_skipped_install')) {
+                const skipped = localStorage.getItem('thiabs_skipped_install');
+                console.log(`[PWA] Décision Mur Install -> isStandalone: ${isStandalone}, Skipped: ${skipped}`);
+                
+                if (!isStandalone && !skipped) {
                     promoInstallModal.classList.remove('hidden');
+                    console.log("[PWA] Affichage du mur de promotion d'installation.");
                 } else {
                     authPage.classList.remove('hidden');
+                    console.log("[PWA] Mur ignoré (déjà installé ou ignoré par l'utilisateur précédemment).");
                 }
             };
 
@@ -1327,7 +1346,7 @@
             document.querySelectorAll('.lang-btn').forEach(btn => {
                 btn.onclick = () => {
                     applyLanguage(btn.dataset.lang);
-                    showPromoOrAuth();
+                    checkPromoInstall();
                 };
             });
 
@@ -1565,6 +1584,9 @@
             document.getElementById('clearConsoleBtn').onclick = () => { 
                 document.getElementById('consoleOutput').innerHTML = '<div class="text-white/30 text-center pb-2 border-b border-white/5">--- Système de Logs Initialisé ---</div>'; 
                 window._logHistory = []; 
+                // Réinitialise le mur de promotion pour tester
+                localStorage.removeItem('thiabs_skipped_install');
+                console.log("✅ Cache de l'installation vidé ! Le mur d'installation réapparaîtra au prochain chargement.");
             };
 
             // Nouveau Bouton: Copier le Token FCM
