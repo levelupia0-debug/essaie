@@ -1,7 +1,7 @@
 importScripts('https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js');
 importScripts('https://www.gstatic.com/firebasejs/11.0.1/firebase-messaging-compat.js');
 
-// La même configuration que ton application principale
+// Configuration Firebase
 const firebaseConfig = {
     apiKey: "AIzaSyA3JgvNu5p-43037jvm4WRDaJHI9ES7uGM",
     authDomain: "levelup-ia.firebaseapp.com",
@@ -16,14 +16,20 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
-// Gère les notifications reçues quand l'application est fermée
+// Gère les notifications reçues quand l'application est fermée (en arrière-plan)
 messaging.onBackgroundMessage((payload) => {
     console.log('[firebase-messaging-sw.js] Message reçu en arrière-plan ', payload);
     
-    const notificationTitle = payload.notification.title || 'Level IA';
+    // Titre Premium par défaut si aucun titre n'est envoyé
+    const notificationTitle = payload.notification?.title || '🌟 Level IA Premium';
+    
+    // Options de la notification (Design, Icone, Vibration)
     const notificationOptions = {
-        body: payload.notification.body,
-        icon: './icon.png' // L'image locale PNG que tu as uploadée sur ton GitHub
+        body: payload.notification?.body || 'Nouvelle information de ton assistant.',
+        icon: './icon.svg', // Ton étoile brillante en SVG
+        badge: './icon.svg', // Petite icône dans la barre d'état Android
+        vibrate: [300, 100, 400, 100, 400, 100, 300], // Vibration personnalisée
+        requireInteraction: true // Force la notification à rester à l'écran jusqu'à ce qu'on clique dessus
     };
 
     self.registration.showNotification(notificationTitle, notificationOptions);
