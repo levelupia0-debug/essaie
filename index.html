@@ -1076,25 +1076,42 @@
                 if (!userNotifs.enabled || !("Notification" in window) || Notification.permission !== "granted") return;
                 
                 const now = new Date();
-                const currentTimeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
                 const todayStr = now.toDateString();
+
+                // Fonction fiable pour envoyer une notification (même sur mobile PWA)
+                const fireNotification = (title, body) => {
+                    if (navigator.serviceWorker) {
+                        navigator.serviceWorker.ready.then(reg => {
+                            reg.showNotification(title, { body: body, icon: '/icon.png' });
+                        }).catch(() => {
+                            new Notification(title, { body: body });
+                        });
+                    } else {
+                        new Notification(title, { body: body });
+                    }
+                };
 
                 // 1. Alerte de Quota Réinitialisé
                 if (userUsage.msgCount >= MAX_MSGS && now.getTime() > userUsage.msgReset && userNotifs.lastQuotaNotif !== todayStr) {
-                    new Notification("Level IA", { 
-                        body: currentLang === 'fr' ? "Tes quotas sont réinitialisés ! Tu peux de nouveau discuter." : "Your quotas are reset! You can chat again.",
-                    });
+                    fireNotification("Level IA", currentLang === 'fr' ? "Tes quotas sont réinitialisés ! Tu peux de nouveau discuter." : "Your quotas are reset! You can chat again.");
                     userNotifs.lastQuotaNotif = todayStr;
                     if(userId) setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "notifications"), userNotifs, { merge: true });
                 }
 
-                // 2. Alerte d'Exercice (Thiab's Mode)
-                if (userNotifs.exerciseTime === currentTimeStr && userNotifs.lastExerciseNotif !== todayStr) {
-                    new Notification("Thiab's Mode 🌟", { 
-                        body: currentLang === 'fr' ? "C'est l'heure de ton exercice ! Ne remets pas à plus tard, ouvre Level IA." : "It's time for your exercise! Don't procrastinate, open Level IA.",
-                    });
-                    userNotifs.lastExerciseNotif = todayStr;
-                    if(userId) setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "notifications"), userNotifs, { merge: true });
+                // 2. Alerte d'Exercice (Thiab's Mode) - Tolérance de 60 minutes
+                if (userNotifs.exerciseTime) {
+                    const currentMins = now.getHours() * 60 + now.getMinutes();
+                    const [exH, exM] = userNotifs.exerciseTime.split(':').map(Number);
+                    const exTotalMins = exH * 60 + exM;
+                    
+                    const diff = currentMins - exTotalMins;
+                    
+                    // Si on est dans l'heure qui suit l'alarme et qu'on ne l'a pas encore reçue aujourd'hui
+                    if (diff >= 0 && diff <= 60 && userNotifs.lastExerciseNotif !== todayStr) {
+                        fireNotification("Thiab's Mode 🌟", currentLang === 'fr' ? "C'est l'heure de ton exercice ! Ne remets pas à plus tard, ouvre Level IA." : "It's time for your exercise! Don't procrastinate, open Level IA.");
+                        userNotifs.lastExerciseNotif = todayStr;
+                        if(userId) setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "notifications"), userNotifs, { merge: true });
+                    }
                 }
             }, 30000);
 
