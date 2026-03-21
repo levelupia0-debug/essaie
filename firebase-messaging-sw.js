@@ -23,8 +23,15 @@ messaging.onBackgroundMessage((payload) => {
     const notificationTitle = payload.notification.title || 'Level IA';
     const notificationOptions = {
         body: payload.notification.body,
-        icon: '/icon.png' // Tu pourras remplacer ça par l'URL de ton logo
+        icon: 'https://ih1.redbubble.net/image.5391350517.6380/bg,f8f8f8-flat,750x,075,f-pad,750x1000,f8f8f8.jpg' // Lien direct vers ton étoile violette
     };
 
     self.registration.showNotification(notificationTitle, notificationOptions);
+});
+
+// =========================================================================
+// LIGNE MAGIQUE OBLIGATOIRE POUR QUE CHROME VALIDE L'INSTALLATION DE LA PWA
+// =========================================================================
+self.addEventListener('fetch', function(event) {
+    // Un simple écouteur vide suffit pour débloquer l'installation PWA !
 });
