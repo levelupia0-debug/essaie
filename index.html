@@ -3,11 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Level IA</title>
     
     <!-- Ajout du favicon Étoile Violette -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'><path fill='%23a855f7' d='M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z'/></svg>" type="image/svg+xml">
-    
+    <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'><path fill='%23a855f7' d='M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z'/></svg>">
+
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
@@ -16,6 +19,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signInAnonymously, deleteUser } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, collectionGroup, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-messaging.js";
 
         // --- CONFIGURATION FIREBASE ---
         const firebaseConfig = {
@@ -33,12 +37,14 @@
         const db = getFirestore(app);
 
         // Export global
+        window.app = app;
         window.auth = auth;
         window.db = db;
         window.signInAnonymously = signInAnonymously;
         window.onAuthStateChanged = onAuthStateChanged;
         window.deleteUser = deleteUser;
         window.firestoreUtils = { collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, collectionGroup, updateDoc, arrayUnion };
+        window.messagingUtils = { getMessaging, getToken, onMessage };
         
         window.__app_id = "level-ia-premium"; 
     </script>
@@ -105,7 +111,6 @@
             transform: translateY(-2px);
         }
 
-        /* NOUVEAU: Menu d'import */
         #attachMenu { transition: all 0.2s cubic-bezier(0.1, 0.9, 0.2, 1); transform-origin: bottom left; }
         #attachMenu.hidden-menu { opacity: 0; transform: scale(0.9) translateY(10px); pointer-events: none; }
     </style>
@@ -139,6 +144,26 @@
                 <button class="lang-btn bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-purple-600 hover:border-purple-500 transition-all flex flex-col items-center gap-3" data-lang="en">
                     <span class="text-4xl">🇬🇧</span>
                     <span class="text-[10px] font-black uppercase tracking-widest">English</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROMO INSTALL MODAL (MUR D'INSTALLATION) -->
+    <div id="promoInstallModal" class="hidden fixed inset-0 z-[5500] flex items-end md:items-center justify-center p-4 md:p-8 bg-black/90 backdrop-blur-md">
+        <div class="glass p-8 rounded-3xl max-w-sm w-full text-center space-y-6 animate-in slide-in-from-bottom-10 md:zoom-in duration-500 shadow-[0_0_50px_rgba(168,85,247,0.15)] border-purple-500/30">
+            <div class="mx-auto w-20 h-20 rounded-2xl bg-purple-500/20 flex items-center justify-center mb-2 border border-purple-500/50 shadow-inner">
+                <i id="promoIcon" class="fas fa-rocket text-3xl text-purple-400"></i>
+            </div>
+            <h2 id="promoTitle" class="text-2xl font-black text-white uppercase tracking-widest leading-tight">Passe au niveau<br><span class="text-purple-400">Supérieur</span></h2>
+            <p id="promoDesc" class="text-xs text-white/70 leading-relaxed font-bold px-2">Pour une expérience fluide, rapide et des notifications intelligentes, installe l'application Level IA sur ton appareil dès maintenant.</p>
+            
+            <div class="space-y-3 pt-4">
+                <button id="promoInstallBtn" class="w-full bg-purple-600 text-white py-4 rounded-xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-purple-500 transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)] flex items-center justify-center gap-2">
+                    <i class="fas fa-download"></i> <span id="promoInstallText">Installer l'App</span>
+                </button>
+                <button id="promoSkipBtn" class="w-full bg-transparent text-white/40 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all">
+                    <span id="promoSkipText">Continuer sur le web</span>
                 </button>
             </div>
         </div>
@@ -224,7 +249,7 @@
         </div>
     </div>
 
-    <!-- CGU MODAL ULTRA DETAILLÉ -->
+    <!-- CGU MODAL -->
     <div id="cguModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-4 md:p-8 bg-black/80 backdrop-blur-md">
         <div class="glass p-6 md:p-8 rounded-3xl max-w-lg w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10 max-h-[90vh] flex flex-col">
             <div class="mx-auto w-14 h-14 shrink-0 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/50">
@@ -256,7 +281,7 @@
         </div>
     </div>
     
-    <!-- INFO MODAL ULTRA DETAILLÉ -->
+    <!-- INFO MODAL -->
     <div id="infoModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-4 md:p-8 bg-black/80 backdrop-blur-md">
         <div class="glass p-6 md:p-8 rounded-3xl max-w-lg w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10 max-h-[90vh] flex flex-col">
             <div class="mx-auto w-14 h-14 shrink-0 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/50">
@@ -286,7 +311,7 @@
         </div>
     </div>
 
-    <!-- FEEDBACK MODAL (AVIS) -->
+    <!-- FEEDBACK MODAL -->
     <div id="feedbackModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-8 bg-black/80 backdrop-blur-md">
         <div class="glass p-8 rounded-3xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
             <div class="flex justify-between items-center mb-2">
@@ -308,7 +333,7 @@
         </div>
     </div>
 
-    <!-- REPORT MODAL (SIGNALEMENT) -->
+    <!-- REPORT MODAL -->
     <div id="reportModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-8 bg-black/80 backdrop-blur-md">
         <div class="glass p-8 rounded-3xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
             <div class="flex justify-between items-center mb-2">
@@ -328,6 +353,35 @@
             </div>
             
             <button id="submitReportBtn" class="w-full bg-red-500 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-red-400 transition-all shadow-[0_0_15px_rgba(239,68,68,0.4)]">Envoyer le rapport</button>
+        </div>
+    </div>
+
+    <!-- NOUVEAU: NOTIF MODAL -->
+    <div id="notifModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-8 bg-black/80 backdrop-blur-md">
+        <div class="glass p-8 rounded-3xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
+            <div class="flex justify-between items-center mb-2">
+                <h2 id="notifModalTitle" class="text-lg font-black text-white uppercase tracking-widest">Notifications</h2>
+                <button id="closeNotifBtn" class="text-white/40 hover:text-white"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <div class="space-y-6 text-left">
+                <!-- Toggle -->
+                <div class="flex items-center justify-between bg-white/5 border border-white/10 p-4 rounded-xl">
+                    <label id="lblNotifEnable" class="text-[10px] font-bold text-white uppercase tracking-widest">Activer les alertes</label>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="notifToggle" class="sr-only peer">
+                        <div class="w-9 h-5 bg-black/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/50 after:border-white/10 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500 peer-checked:after:bg-white shadow-inner"></div>
+                    </label>
+                </div>
+                
+                <!-- Time picker -->
+                <div class="space-y-2">
+                    <label id="lblNotifTime" class="text-[10px] font-bold text-white/60 uppercase tracking-widest">Heure de l'exercice (Thiab's)</label>
+                    <input type="time" id="exerciseTimeInput" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white outline-none focus:border-blue-500 transition-all font-bold text-lg text-center cursor-pointer">
+                </div>
+            </div>
+            
+            <button id="saveNotifBtn" class="w-full bg-blue-500 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-400 transition-all shadow-[0_0_15px_rgba(59,130,246,0.4)]">Enregistrer</button>
         </div>
     </div>
 
@@ -448,6 +502,10 @@
                             </button>
                         </div>
                         
+                        <button id="openNotifBtn" class="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-blue-500/40 transition-all group">
+                            <span id="notifMenuText" class="text-[9px] font-black uppercase tracking-widest">Rappels & Notifs</span>
+                            <i class="fas fa-bell text-xs opacity-20 group-hover:opacity-100 text-blue-400"></i>
+                        </button>
                         <button id="installMenuBtn" class="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/40 transition-all group">
                             <span id="installAppMenuText" class="text-[9px] font-black uppercase tracking-widest">Installer l'App</span>
                             <i class="fas fa-mobile-alt text-xs opacity-20 group-hover:opacity-100"></i>
@@ -549,20 +607,25 @@
 
     <script type="module">
         const checkReady = setInterval(() => {
-            if (window.auth && window.db) {
+            if (window.auth && window.db && window.app) {
                 clearInterval(checkReady);
                 initApp();
             }
         }, 100);
 
         function initApp() {
-            const { auth, db, firestoreUtils, deleteUser } = window;
+            const { app, auth, db, firestoreUtils, deleteUser } = window;
             const { signInAnonymously } = window;
             const { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, setDoc, getDoc, getDocs, collectionGroup, updateDoc, arrayUnion } = firestoreUtils;
+            const { getMessaging, getToken, onMessage } = window.messagingUtils;
             
+            const messaging = getMessaging(app);
+            const vapidKey = "BPc3w8mDuNONg6Wl5TyU_x-l8KfUAtd_D868u3PaPpgrM7HUBMJ5qmuCCmR_U05YZlzGdYfFHPoQEzCakFaTjGM"; // Ta clé de sécurité Push
+
             const splashScreen = document.getElementById('splashScreen');
             const langPage = document.getElementById('langPage');
             const authPage = document.getElementById('authPage');
+            const promoInstallModal = document.getElementById('promoInstallModal');
             const welcomePage = document.getElementById('welcomePage');
             const logoutModal = document.getElementById('logoutModal');
             const installModal = document.getElementById('installModal');
@@ -570,6 +633,7 @@
             const infoModal = document.getElementById('infoModal');
             const feedbackModal = document.getElementById('feedbackModal');
             const reportModal = document.getElementById('reportModal');
+            const notifModal = document.getElementById('notifModal');
             const mainApp = document.getElementById('mainApp');
             const conversationContainer = document.getElementById('conversationContainer');
             const chatArea = document.getElementById('chatArea');
@@ -607,12 +671,24 @@
             let currentSessionMessages = []; 
             let currentStarRating = 0;
             
-            // Gestion des fichiers
             let currentAttachment = null; 
-            // Gestion des limites
             const MAX_MSGS = 100;
             const MAX_UPLOADS = 10;
             let userUsage = { msgCount: 0, msgReset: 0, uploadCount: 0, uploadReset: 0 };
+            
+            // Notifications State
+            let userNotifs = { enabled: false, exerciseTime: "08:00", lastQuotaNotif: "", lastExerciseNotif: "" };
+
+            // PWA Installation & Device Detection
+            const ua = navigator.userAgent || navigator.vendor || window.opera;
+            const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+            let deferredPrompt;
+
+            window.addEventListener('beforeinstallprompt', (e) => {
+                e.preventDefault();
+                deferredPrompt = e;
+            });
 
             marked.setOptions({ breaks: true });
 
@@ -663,6 +739,10 @@
                     infoText3: "⚡ <strong>Écosystème Dual-Persona :</strong> Cette application intègre deux environnements distincts :<br><br>- <strong>Level IA :</strong> L'assistant pro (Normal, Travail, Expert) pour la productivité et la gestion de projets.<br>- <strong>Thiab's Mode :</strong> L'environnement secret de développement personnel (Motivation, Coach, Procrastination).",
                     hardcoreTitle: "Mode Hardcore 🤬", hardcoreDesc: "Désactiver la politesse", feedbackMenuText: "Avis", reportMenuText: "Signaler",
                     lblImportImg: "Image", lblImportDoc: "Document (PDF)",
+                    notifMenuText: "Rappels & Notifs", notifModalTitle: "Notifications", notifEnable: "Activer les alertes", notifTime: "Heure de l'exercice (Thiab's)", notifSave: "Enregistrer",
+                    promoTitle: "Passe au niveau<br><span class='text-purple-400'>Supérieur</span>",
+                    promoDesc: "Pour une expérience fluide, un accès ultra-rapide et recevoir des notifications, installe l'application Level IA sur ton appareil dès maintenant.",
+                    promoInstallText: "Installer l'App", promoSkipText: "Continuer sur le web",
                     lengthOptions: { medium: "Moyenne (Chill & Pro)", long: "Longue (Détaillée)", short: "Courte (Directe)" }
                 },
                 en: {
@@ -686,6 +766,10 @@
                     infoText3: "⚡ <strong>Dual-Persona Ecosystem:</strong> This application integrates two distinct environments:<br><br>- <strong>Level IA:</strong> The pro assistant (Normal, Work, Expert) for productivity and project management.<br>- <strong>Thiab's Mode:</strong> The secret personal development environment (Motivation, Coach, Procrastination).",
                     hardcoreTitle: "Hardcore Mode 🤬", hardcoreDesc: "Disable politeness", feedbackMenuText: "Feedback", reportMenuText: "Report",
                     lblImportImg: "Image", lblImportDoc: "Document (PDF)",
+                    notifMenuText: "Reminders & Notifs", notifModalTitle: "Notifications", notifEnable: "Enable alerts", notifTime: "Exercise Time (Thiab's)", notifSave: "Save",
+                    promoTitle: "Level Up your<br><span class='text-purple-400'>Experience</span>",
+                    promoDesc: "For a smooth, fast experience and to receive notifications, install the Level IA application on your device right now.",
+                    promoInstallText: "Install App", promoSkipText: "Continue on web",
                     lengthOptions: { medium: "Medium (Chill & Pro)", long: "Long (Detailed)", short: "Short (Direct)" }
                 }
             };
@@ -756,6 +840,17 @@
 
                 setSafeText('hardcoreTitle', t.hardcoreTitle);
                 setSafeText('hardcoreDesc', t.hardcoreDesc);
+                
+                setSafeText('notifMenuText', t.notifMenuText);
+                setSafeText('notifModalTitle', t.notifModalTitle);
+                setSafeText('lblNotifEnable', t.notifEnable);
+                setSafeText('lblNotifTime', t.notifTime);
+                setSafeText('saveNotifBtn', t.notifSave);
+
+                setSafeHTML('promoTitle', t.promoTitle);
+                setSafeText('promoDesc', t.promoDesc);
+                setSafeText('promoInstallText', t.promoInstallText);
+                setSafeText('promoSkipText', t.promoSkipText);
                 
                 const userStatusEl = document.getElementById('userStatus');
                 if(userStatusEl) userStatusEl.innerHTML = `<i class="fas fa-shield-alt"></i> ${t.verifiedStatus}`;
@@ -915,6 +1010,65 @@
                 return { allowed: true };
             }
 
+            // BOUCLE DE NOTIFICATIONS LOCALES (Vérification toutes les 30s)
+            setInterval(() => {
+                if (!userNotifs.enabled || !("Notification" in window) || Notification.permission !== "granted") return;
+                
+                const now = new Date();
+                const currentTimeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                const todayStr = now.toDateString();
+
+                // 1. Alerte de Quota Réinitialisé
+                if (userUsage.msgCount >= MAX_MSGS && now.getTime() > userUsage.msgReset && userNotifs.lastQuotaNotif !== todayStr) {
+                    new Notification("Level IA", { 
+                        body: currentLang === 'fr' ? "Tes quotas sont réinitialisés ! Tu peux de nouveau discuter." : "Your quotas are reset! You can chat again.",
+                    });
+                    userNotifs.lastQuotaNotif = todayStr;
+                    if(userId) setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "notifications"), userNotifs, { merge: true });
+                }
+
+                // 2. Alerte d'Exercice (Thiab's Mode)
+                if (userNotifs.exerciseTime === currentTimeStr && userNotifs.lastExerciseNotif !== todayStr) {
+                    new Notification("Thiab's Mode 🌟", { 
+                        body: currentLang === 'fr' ? "C'est l'heure de ton exercice ! Ne remets pas à plus tard, ouvre Level IA." : "It's time for your exercise! Don't procrastinate, open Level IA.",
+                    });
+                    userNotifs.lastExerciseNotif = todayStr;
+                    if(userId) setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "notifications"), userNotifs, { merge: true });
+                }
+            }, 30000);
+
+            // LOGIQUE DU MUR DE PROMOTION (SOFT INSTALL)
+            document.getElementById('promoSkipBtn').onclick = () => {
+                localStorage.setItem('thiabs_skipped_install', 'true');
+                promoInstallModal.classList.add('hidden');
+                authPage.classList.remove('hidden');
+            };
+
+            document.getElementById('promoInstallBtn').onclick = async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        localStorage.setItem('thiabs_skipped_install', 'true');
+                        promoInstallModal.classList.add('hidden');
+                        authPage.classList.remove('hidden');
+                    }
+                    deferredPrompt = null;
+                } else {
+                    // Si on ne peut pas forcer (iOS), on affiche le modal d'instruction
+                    promoInstallModal.classList.add('hidden');
+                    installModal.classList.remove('hidden');
+                    // On modifie légèrement la fermeture de installModal pour retourner à Auth
+                    document.getElementById('closeInstallModalBtn').onclick = () => {
+                        localStorage.setItem('thiabs_skipped_install', 'true');
+                        installModal.classList.add('hidden');
+                        authPage.classList.remove('hidden');
+                        // Remettre le comportement par défaut pour plus tard
+                        document.getElementById('closeInstallModalBtn').onclick = () => installModal.classList.add('hidden');
+                    };
+                }
+            };
+
             async function processLogin(keyVal, isAutoLogin = false) {
                 const btn = document.getElementById('verifyKeyBtn');
                 const errorMsg = document.getElementById('keyError');
@@ -939,7 +1093,6 @@
                 }
                 
                 try {
-                    // Sécurité : on s'assure d'être connecté anonymement avant d'interroger la base
                     if (!auth.currentUser) {
                         console.log("⏳ [DEBUG] Authentification anonyme en cours...");
                         await signInAnonymously(auth);
@@ -961,6 +1114,7 @@
                         userId = foundUserData.uid;
                         authPage.classList.add('hidden');
                         langPage.classList.add('hidden'); 
+                        promoInstallModal.classList.add('hidden');
                         
                         try {
                             const configDoc = await getDoc(doc(db, "artifacts", appId, "system", "config"));
@@ -1012,6 +1166,13 @@
                             const usageDoc = await getDoc(doc(db, "artifacts", appId, "users", userId, "settings", "usage"));
                             if(usageDoc.exists()) userUsage = usageDoc.data();
                             
+                            const notifDoc = await getDoc(doc(db, "artifacts", appId, "users", userId, "settings", "notifications"));
+                            if(notifDoc.exists()) {
+                                userNotifs = { ...userNotifs, ...notifDoc.data() };
+                                document.getElementById('notifToggle').checked = userNotifs.enabled;
+                                document.getElementById('exerciseTimeInput').value = userNotifs.exerciseTime;
+                            }
+                            
                         } catch(e) {}
                         
                         populateModels();
@@ -1030,6 +1191,8 @@
                             errorMsg.classList.remove('hidden');
                         } else {
                             localStorage.removeItem('thiabs_saved_key');
+                            // Si auto-login fail, on affiche le flow normal (promo puis auth)
+                            checkPromoInstall();
                         }
                     }
                 } catch (e) {
@@ -1039,6 +1202,8 @@
                         errorDetailsSpan.innerText = `Détails: ${e.message || e.code}`;
                         errorDetailsSpan.classList.remove('hidden');
                         errorMsg.classList.remove('hidden');
+                    } else {
+                        checkPromoInstall();
                     }
                 }
                 
@@ -1046,6 +1211,15 @@
                     btn.innerText = i18n[currentLang].verifyBtn; btn.disabled = false;
                 }
             }
+
+            const checkPromoInstall = () => {
+                if (!userId && !isStandalone && !localStorage.getItem('thiabs_skipped_install') && !localStorage.getItem('thiabs_saved_key')) {
+                    langPage.classList.add('hidden');
+                    promoInstallModal.classList.remove('hidden');
+                } else if (!userId && !localStorage.getItem('thiabs_saved_key')) {
+                    langPage.classList.remove('hidden');
+                }
+            };
 
             const startIntro = () => {
                 const s1 = document.getElementById('splash1');
@@ -1059,8 +1233,10 @@
                     splashScreen.style.opacity = '0';
                     setTimeout(() => {
                         splashScreen.style.display = 'none';
-                        if (!userId && !localStorage.getItem('thiabs_saved_key')) {
-                            langPage.classList.remove('hidden'); 
+                        const savedKey = localStorage.getItem('thiabs_saved_key');
+                        if (!savedKey) {
+                            // Au lieu d'afficher direct la langue, on passe par la vérification promo install
+                            checkPromoInstall();
                         }
                     }, 400); 
                 }, 3000);
@@ -1237,10 +1413,7 @@
             document.getElementById('closeSidebar').onclick = closeSidebar;
             appOverlay.onclick = closeSidebar;
             
-            document.getElementById('logoutBtn').onclick = () => {
-                closeSidebar();
-                logoutModal.classList.remove('hidden');
-            };
+            document.getElementById('logoutBtn').onclick = () => { closeSidebar(); logoutModal.classList.remove('hidden'); };
             document.getElementById('cancelLogoutBtn').onclick = () => logoutModal.classList.add('hidden');
             document.getElementById('confirmLogoutBtn').onclick = async () => {
                 document.getElementById('confirmLogoutBtn').innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
@@ -1258,6 +1431,48 @@
             document.getElementById('closeCguModalBtn').onclick = () => cguModal.classList.add('hidden');
             document.getElementById('infoMenuBtn').onclick = () => { closeSidebar(); infoModal.classList.remove('hidden'); };
             document.getElementById('closeInfoModalBtn').onclick = () => infoModal.classList.add('hidden');
+            
+            // Gestion Modal Notifs
+            document.getElementById('openNotifBtn').onclick = () => { closeSidebar(); notifModal.classList.remove('hidden'); };
+            document.getElementById('closeNotifBtn').onclick = () => notifModal.classList.add('hidden');
+            document.getElementById('saveNotifBtn').onclick = async () => {
+                userNotifs.enabled = document.getElementById('notifToggle').checked;
+                userNotifs.exerciseTime = document.getElementById('exerciseTimeInput').value;
+                
+                if (userNotifs.enabled && ("Notification" in window)) {
+                    try {
+                        const permission = await Notification.requestPermission();
+                        if (permission === 'granted') {
+                            // Demander le Token unique du téléphone à Firebase
+                            const currentToken = await getToken(messaging, { vapidKey: vapidKey });
+                            if (currentToken) {
+                                userNotifs.fcmToken = currentToken;
+                                console.log("✅ Token FCM généré et prêt pour les notifications !");
+                            }
+                        } else {
+                            userNotifs.enabled = false;
+                            document.getElementById('notifToggle').checked = false;
+                            showSysToast(currentLang === 'fr' ? "Permission refusée" : "Permission denied", true);
+                        }
+                    } catch (err) {
+                        console.error("Erreur FCM:", err);
+                        showSysToast("Erreur d'activation", true);
+                    }
+                } else if (!userNotifs.enabled) {
+                    userNotifs.fcmToken = ""; // On efface le token si l'utilisateur désactive les alertes
+                }
+                
+                await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "notifications"), userNotifs, { merge: true });
+                notifModal.classList.add('hidden');
+                showSysToast(currentLang === 'fr' ? "Préférences sauvegardées" : "Preferences saved");
+            };
+
+            // Écouteur pour les notifications quand l'application est ouverte
+            onMessage(messaging, (payload) => {
+                if (payload.notification) {
+                    showSysToast(`📩 ${payload.notification.title} : ${payload.notification.body}`);
+                }
+            });
             
             document.getElementById('openFeedbackBtn').onclick = () => { closeSidebar(); feedbackModal.classList.remove('hidden'); };
             document.getElementById('closeFeedbackBtn').onclick = () => feedbackModal.classList.add('hidden');
