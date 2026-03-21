@@ -78,12 +78,10 @@
         .storage-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
         .storage-progress { height: 100%; background: var(--primary); transition: width 0.5s ease; }
         
-        /* Animation pour les étoiles d'avis */
         .star-rating i { cursor: pointer; transition: all 0.2s; }
         .star-rating i:hover { transform: scale(1.2); }
         .star-rating i.active { color: #f59e0b; }
         
-        /* Boutons magiques Markdown (générés par l'IA) */
         a[href="#switch-level-ia"], .support-btn {
             display: inline-flex;
             align-items: center;
@@ -106,6 +104,10 @@
             border-color: #a855f7;
             transform: translateY(-2px);
         }
+
+        /* NOUVEAU: Menu d'import */
+        #attachMenu { transition: all 0.2s cubic-bezier(0.1, 0.9, 0.2, 1); transform-origin: bottom left; }
+        #attachMenu.hidden-menu { opacity: 0; transform: scale(0.9) translateY(10px); pointer-events: none; }
     </style>
 </head>
 <body class="bg-main">
@@ -482,7 +484,7 @@
             </button>
         </header>
 
-        <main class="flex-1 overflow-y-auto px-6 py-10 no-scrollbar space-y-10" id="chatArea">
+        <main class="flex-1 overflow-y-auto px-6 py-10 no-scrollbar space-y-10 relative" id="chatArea">
             <div class="max-w-2xl mx-auto space-y-8" id="conversationContainer"></div>
             
             <div id="aiTyping" class="max-w-2xl mx-auto hidden pl-2 pb-4">
@@ -493,11 +495,50 @@
             </div>
         </main>
 
-        <footer class="px-4 py-4 border-t border-white/5 bg-[#020202]/90 backdrop-blur-3xl shrink-0 z-50">
-            <div class="max-w-2xl mx-auto">
-                <div class="glass rounded-3xl p-1.5 flex items-end gap-2 focus-within:border-purple-500/40 transition-all shadow-2xl">
+        <footer class="px-4 py-4 border-t border-white/5 bg-[#020202]/90 backdrop-blur-3xl shrink-0 z-50 relative">
+            <div class="max-w-2xl mx-auto relative">
+                
+                <!-- PREVIEW ATTACHMENT -->
+                <div id="attachmentPreview" class="hidden absolute bottom-full mb-3 left-0 bg-white/10 backdrop-blur-md border border-white/20 p-2 rounded-xl flex items-center gap-3 shadow-2xl">
+                    <div id="attachIcon" class="w-10 h-10 bg-black/50 rounded-lg flex items-center justify-center overflow-hidden"></div>
+                    <div class="text-[10px] truncate max-w-[150px]">
+                        <p id="attachName" class="font-bold text-white truncate"></p>
+                        <p id="attachSize" class="text-white/50"></p>
+                    </div>
+                    <button id="removeAttachBtn" class="text-red-400 hover:text-red-300 px-2"><i class="fas fa-times"></i></button>
+                </div>
+
+                <div class="glass rounded-3xl p-1.5 flex items-end gap-2 focus-within:border-purple-500/40 transition-all shadow-2xl relative">
+                    
+                    <!-- BOUTON PLUS (+) EPURE -->
+                    <div class="relative">
+                        <button id="attachBtn" class="w-10 h-10 text-white/50 flex items-center justify-center hover:text-white transition-all ml-1 shrink-0 bg-transparent border-none outline-none focus:outline-none">
+                            <i class="fas fa-plus"></i>
+                        </button>
+                        
+                        <!-- MENU D'IMPORT -->
+                        <div id="attachMenu" class="hidden-menu absolute bottom-full left-0 mb-2 w-48 bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl flex flex-col gap-1 z-50">
+                            <button id="importImgBtn" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all text-left group">
+                                <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all"><i class="fas fa-image"></i></div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-white uppercase tracking-widest" id="lblImportImg">Image</p>
+                                </div>
+                            </button>
+                            <button id="importDocBtn" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all text-left group">
+                                <div class="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center text-red-400 group-hover:bg-red-500 group-hover:text-white transition-all"><i class="fas fa-file-pdf"></i></div>
+                                <div>
+                                    <p class="text-[10px] font-bold text-white uppercase tracking-widest" id="lblImportDoc">Document (PDF)</p>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- INPUTS CACHÉS -->
+                    <input type="file" id="imgInput" accept="image/*" class="hidden">
+                    <input type="file" id="docInput" accept="application/pdf" class="hidden">
+
                     <div class="flex-1 px-2"><textarea id="userInput" placeholder="Dis-moi tout bro..." rows="1" autocomplete="off"></textarea></div>
-                    <button id="sendBtn" class="w-12 h-12 rounded-2xl bg-white text-black flex items-center justify-center hover:bg-purple-500 hover:text-white transition-all shadow-lg"><i class="fas fa-chevron-up text-xs"></i></button>
+                    <button id="sendBtn" class="w-12 h-12 rounded-2xl bg-white text-black flex items-center justify-center hover:bg-purple-500 hover:text-white transition-all shadow-lg shrink-0"><i class="fas fa-chevron-up text-xs"></i></button>
                 </div>
                 <div class="text-center mt-3">
                     <p id="footerBranding" class="text-[8px] font-bold text-white/30 uppercase tracking-[0.3em]">Propulsé par <strong>LevelUp</strong></p>
@@ -517,7 +558,7 @@
         function initApp() {
             const { auth, db, firestoreUtils, deleteUser } = window;
             const { signInAnonymously } = window;
-            const { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, setDoc, getDoc, collectionGroup, getDocs, updateDoc, arrayUnion } = firestoreUtils;
+            const { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, setDoc, getDoc, getDocs, collectionGroup, updateDoc, arrayUnion } = firestoreUtils;
             
             const splashScreen = document.getElementById('splashScreen');
             const langPage = document.getElementById('langPage');
@@ -559,11 +600,19 @@
             }; 
             
             let hasSeenGrandIntro = false;
+            let hasSeenWelcomeMsg = false;
 
             let currentUserName = "Utilisateur";
             let currentUserMail = "";
             let currentSessionMessages = []; 
             let currentStarRating = 0;
+            
+            // Gestion des fichiers
+            let currentAttachment = null; 
+            // Gestion des limites
+            const MAX_MSGS = 100;
+            const MAX_UPLOADS = 10;
+            let userUsage = { msgCount: 0, msgReset: 0, uploadCount: 0, uploadReset: 0 };
 
             marked.setOptions({ breaks: true });
 
@@ -613,6 +662,7 @@
                     infoText2: "🔒 <strong>Architecture & Sécurité :</strong> Toutes vos données (historique, ADN utilisateur, clés d'accès) sont hébergées sur l'infrastructure ultra-sécurisée de <strong>Google Cloud (Firebase Firestore)</strong>. La sécurité et la confidentialité sont au cœur de notre développement.",
                     infoText3: "⚡ <strong>Écosystème Dual-Persona :</strong> Cette application intègre deux environnements distincts :<br><br>- <strong>Level IA :</strong> L'assistant pro (Normal, Travail, Expert) pour la productivité et la gestion de projets.<br>- <strong>Thiab's Mode :</strong> L'environnement secret de développement personnel (Motivation, Coach, Procrastination).",
                     hardcoreTitle: "Mode Hardcore 🤬", hardcoreDesc: "Désactiver la politesse", feedbackMenuText: "Avis", reportMenuText: "Signaler",
+                    lblImportImg: "Image", lblImportDoc: "Document (PDF)",
                     lengthOptions: { medium: "Moyenne (Chill & Pro)", long: "Longue (Détaillée)", short: "Courte (Directe)" }
                 },
                 en: {
@@ -635,6 +685,7 @@
                     infoText2: "🔒 <strong>Architecture & Security:</strong> All your data (history, user DNA, access keys) is hosted on the ultra-secure <strong>Google Cloud (Firebase Firestore)</strong> infrastructure. Security and privacy are at the heart of our development.",
                     infoText3: "⚡ <strong>Dual-Persona Ecosystem:</strong> This application integrates two distinct environments:<br><br>- <strong>Level IA:</strong> The pro assistant (Normal, Work, Expert) for productivity and project management.<br>- <strong>Thiab's Mode:</strong> The secret personal development environment (Motivation, Coach, Procrastination).",
                     hardcoreTitle: "Hardcore Mode 🤬", hardcoreDesc: "Disable politeness", feedbackMenuText: "Feedback", reportMenuText: "Report",
+                    lblImportImg: "Image", lblImportDoc: "Document (PDF)",
                     lengthOptions: { medium: "Medium (Chill & Pro)", long: "Long (Detailed)", short: "Short (Direct)" }
                 }
             };
@@ -700,6 +751,8 @@
                 
                 setSafeText('feedbackMenuText', t.feedbackMenuText);
                 setSafeText('reportMenuText', t.reportMenuText);
+                setSafeText('lblImportImg', t.lblImportImg);
+                setSafeText('lblImportDoc', t.lblImportDoc);
 
                 setSafeText('hardcoreTitle', t.hardcoreTitle);
                 setSafeText('hardcoreDesc', t.hardcoreDesc);
@@ -837,16 +890,45 @@
                 }
             });
 
+            // GESTION DES LIMITES JOURNALIÈRES
+            async function checkUsage(type) {
+                const now = Date.now();
+                const DAY_MS = 24 * 60 * 60 * 1000;
+                let updated = false;
+
+                if (now > userUsage.msgReset) { userUsage.msgCount = 0; userUsage.msgReset = now + DAY_MS; updated = true; }
+                if (now > userUsage.uploadReset) { userUsage.uploadCount = 0; userUsage.uploadReset = now + DAY_MS; updated = true; }
+
+                if (type === 'msg') {
+                    if (userUsage.msgCount >= MAX_MSGS) return { allowed: false, resetDate: new Date(userUsage.msgReset) };
+                    userUsage.msgCount++;
+                    updated = true;
+                } else if (type === 'upload') {
+                    if (userUsage.uploadCount >= MAX_UPLOADS) return { allowed: false, resetDate: new Date(userUsage.uploadReset) };
+                    userUsage.uploadCount++;
+                    updated = true;
+                }
+
+                if (updated && userId) {
+                    await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "usage"), userUsage);
+                }
+                return { allowed: true };
+            }
+
             async function processLogin(keyVal, isAutoLogin = false) {
                 const btn = document.getElementById('verifyKeyBtn');
                 const errorMsg = document.getElementById('keyError');
                 const errorDetailsSpan = document.getElementById('keyErrorDetails');
                 
+                console.log(`🔍 [DEBUG] Tentative de connexion avec la clé : ${keyVal}`);
+                
                 const keyFormatRegex = /^(LVL|THB)-[A-Z0-9]{3,6}-[A-Z0-9]{3,6}$/;
                 if (!keyFormatRegex.test(keyVal)) {
+                    console.error("🚨 [DEBUG] Le format de la clé est rejeté par la Regex.");
                     if (!isAutoLogin) {
-                        document.getElementById('keyErrorMain').innerText = currentLang === 'fr' ? "Code d'accès incorrect ou expiré." : "Access code incorrect or expired.";
-                        errorDetailsSpan.innerText = "";
+                        document.getElementById('keyErrorMain').innerText = currentLang === 'fr' ? "Format de code invalide." : "Invalid code format.";
+                        errorDetailsSpan.innerText = "Attendu: LVL-XXXXX-XXXXX";
+                        errorDetailsSpan.classList.remove('hidden');
                         errorMsg.classList.remove('hidden');
                     }
                     return;
@@ -857,15 +939,25 @@
                 }
                 
                 try {
+                    // Sécurité : on s'assure d'être connecté anonymement avant d'interroger la base
+                    if (!auth.currentUser) {
+                        console.log("⏳ [DEBUG] Authentification anonyme en cours...");
+                        await signInAnonymously(auth);
+                    }
+
+                    console.log("🔍 [DEBUG] Lancement de la requête collectionGroup('security')...");
                     const q = collectionGroup(db, 'security');
                     const querySnapshot = await getDocs(q);
                     let foundUserData = null;
+                    
+                    console.log(`🔍 [DEBUG] Nombre de documents 'security' trouvés dans la base : ${querySnapshot.size}`);
                     
                     querySnapshot.forEach(docSnap => {
                         if (docSnap.data().key === keyVal) foundUserData = docSnap.data();
                     });
                     
                     if (foundUserData) {
+                        console.log("✅ [DEBUG] Clé valide trouvée pour l'utilisateur:", foundUserData.uid);
                         userId = foundUserData.uid;
                         authPage.classList.add('hidden');
                         langPage.classList.add('hidden'); 
@@ -881,17 +973,8 @@
                                 } else if (typeof rawKeys === 'string' && rawKeys.trim() !== '') {
                                     apiKeys = [rawKeys.trim()];
                                 }
-                                
-                                if (apiKeys.length === 0) {
-                                    console.error("🚨 [CRITIQUE] Le tableau de clés est vide dans le document system/config.");
-                                    // Hidden from regular UI, only console
-                                }
-                            } else {
-                                console.error("🚨 [CRITIQUE] Le document 'system/config' est INTROUVABLE dans la base de données Firebase.");
                             }
-                        } catch(err) {
-                            console.error("🚨 [ERREUR LECTURE FIREBASE] Impossible de lire system/config :", err);
-                        }
+                        } catch(err) { console.error("Config Firebase refusée", err); }
                         
                         const userEmail = foundUserData.owner || "email@inconnu.com";
                         const userName = foundUserData.name || foundUserData.displayName || userEmail.split('@')[0] || "Utilisateur";
@@ -915,38 +998,20 @@
                             const dnaDoc = await getDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"));
                             if (dnaDoc.exists()) {
                                 const d = dnaDoc.data();
-                                
                                 hasSeenGrandIntro = d.hasSeenGrandIntro || false;
-                                
-                                if (d.prompts) {
-                                    dnaPrompts = { ...dnaPrompts, ...d.prompts };
-                                }
-
-                                if(d.isThiabsMode !== undefined) {
-                                    isThiabsMode = d.isThiabsMode;
-                                    document.getElementById('thiabsModeToggle').checked = isThiabsMode;
-                                }
-                                
-                                if(d.model) {
+                                if (d.prompts) dnaPrompts = { ...dnaPrompts, ...d.prompts };
+                                if (d.isThiabsMode !== undefined) { isThiabsMode = d.isThiabsMode; document.getElementById('thiabsModeToggle').checked = isThiabsMode; }
+                                if (d.model) {
                                     const category = isThiabsMode ? 'thiabs' : 'level';
-                                    if(aiModels[category][d.model]) {
-                                        currentModel = d.model;
-                                    } else {
-                                        currentModel = isThiabsMode ? 'motivation' : 'normal';
-                                    }
+                                    currentModel = aiModels[category][d.model] ? d.model : (isThiabsMode ? 'motivation' : 'normal');
                                 }
-                                
-                                if(d.hardcore !== undefined) {
-                                    isHardcoreMode = d.hardcore;
-                                    document.getElementById('hardcoreToggle').checked = isHardcoreMode;
-                                }
-                                if(d.responseLength) {
-                                    currentResponseLength = d.responseLength;
-                                    document.getElementById('lengthSelect').value = currentResponseLength;
-                                }
-                            } else {
-                                hasSeenGrandIntro = false;
+                                if (d.hardcore !== undefined) { isHardcoreMode = d.hardcore; document.getElementById('hardcoreToggle').checked = isHardcoreMode; }
+                                if (d.responseLength) { currentResponseLength = d.responseLength; document.getElementById('lengthSelect').value = currentResponseLength; }
                             }
+                            
+                            const usageDoc = await getDoc(doc(db, "artifacts", appId, "users", userId, "settings", "usage"));
+                            if(usageDoc.exists()) userUsage = usageDoc.data();
+                            
                         } catch(e) {}
                         
                         populateModels();
@@ -957,9 +1022,11 @@
 
                         setupHistoryListener();
                     } else {
+                        console.warn("❌ [DEBUG] Clé introuvable dans la base de données.");
                         if (!isAutoLogin) {
-                            document.getElementById('keyErrorMain').innerText = i18n[currentLang].keyNotFound; // "Clé introuvable ou incorrecte."
-                            errorDetailsSpan.innerText = "";
+                            document.getElementById('keyErrorMain').innerText = currentLang === 'fr' ? "Code d'accès incorrect ou expiré." : "Access code incorrect or expired.";
+                            errorDetailsSpan.innerText = "[DEBUG] Clé non trouvée en base de données.";
+                            errorDetailsSpan.classList.remove('hidden');
                             errorMsg.classList.remove('hidden');
                         } else {
                             localStorage.removeItem('thiabs_saved_key');
@@ -968,8 +1035,9 @@
                 } catch (e) {
                     console.error("🚨 [ERREUR CRITIQUE DE CONNEXION FIREBASE] :", e);
                     if (!isAutoLogin) {
-                        document.getElementById('keyErrorMain').innerText = currentLang === 'fr' ? "Code d'accès incorrect ou expiré." : "Access code incorrect or expired.";
-                        errorDetailsSpan.innerText = "";
+                        document.getElementById('keyErrorMain').innerText = "Erreur de connexion (Base de données).";
+                        errorDetailsSpan.innerText = `Détails: ${e.message || e.code}`;
+                        errorDetailsSpan.classList.remove('hidden');
                         errorMsg.classList.remove('hidden');
                     }
                 }
@@ -1152,8 +1220,10 @@
 
                 if(messages && messages.length > 0) {
                     messages.forEach(m => {
-                        displayUserMessage(m.user);
+                        displayUserMessage(m.user, m.attachmentHtml);
                         displayAIMessage(m.ai, false, m.sources || "");
+                        
+                        // Reconstruire l'historique Gemini si des images étaient jointes (ici on push le text, pas l'image pour l'historique API)
                         currentSessionMessages.push({ role: "user", parts: [{ text: m.user }] });
                         currentSessionMessages.push({ role: "model", parts: [{ text: m.ai }] });
                     });
@@ -1182,28 +1252,14 @@
                 window.location.reload();
             };
 
-            document.getElementById('installMenuBtn').onclick = () => {
-                closeSidebar();
-                installModal.classList.remove('hidden');
-            };
+            document.getElementById('installMenuBtn').onclick = () => { closeSidebar(); installModal.classList.remove('hidden'); };
             document.getElementById('closeInstallModalBtn').onclick = () => installModal.classList.add('hidden');
-
-            document.getElementById('cguMenuBtn').onclick = () => {
-                closeSidebar();
-                cguModal.classList.remove('hidden');
-            };
+            document.getElementById('cguMenuBtn').onclick = () => { closeSidebar(); cguModal.classList.remove('hidden'); };
             document.getElementById('closeCguModalBtn').onclick = () => cguModal.classList.add('hidden');
-
-            document.getElementById('infoMenuBtn').onclick = () => {
-                closeSidebar();
-                infoModal.classList.remove('hidden');
-            };
+            document.getElementById('infoMenuBtn').onclick = () => { closeSidebar(); infoModal.classList.remove('hidden'); };
             document.getElementById('closeInfoModalBtn').onclick = () => infoModal.classList.add('hidden');
             
-            document.getElementById('openFeedbackBtn').onclick = () => {
-                closeSidebar();
-                feedbackModal.classList.remove('hidden');
-            };
+            document.getElementById('openFeedbackBtn').onclick = () => { closeSidebar(); feedbackModal.classList.remove('hidden'); };
             document.getElementById('closeFeedbackBtn').onclick = () => feedbackModal.classList.add('hidden');
             
             const stars = document.querySelectorAll('.star-rating i');
@@ -1220,46 +1276,24 @@
             document.getElementById('submitFeedbackBtn').onclick = async () => {
                 const text = document.getElementById('feedbackText').value.trim();
                 if (currentStarRating === 0 && text === '') return;
-                
                 try {
-                    await addDoc(collection(db, "artifacts", appId, "users", userId, "feedbacks"), {
-                        rating: currentStarRating,
-                        comment: text,
-                        date: Date.now()
-                    });
-                    feedbackModal.classList.add('hidden');
-                    document.getElementById('feedbackText').value = '';
-                    stars.forEach(s => s.classList.remove('active'));
-                    currentStarRating = 0;
-                    showSysToast("Merci pour votre avis ! ⭐");
-                } catch(e) {
-                    showSysToast("Erreur d'envoi", true);
-                }
+                    await addDoc(collection(db, "artifacts", appId, "users", userId, "feedbacks"), { rating: currentStarRating, comment: text, date: Date.now() });
+                    feedbackModal.classList.add('hidden'); document.getElementById('feedbackText').value = '';
+                    stars.forEach(s => s.classList.remove('active')); currentStarRating = 0; showSysToast("Merci pour votre avis ! ⭐");
+                } catch(e) { showSysToast("Erreur d'envoi", true); }
             };
             
-            document.getElementById('openReportBtn').onclick = () => {
-                closeSidebar();
-                reportModal.classList.remove('hidden');
-            };
+            document.getElementById('openReportBtn').onclick = () => { closeSidebar(); reportModal.classList.remove('hidden'); };
             document.getElementById('closeReportBtn').onclick = () => reportModal.classList.add('hidden');
             
             document.getElementById('submitReportBtn').onclick = async () => {
                 const category = document.getElementById('reportCategory').value;
                 const text = document.getElementById('reportText').value.trim();
                 if (text === '') return;
-                
                 try {
-                    await addDoc(collection(db, "artifacts", appId, "users", userId, "reports"), {
-                        category: category,
-                        description: text,
-                        date: Date.now()
-                    });
-                    reportModal.classList.add('hidden');
-                    document.getElementById('reportText').value = '';
-                    showSysToast("Rapport envoyé à l'équipe. 🛠️");
-                } catch(e) {
-                    showSysToast("Erreur d'envoi", true);
-                }
+                    await addDoc(collection(db, "artifacts", appId, "users", userId, "reports"), { category: category, description: text, date: Date.now() });
+                    reportModal.classList.add('hidden'); document.getElementById('reportText').value = ''; showSysToast("Rapport envoyé à l'équipe. 🛠️");
+                } catch(e) { showSysToast("Erreur d'envoi", true); }
             };
 
             document.getElementById('saveDNA').onclick = async () => {
@@ -1271,9 +1305,116 @@
                 setTimeout(() => btn.innerText = i18n[currentLang].saveDNA, 2000);
             };
 
-            function displayUserMessage(text) {
+            // ---- GESTION DES FICHIERS (IMAGE / PDF) ----
+            const attachBtn = document.getElementById('attachBtn');
+            const attachMenu = document.getElementById('attachMenu');
+            const imgInput = document.getElementById('imgInput');
+            const docInput = document.getElementById('docInput');
+            const attachPreview = document.getElementById('attachmentPreview');
+            const attachIcon = document.getElementById('attachIcon');
+            const attachName = document.getElementById('attachName');
+            const attachSize = document.getElementById('attachSize');
+            const removeAttachBtn = document.getElementById('removeAttachBtn');
+
+            attachBtn.onclick = (e) => {
+                e.stopPropagation();
+                attachMenu.classList.toggle('hidden-menu');
+            };
+
+            document.addEventListener('click', (e) => {
+                if(!attachMenu.contains(e.target) && !attachBtn.contains(e.target)) {
+                    attachMenu.classList.add('hidden-menu');
+                }
+            });
+
+            document.getElementById('importImgBtn').onclick = async () => {
+                attachMenu.classList.add('hidden-menu');
+                const usage = await checkUsage('upload');
+                if(!usage.allowed) {
+                    showLimitMessage('upload', usage.resetDate);
+                    return;
+                }
+                imgInput.click();
+            };
+
+            document.getElementById('importDocBtn').onclick = async () => {
+                attachMenu.classList.add('hidden-menu');
+                const usage = await checkUsage('upload');
+                if(!usage.allowed) {
+                    showLimitMessage('upload', usage.resetDate);
+                    return;
+                }
+                docInput.click();
+            };
+
+            const processFile = (file) => {
+                if(!file) return;
+                if(file.size > 5 * 1024 * 1024) { // 5MB limit
+                    showSysToast(currentLang === 'fr' ? "Fichier trop lourd (Max 5Mo)" : "File too large (Max 5MB)", true);
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const base64Full = e.target.result;
+                    const base64Data = base64Full.split(',')[1];
+                    
+                    currentAttachment = {
+                        name: file.name,
+                        mimeType: file.type,
+                        base64: base64Data,
+                        isImage: file.type.startsWith('image/')
+                    };
+
+                    attachName.innerText = file.name;
+                    attachSize.innerText = (file.size / 1024).toFixed(1) + ' KB';
+                    
+                    if(currentAttachment.isImage) {
+                        attachIcon.innerHTML = `<img src="${base64Full}" class="w-full h-full object-cover">`;
+                    } else {
+                        attachIcon.innerHTML = `<i class="fas fa-file-pdf text-red-400 text-lg"></i>`;
+                    }
+                    
+                    attachPreview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+                
+                // Clear inputs
+                imgInput.value = '';
+                docInput.value = '';
+            };
+
+            imgInput.onchange = (e) => processFile(e.target.files[0]);
+            docInput.onchange = (e) => processFile(e.target.files[0]);
+
+            removeAttachBtn.onclick = () => {
+                currentAttachment = null;
+                attachPreview.classList.add('hidden');
+            };
+
+            function showLimitMessage(type, resetDate) {
+                const formatter = new Intl.DateTimeFormat(currentLang, { weekday: 'long', hour: '2-digit', minute: '2-digit' });
+                const dateStr = formatter.format(resetDate);
+                
+                let msg = "";
+                if(type === 'upload') {
+                    msg = currentLang === 'fr' 
+                        ? `🚫 Vous avez atteint votre limite de 10 fichiers envoyés par jour.\n\nRevenez ${dateStr} pour envoyer de nouvelles images ou documents.`
+                        : `🚫 You have reached your limit of 10 uploaded files per day.\n\nCome back ${dateStr} to send new images or documents.`;
+                } else {
+                    msg = currentLang === 'fr' 
+                        ? `🚫 Vous avez atteint votre limite de 100 messages par jour pour préserver les serveurs.\n\nRevenez ${dateStr} pour continuer la discussion.`
+                        : `🚫 You have reached your limit of 100 messages per day to preserve the servers.\n\nCome back ${dateStr} to continue the discussion.`;
+                }
+                displayAIMessage(msg, true);
+            }
+
+            function displayUserMessage(text, attachmentHtml = "") {
                 const div = document.createElement('div'); div.className = "flex justify-end w-full";
-                div.innerHTML = `<div class="bg-white/5 border border-white/10 px-6 py-3 rounded-2xl text-sm message-bubble text-white shadow-lg">${text}</div>`;
+                div.innerHTML = `<div class="bg-white/5 border border-white/10 px-6 py-3 rounded-2xl text-sm message-bubble text-white shadow-lg flex flex-col gap-2">
+                    ${attachmentHtml}
+                    ${text ? `<span>${text}</span>` : ''}
+                </div>`;
                 conversationContainer.appendChild(div); chatArea.scrollTop = chatArea.scrollHeight;
             }
 
@@ -1341,10 +1482,12 @@
 
             async function send() {
                 const val = userInput.value.trim();
+                const attachment = currentAttachment; // Lock the reference
                 
-                if (!val || !userId) {
+                if (!val && !attachment) {
                     return;
                 }
+                if (!userId) return;
                 
                 if (apiKeys.length === 0) {
                     const errorMsg = currentLang === 'fr' 
@@ -1353,8 +1496,16 @@
                     displayAIMessage(errorMsg, true);
                     return;
                 }
+                
+                const msgUsage = await checkUsage('msg');
+                if(!msgUsage.allowed) {
+                    showLimitMessage('msg', msgUsage.resetDate);
+                    return;
+                }
 
                 userInput.value = ''; userInput.style.height = '44px';
+                currentAttachment = null;
+                attachPreview.classList.add('hidden');
                 
                 if(!currentSessionId && conversationContainer.children.length === 1 && hasSeenWelcomeMsg) {
                     const firstMsg = conversationContainer.querySelector('.prose');
@@ -1363,7 +1514,16 @@
                     }
                 }
 
-                displayUserMessage(val);
+                // Render User message with potential attachment UI
+                let userAttachHtml = "";
+                let dbAttachMarker = "";
+                if(attachment) {
+                    const iconClass = attachment.isImage ? "fa-image text-blue-400" : "fa-file-pdf text-red-400";
+                    userAttachHtml = `<div class="flex items-center gap-2 bg-black/40 p-2 rounded-lg w-fit mb-1 border border-white/5"><i class="fas ${iconClass}"></i> <span class="text-[10px] font-bold">${attachment.name}</span></div>`;
+                    dbAttachMarker = attachment.isImage ? `[🖼️ Image jointe : ${attachment.name}]` : `[📄 Document joint : ${attachment.name}]`;
+                }
+
+                displayUserMessage(val, userAttachHtml);
                 
                 document.getElementById('aiTyping').classList.remove('hidden');
                 chatArea.scrollTop = chatArea.scrollHeight;
@@ -1399,8 +1559,12 @@
                 let redirectionInstruction = "";
                 if (isThiabsMode) {
                     redirectionInstruction = currentLang === 'fr' 
-                        ? "\n\n⚠️ RÈGLE DE REDIRECTION OBLIGATOIRE (POUR TOUS LES MODES THIAB'S : MOTIVATION, COACH ET PROCRASTINATION) : Ce mode est STRICTEMENT dédié au développement personnel, au mindset et au coaching. Si l'utilisateur te demande des informations générales, de l'actualité, de la programmation, ou des recherches hors coaching, TU DOIS LUI RÉPONDRE BRIÈVEMENT pour l'aider, MAIS tu dois immédiatement lui expliquer poliment que ce mode n'est pas conçu pour ça. À la toute fin de ta réponse, insère EXACTEMENT ET UNIQUEMENT ce lien cliquable en Markdown pour le rediriger : `\n\n[👉 Basculer vers Level IA (Mode Normal)](#switch-level-ia)`"
-                        : "\n\n⚠️ MANDATORY REDIRECTION RULE (FOR ALL THIAB'S MODES: MOTIVATION, COACH, AND PROCRASTINATION): This mode is STRICTLY dedicated to personal development, mindset, and coaching. If the user asks for general info, news, coding, or non-coaching research, YOU MUST ANSWER BRIEFLY to help them, BUT immediately explain politely that this mode isn't designed for that. At the very end of your response, insert EXACTLY AND ONLY this clickable Markdown link to redirect them: `\n\n[👉 Switch to Level IA (Normal Mode)](#switch-level-ia)`";
+                        ? "\n\n⚠️ RÈGLE DE REDIRECTION DOUCE ET INTELLIGENTE : Tu es dans le mode Thiab's (dédié au mindset, business, sport, motivation). Si l'utilisateur te pose une question ou t'envoie une image qui est TOTALEMENT HORS-SUJET (ex: programmation, recettes, etc.), TU DOIS D'ABORD LUI RÉPONDRE COMPLÈTEMENT, PARFAITEMENT ET GENTIMENT pour l'aider sans être méchant. Une fois que tu as fini de bien lui répondre, ajoute EXACTEMENT ce lien à la toute fin de ton message pour l'inviter poliment à utiliser le bon mode la prochaine fois : `\n\n[👉 Basculer vers Level IA (Mode Normal)](#switch-level-ia)`. \n⚡ IMPORTANT : Si la question est extrêmement simple (ex: 1+1, 'ça va ?'), réponds juste normalement SANS JAMAIS mettre le bouton de redirection."
+                        : "\n\n⚠️ GENTLE AND SMART REDIRECTION RULE: You are in Thiab's mode (mindset, business, sports, motivation). If the user asks a question or sends an image that is TOTALLY OFF-TOPIC, YOU MUST FIRST ANSWER THEM COMPLETELY, PERFECTLY, AND KINDLY. Once you have finished answering properly, add EXACTLY this link at the very end of your message to politely invite them to use the correct mode next time: `\n\n[👉 Switch to Level IA (Normal Mode)](#switch-level-ia)`. \n⚡ IMPORTANT: If the question is extremely simple (e.g., 1+1, 'how are you?'), answer normally WITHOUT EVER putting the redirection button.";
+                } else if (!isThiabsMode && currentModel === 'travail') {
+                    redirectionInstruction = currentLang === 'fr'
+                        ? "\n\n⚠️ RÈGLE DE REDIRECTION DOUCE ET INTELLIGENTE : Tu es dans le mode Travail. Si la demande n'a STRICTEMENT AUCUN rapport avec le travail, RÉPONDS D'ABORD COMPLÈTEMENT ET GENTIMENT. Ensuite, ajoute obligatoirement ce lien à la fin : `\n\n[👉 Basculer vers Mode Normal](#switch-level-ia)`. \n⚡ IMPORTANT : Si c'est une question très simple (1+1), réponds normalement sans le bouton."
+                        : "\n\n⚠️ GENTLE AND SMART REDIRECTION RULE: You are in Work mode. If the request has STRICTLY NOTHING to do with work, FIRST ANSWER COMPLETELY AND KINDLY. Then, obligatorily add this link at the end: `\n\n[👉 Switch to Normal Mode](#switch-level-ia)`. \n⚡ IMPORTANT: If it's a very simple question (1+1), answer normally without the button.";
                 }
 
                 const firstName = currentUserName.split(' ')[0];
@@ -1426,7 +1590,7 @@ ${currentDna}
 C'est la toute première fois que cet utilisateur interagit avec toi. Tu DOIS ABSOLUMENT suspendre ta réponse initiale pour faire une présentation magistrale, ultra-pro et extrêmement détaillée de TOUT ton écosystème. Voici le plan strict :
 
 1. **L'Accroche :** Commence par une phrase chaleureuse (ex: "Avant de plonger dans le vif du sujet, prenons un instant. Laisse-moi te présenter l'univers dans lequel tu viens d'entrer...").
-2. **L'Identité Globale :** Présente-toi comme l'assistant virtuel **ultra-premium** de l'application **Level IA**, forgé par l'organisation visionnaire **LevelUp**. Précise bien que l'application globale est Level IA.
+2. **L'Identité Globale :** Présente-toi comme l'assistant virtuel **ultra-premium** de l'application **Level IA**, créé par le visionnaire **LevelUp**. Précise bien que l'application globale est Level IA.
 3. **L'Écosystème (Les 2 Visages de l'Application) :** Détaille clairement les deux facettes de l'application en mettant MASSIVEMENT en **gras** les concepts forts :
    - 🏢 **Level IA (Productivité & Vision) :** Ton mode par défaut avec ses 3 cerveaux : **Normal** (Généraliste expert), **Travail** (Vision de projet et d'entreprise), et **Expert** (Analytique et ultra-précis).
    - 🌟 **Mode Thiab's (Développement Personnel) :** Une section secrète activable dans les paramètres, dédiée à l'élévation personnelle avec 3 cerveaux : **Motivation** (Inspiration pure), **Coach de Vie** (Stratégie d'évolution), et **Anti-Procrastination** (Mode hardcore destructeur d'excuses).
@@ -1436,13 +1600,14 @@ C'est la toute première fois que cet utilisateur interagit avec toi. Tu DOIS AB
    - 💾 **Mémoire Cloud & PWA :** Historique sauvegardé en direct, et installation mobile native (iOS/Android).
 5. **La Promesse :** Assure-lui que ton intelligence est sans limite et que tu es là pour le propulser au niveau supérieur.
 6. **La Transition :** Fais une ligne de séparation claire avec \`---\`.
-7. **La Réponse :** Écris "Pour en revenir à ton message :" et réponds de manière experte à sa toute première question.
+7. **L'Hommage :** Ajoute un P.S. très discret mais respectueux : "P.S. : Ce double écosystème a été créé par LevelUp. Le Mode Thiab's a été inspiré par Thiab's, une brillante Sénégalaise de 17 ans qui lutte contre la procrastination. Ce mode porte son nom en son honneur."
+8. **La Réponse :** Écris "Pour en revenir à ton message :" et réponds de manière experte à sa toute première question.
 ` : `
 🚨 SPECIAL MANDATORY INSTRUCTION FOR THIS VERY FIRST MESSAGE 🚨
 This is the very first time this user is interacting with you. You MUST suspend your initial response to make a masterful, ultra-pro, and highly detailed presentation of YOUR ENTIRE ecosystem. Here is the strict plan:
 
 1. **The Hook:** Start with a warm phrase.
-2. **Global Identity:** Present yourself as the **ultra-premium** virtual assistant of the **Level IA** app, forged by the visionary organization **LevelUp**.
+2. **Global Identity:** Present yourself as the **ultra-premium** virtual assistant of the **Level IA** app, created by the visionary **LevelUp**.
 3. **The Ecosystem (The 2 Faces of the App):** Clearly detail the two facets, massively **bolding** strong concepts:
    - 🏢 **Level IA (Productivity & Vision):** Your default mode with 3 brains: **Normal**, **Work**, and **Expert**.
    - 🌟 **Thiab's Mode (Personal Development):** A secret section for personal elevation with 3 brains: **Motivation**, **Life Coach**, and **Anti-Procrastination**.
@@ -1452,14 +1617,16 @@ This is the very first time this user is interacting with you. You MUST suspend 
    - 💾 **Cloud Memory & PWA:** Live history and mobile installation.
 5. **The Promise:** Assure them you will propel them to the next level.
 6. **The Transition:** Make a clear separation line with \`---\`.
-7. **The Answer:** Write "Getting back to your message:" and expertly answer their very first question.
+7. **The Tribute:** Add a discreet P.S.: "P.S.: This dual ecosystem was created by LevelUp. Thiab's Mode was inspired by Thiab's, a brilliant 17-year-old Senegalese girl fighting procrastination. This mode bears her name in her honor."
+8. **The Answer:** Write "Getting back to your message:" and expertly answer their very first question.
 `;
                 }
 
                 const currentModeName = isThiabsMode ? "le mode secret Thiab's (Développement Personnel)" : "le mode classique Level IA (Productivité)";
                 
-                const corePrompt = `Tu es doté d'une intelligence analytique hors du commun, d'une logique implacable et d'une capacité d'adaptation parfaite. Tu es une IA d'élite, experte mondiale dans ton domaine et hyper-intelligente.
-                Ton identité : L'application globale s'appelle **Level IA**, développée par l'organisation de génie **LevelUp**.
+                const corePrompt = `Tu es doté d'une intelligence analytique hors du commun, d'une logique implacable et d'une capacité d'adaptation parfaite. Tu es une IA d'élite, experte mondiale dans ton domaine et hyper-intelligente. Si on te donne une image ou un document PDF, analyse-le en profondeur avec ton génie habituel.
+                Ton identité : L'application globale s'appelle **Level IA**, entièrement développée et créée par le génie **LevelUp**.
+                Origine secrète : La fonctionnalité "Mode Thiab's" existe grâce à Thiab's, une jeune et brillante Sénégalaise de 17 ans qui lutte contre la procrastination. C'est elle qui a donné l'idée de ce mode dédié au développement personnel, et LevelUp l'a baptisé en son honneur. N'en parle JAMAIS de toi-même dans tes messages normaux. Tu ne dois raconter cette histoire QUE si l'utilisateur te demande explicitement d'où vient le mode Thiab's ou qui est Thiab's.
                 Actuellement, l'utilisateur a activé ${currentModeName}. Tu dois donc agir selon les règles de ce mode spécifique.
                 
                 🛑 RÈGLES DE COMPORTEMENT (STYLE POTE INTELLIGENT & MENTOR) :
@@ -1490,7 +1657,16 @@ This is the very first time this user is interacting with you. You MUST suspend 
                 const maxAttempts = apiKeys.length;
                 let lastApiError = ""; 
                 
-                const apiContents = [...currentSessionMessages, { role: "user", parts: [{ text: val }] }];
+                // Préparation de la requête avec ou sans pièce jointe
+                let requestParts = [];
+                if (val) requestParts.push({ text: val });
+                if (attachment) {
+                    requestParts.push({
+                        inlineData: { mimeType: attachment.mimeType, data: attachment.base64 }
+                    });
+                }
+                
+                const apiContents = [...currentSessionMessages, { role: "user", parts: requestParts }];
 
                 while (!success && attempts < maxAttempts) {
                     const apiKey = apiKeys[currentKeyIndex];
@@ -1594,14 +1770,22 @@ This is the very first time this user is interacting with you. You MUST suspend 
                     document.getElementById('aiTyping').classList.add('hidden');
                     displayAIMessage(aiText, true, sourcesHtml);
                     
-                    currentSessionMessages.push({ role: "user", parts: [{ text: val }] });
+                    // Ajout à l'historique Gemini (Pour ne pas exploser Firestore, on ne push que le texte dans l'historique local)
+                    const userDbText = val + (dbAttachMarker ? `\n\n${dbAttachMarker}` : "");
+                    currentSessionMessages.push({ role: "user", parts: [{ text: userDbText }] });
                     currentSessionMessages.push({ role: "model", parts: [{ text: aiText }] });
                     
-                    const messageObj = { user: val, ai: aiText, sources: sourcesHtml, timestamp: Date.now() };
+                    const messageObj = { 
+                        user: val, 
+                        attachmentHtml: userAttachHtml,
+                        ai: aiText, 
+                        sources: sourcesHtml, 
+                        timestamp: Date.now() 
+                    };
                     
                     try {
                         if (!currentSessionId) {
-                            const title = val.length > 25 ? val.substring(0, 25) + "..." : val;
+                            const title = val ? (val.length > 25 ? val.substring(0, 25) + "..." : val) : (attachment ? `Fichier: ${attachment.name}` : "Nouvelle session");
                             const docRef = await addDoc(collection(db, "artifacts", appId, "users", userId, "sessions"), {
                                 title: title,
                                 updatedAt: Date.now(),
