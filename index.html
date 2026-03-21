@@ -730,7 +730,7 @@
             let currentStarRating = 0;
             
             let currentAttachment = null; 
-            const MAX_MSGS = 100;
+            const MAX_MSGS = 200;
             const MAX_UPLOADS = 10;
             let userUsage = { msgCount: 0, msgReset: 0, uploadCount: 0, uploadReset: 0 };
             
@@ -1504,8 +1504,10 @@
                     try {
                         const permission = await Notification.requestPermission();
                         if (permission === 'granted') {
-                            // Demander le Token unique du téléphone à Firebase
-                            const currentToken = await getToken(messaging, { vapidKey: vapidKey });
+                            // Enregistrer le Service Worker manuellement avec le bon chemin (GitHub Pages)
+                            const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+                            // Demander le Token avec le SW spécifique
+                            const currentToken = await getToken(messaging, { vapidKey: vapidKey, serviceWorkerRegistration: registration });
                             if (currentToken) {
                                 userNotifs.fcmToken = currentToken;
                                 console.log("✅ Token FCM généré et prêt pour les notifications !");
@@ -1624,30 +1626,32 @@
                 }
             });
 
-            document.getElementById('importImgBtn').onclick = async () => {
+            document.getElementById('importImgBtn').onclick = () => {
                 attachMenu.classList.add('hidden-menu');
-                const usage = await checkUsage('upload');
-                if(!usage.allowed) {
-                    showLimitMessage('upload', usage.resetDate);
-                    return;
-                }
+                // Ouverture instantanée de la galerie (Requis par l'iPhone)
                 imgInput.click();
             };
 
-            document.getElementById('importDocBtn').onclick = async () => {
+            document.getElementById('importDocBtn').onclick = () => {
                 attachMenu.classList.add('hidden-menu');
-                const usage = await checkUsage('upload');
-                if(!usage.allowed) {
-                    showLimitMessage('upload', usage.resetDate);
-                    return;
-                }
+                // Ouverture instantanée du sélecteur (Requis par l'iPhone)
                 docInput.click();
             };
 
-            const processFile = (file) => {
+            const processFile = async (file) => {
                 if(!file) return;
+
+                // On vérifie le quota APRES la sélection (pour ne pas bloquer iOS)
+                const usage = await checkUsage('upload');
+                if(!usage.allowed) {
+                    showLimitMessage('upload', usage.resetDate);
+                    imgInput.value = ''; docInput.value = '';
+                    return;
+                }
+
                 if(file.size > 5 * 1024 * 1024) { // 5MB limit
                     showSysToast(currentLang === 'fr' ? "Fichier trop lourd (Max 5Mo)" : "File too large (Max 5MB)", true);
+                    imgInput.value = ''; docInput.value = '';
                     return;
                 }
 
