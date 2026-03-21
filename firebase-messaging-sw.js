@@ -23,7 +23,7 @@ messaging.onBackgroundMessage((payload) => {
     const notificationTitle = payload.notification.title || 'Level IA';
     const notificationOptions = {
         body: payload.notification.body,
-        icon: 'https://ih1.redbubble.net/image.5391350517.6380/bg,f8f8f8-flat,750x,075,f-pad,750x1000,f8f8f8.jpg' // Lien direct vers ton étoile violette
+        icon: 'https://www.le-monde-du-stickers.fr/13835/sticker-mural-etoile-violette.jpg' // Nouveau lien vers l'étoile violette
     };
 
     self.registration.showNotification(notificationTitle, notificationOptions);
