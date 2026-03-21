@@ -67,21 +67,28 @@
         
         :root { --primary: #a855f7; --dark: #020202; }
         
-        /* CORRECTION SIMPLE DU BLANC EN BAS (SANS CASSER L'INTERFACE) */
+        /* CORRECTION SIMPLE DU BLANC EN BAS ET FIXATION GLOBALE DE L'APP */
         html { 
             background-color: var(--dark); 
-            overscroll-behavior: none; /* Empêche le rebond élastique de Safari */
+            overscroll-behavior: none; /* Empêche le rebond élastique de Safari/Chrome */
         }
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
             background-color: var(--dark); 
             color: #ffffff; 
-            height: 100dvh; /* Rétablit l'écran FIXE sans scroll global */
             margin: 0; 
             display: flex; 
             flex-direction: column; 
             overflow: hidden; /* Empêche l'application de déborder */
             overscroll-behavior: none; 
+            /* VERROUILLAGE TOTAL DE L'ÉCRAN : empêche l'app de monter vers le haut */
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            width: 100%;
+            height: 100%;
         }
         
         .bg-main { background: radial-gradient(circle at 50% 0%, #0d061a 0%, #020202 100%); }
