@@ -385,6 +385,22 @@
         </div>
     </div>
 
+    <!-- CONSOLE DEV MODAL -->
+    <div id="consoleModal" class="hidden fixed inset-0 z-[7000] flex items-center justify-center p-4 md:p-8 bg-black/90 backdrop-blur-md">
+        <div class="glass p-4 rounded-3xl w-full max-w-3xl h-[85vh] flex flex-col border-white/10 shadow-[0_0_50px_rgba(34,197,94,0.15)]">
+            <div class="flex justify-between items-center mb-4 px-2 shrink-0">
+                <h2 class="text-sm font-black text-white uppercase tracking-widest"><i class="fas fa-terminal text-green-400 mr-2"></i> Console Système</h2>
+                <div class="flex gap-4">
+                    <button id="clearConsoleBtn" class="text-[10px] text-white/40 hover:text-white uppercase font-bold tracking-widest transition-all"><i class="fas fa-trash-alt mr-1"></i> Vider</button>
+                    <button id="closeConsoleBtn" class="text-white/40 hover:text-white"><i class="fas fa-times text-lg"></i></button>
+                </div>
+            </div>
+            <div id="consoleOutput" class="flex-1 overflow-y-auto bg-[#050505] rounded-2xl p-4 font-mono text-[10px] sm:text-[11px] text-green-400 space-y-2 border border-white/5 break-words shadow-inner">
+                <div class="text-white/30 text-center pb-2 border-b border-white/5">--- Système de Logs Initialisé ---</div>
+            </div>
+        </div>
+    </div>
+
     <!-- MAIN APP -->
     <div id="mainApp" class="hidden flex-col h-full w-full relative">
         <div id="appOverlay" class="fixed inset-0 z-[2999] hidden transition-opacity"></div>
@@ -523,6 +539,9 @@
                             <i class="fas fa-envelope text-xs opacity-20 group-hover:opacity-100"></i>
                         </a>
                         <button id="logoutBtn" class="w-full py-4 text-[9px] text-red-400 font-black uppercase tracking-[0.2em] opacity-60 hover:opacity-100 transition-opacity">Déconnexion</button>
+                        
+                        <!-- BOUTON CONSOLE -->
+                        <button id="openConsoleBtn" class="w-full py-3 mt-4 border-t border-white/5 text-[8px] text-gray-500 font-black uppercase tracking-[0.2em] hover:text-green-400 transition-all text-left flex items-center gap-2"><i class="fas fa-terminal"></i> <span id="consoleMenuText">Console Dev</span></button>
                     </div>
                 </div>
             </div>
@@ -606,6 +625,44 @@
     </div>
 
     <script type="module">
+        // INTERCEPTION GLOBALE DE LA CONSOLE
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+        window._logHistory = [];
+        
+        function safeStringify(arg) {
+            if (arg instanceof Error) return arg.stack || arg.message;
+            if (typeof arg === 'object') {
+                try { return JSON.stringify(arg); } catch(e) { return String(arg); }
+            }
+            return String(arg);
+        }
+
+        function pushToVisualConsole(type, args) {
+            const msg = Array.from(args).map(safeStringify).join(' ');
+            window._logHistory.push({ type, msg });
+            
+            const output = document.getElementById('consoleOutput');
+            if (output) {
+                const el = document.createElement('div');
+                const time = new Date().toLocaleTimeString();
+                el.className = 'py-1 border-b border-white/5 leading-relaxed';
+                if (type === 'error') el.innerHTML = `<span class="text-red-500 font-bold">[${time}] ERR:</span> <span class="text-red-300 ml-1">${msg}</span>`;
+                else if (type === 'warn') el.innerHTML = `<span class="text-yellow-500 font-bold">[${time}] WRN:</span> <span class="text-yellow-200 ml-1">${msg}</span>`;
+                else el.innerHTML = `<span class="text-blue-400 font-bold">[${time}] LOG:</span> <span class="text-green-300 ml-1">${msg}</span>`;
+                output.appendChild(el);
+                output.scrollTop = output.scrollHeight;
+            }
+        }
+
+        console.log = function() { originalLog.apply(console, arguments); pushToVisualConsole('log', arguments); };
+        console.warn = function() { originalWarn.apply(console, arguments); pushToVisualConsole('warn', arguments); };
+        console.error = function() { originalError.apply(console, arguments); pushToVisualConsole('error', arguments); };
+        
+        window.addEventListener('error', function(event) { console.error("Global Error:", event.message, "at", event.filename, ":", event.lineno); });
+        window.addEventListener('unhandledrejection', function(event) { console.error("Unhandled Promise:", event.reason); });
+
         const checkReady = setInterval(() => {
             if (window.auth && window.db && window.app) {
                 clearInterval(checkReady);
@@ -634,6 +691,7 @@
             const feedbackModal = document.getElementById('feedbackModal');
             const reportModal = document.getElementById('reportModal');
             const notifModal = document.getElementById('notifModal');
+            const consoleModal = document.getElementById('consoleModal');
             const mainApp = document.getElementById('mainApp');
             const conversationContainer = document.getElementById('conversationContainer');
             const chatArea = document.getElementById('chatArea');
@@ -743,6 +801,7 @@
                     promoTitle: "Passe au niveau<br><span class='text-purple-400'>Supérieur</span>",
                     promoDesc: "Pour une expérience fluide, un accès ultra-rapide et recevoir des notifications, installe l'application Level IA sur ton appareil dès maintenant.",
                     promoInstallText: "Installer l'App", promoSkipText: "Continuer sur le web",
+                    consoleMenuText: "Console Dev",
                     lengthOptions: { medium: "Moyenne (Chill & Pro)", long: "Longue (Détaillée)", short: "Courte (Directe)" }
                 },
                 en: {
@@ -770,6 +829,7 @@
                     promoTitle: "Level Up your<br><span class='text-purple-400'>Experience</span>",
                     promoDesc: "For a smooth, fast experience and to receive notifications, install the Level IA application on your device right now.",
                     promoInstallText: "Install App", promoSkipText: "Continue on web",
+                    consoleMenuText: "Dev Console",
                     lengthOptions: { medium: "Medium (Chill & Pro)", long: "Long (Detailed)", short: "Short (Direct)" }
                 }
             };
@@ -851,6 +911,7 @@
                 setSafeText('promoDesc', t.promoDesc);
                 setSafeText('promoInstallText', t.promoInstallText);
                 setSafeText('promoSkipText', t.promoSkipText);
+                setSafeText('consoleMenuText', t.consoleMenuText);
                 
                 const userStatusEl = document.getElementById('userStatus');
                 if(userStatusEl) userStatusEl.innerHTML = `<i class="fas fa-shield-alt"></i> ${t.verifiedStatus}`;
@@ -1477,6 +1538,27 @@
             document.getElementById('openFeedbackBtn').onclick = () => { closeSidebar(); feedbackModal.classList.remove('hidden'); };
             document.getElementById('closeFeedbackBtn').onclick = () => feedbackModal.classList.add('hidden');
             
+            // Gestion de la Console Dev
+            document.getElementById('openConsoleBtn').onclick = () => { closeSidebar(); consoleModal.classList.remove('hidden'); };
+            document.getElementById('closeConsoleBtn').onclick = () => consoleModal.classList.add('hidden');
+            document.getElementById('clearConsoleBtn').onclick = () => { 
+                document.getElementById('consoleOutput').innerHTML = '<div class="text-white/30 text-center pb-2 border-b border-white/5">--- Système de Logs Initialisé ---</div>'; 
+                window._logHistory = []; 
+            };
+
+            // Remplir la console si des erreurs se sont produites avant son ouverture
+            const cOutput = document.getElementById('consoleOutput');
+            if (window._logHistory.length > 0 && cOutput.children.length <= 1) {
+                window._logHistory.forEach(log => {
+                    const el = document.createElement('div');
+                    el.className = 'py-1 border-b border-white/5 leading-relaxed';
+                    if (log.type === 'error') el.innerHTML = `<span class="text-red-500 font-bold">ERR:</span> <span class="text-red-300 ml-1">${log.msg}</span>`;
+                    else if (log.type === 'warn') el.innerHTML = `<span class="text-yellow-500 font-bold">WRN:</span> <span class="text-yellow-200 ml-1">${log.msg}</span>`;
+                    else el.innerHTML = `<span class="text-blue-400 font-bold">LOG:</span> <span class="text-green-300 ml-1">${log.msg}</span>`;
+                    cOutput.appendChild(el);
+                });
+            }
+
             const stars = document.querySelectorAll('.star-rating i');
             stars.forEach(star => {
                 star.onclick = (e) => {
@@ -1618,8 +1700,8 @@
                         : `🚫 You have reached your limit of 10 uploaded files per day.\n\nCome back ${dateStr} to send new images or documents.`;
                 } else {
                     msg = currentLang === 'fr' 
-                        ? `🚫 Vous avez atteint votre limite de 100 messages par jour pour préserver les serveurs.\n\nRevenez ${dateStr} pour continuer la discussion.`
-                        : `🚫 You have reached your limit of 100 messages per day to preserve the servers.\n\nCome back ${dateStr} to continue the discussion.`;
+                        ? `🚫 Vous avez atteint votre limite de 200 messages par jour pour préserver les serveurs.\n\nRevenez ${dateStr} pour continuer la discussion.`
+                        : `🚫 You have reached your limit of 200 messages per day to preserve the servers.\n\nCome back ${dateStr} to continue the discussion.`;
                 }
                 displayAIMessage(msg, true);
             }
