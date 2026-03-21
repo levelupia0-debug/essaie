@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- BALISE OBLIGATOIRE POUR CHROME (NOUVEAU) -->
+    <meta name="theme-color" content="#020202">
+    
     <title>Level IA</title>
     
     <!-- LIAISON DU MANIFEST POUR L'INSTALLATION PWA ET NOTIFICATIONS IOS -->
@@ -857,13 +861,13 @@
                 console.log("✅ [PWA SUCCÈS] L'événement 'beforeinstallprompt' est déclenché. Le navigateur reconnaît officiellement l'app comme installable !");
             });
 
-            // Diagnostic après 5 secondes
+            // Diagnostic après 5 secondes (Texte Adouci)
             setTimeout(() => {
                 if (!deferredPrompt && !isStandalone && !isIOS && isSupportedProtocol) {
-                    console.warn("⚠️ [PWA ATTENTION] L'installation n'a pas été validée par le navigateur.");
-                    console.warn("👉 Cause 1 : Tu es dans l'aperçu du chat ou en Navigation Privée (Interdit par Chrome). Teste sur ton vrai lien GitHub !");
-                    console.warn("👉 Cause 2 : L'image 'icon.png' est introuvable sur ton GitHub.");
-                    console.warn("👉 Cause 3 : Le fichier firebase-messaging-sw.js n'a pas la fonction 'fetch' à la fin.");
+                    console.warn("⚠️ [PWA ATTENTION] Chrome n'a pas encore validé la PWA. Voici les causes POSSIBLES à vérifier :");
+                    console.warn("👉 1. Tu es en Navigation Privée (Interdit pour les PWA).");
+                    console.warn("👉 2. L'image 'icon.png' ou 'manifest.json' sont introuvables à la racine.");
+                    console.warn("👉 3. Ton navigateur a gardé l'ancien code en mémoire (Vide le cache !).");
                 }
             }, 5000);
 
