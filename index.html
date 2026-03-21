@@ -6,7 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
-    <!-- BALISE OBLIGATOIRE POUR CHROME (NOUVEAU) -->
+    <!-- BALISE OBLIGATOIRE POUR CHROME -->
     <meta name="theme-color" content="#020202">
     
     <title>Level IA</title>
@@ -28,7 +28,9 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signInAnonymously, deleteUser } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, collectionGroup, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
-        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-messaging.js";
+        
+        // AJOUT DE isSupported POUR EVITER LE CRASH DE LA PWA
+        import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-messaging.js";
 
         // --- CONFIGURATION FIREBASE ---
         const firebaseConfig = {
@@ -53,7 +55,9 @@
         window.onAuthStateChanged = onAuthStateChanged;
         window.deleteUser = deleteUser;
         window.firestoreUtils = { collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, collectionGroup, updateDoc, arrayUnion };
-        window.messagingUtils = { getMessaging, getToken, onMessage };
+        
+        // Export de isSupported
+        window.messagingUtils = { getMessaging, getToken, onMessage, isSupported };
         
         window.__app_id = "level-ia-premium"; 
     </script>
@@ -747,7 +751,7 @@
         window.addEventListener('unhandledrejection', function(event) { console.error("Unhandled Promise:", event.reason); });
 
         const checkReady = setInterval(() => {
-            if (window.auth && window.db && window.app) {
+            if (window.auth && window.db && window.app && window.messagingUtils) {
                 clearInterval(checkReady);
                 initApp();
             }
@@ -757,10 +761,9 @@
             const { app, auth, db, firestoreUtils, deleteUser } = window;
             const { signInAnonymously } = window;
             const { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, setDoc, getDoc, getDocs, collectionGroup, updateDoc, arrayUnion } = firestoreUtils;
-            const { getMessaging, getToken, onMessage } = window.messagingUtils;
+            const { getMessaging, getToken, onMessage, isSupported } = window.messagingUtils;
             
-            const messaging = getMessaging(app);
-            const vapidKey = "BPc3w8mDuNONg6Wl5TyU_x-l8KfUAtd_D868u3PaPpgrM7HUBMJ5qmuCCmR_U05YZlzGdYfFHPoQEzCakFaTjGM"; // Ta clé de sécurité Push
+            const vapidKey = "BPc3w8mDuNONg6Wl5TyU_x-l8KfUAtd_D868u3PaPpgrM7HUBMJ5qmuCCmR_U05YZlzGdYfFHPoQEzCakFaTjGM";
 
             const splashScreen = document.getElementById('splashScreen');
             const langPage = document.getElementById('langPage');
@@ -822,6 +825,24 @@
             let userNotifs = { enabled: false, exerciseTime: "08:00", lastQuotaNotif: "", lastExerciseNotif: "", fcmToken: "" };
 
             const isSupportedProtocol = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+            // ---- INITIALISATION DE FIREBASE MESSAGING SECURISEE ----
+            let messaging = null;
+            isSupported().then(supported => {
+                if (supported) {
+                    messaging = getMessaging(app);
+                    onMessage(messaging, (payload) => {
+                        if (payload.notification) {
+                            showSysToast(`📩 ${payload.notification.title} : ${payload.notification.body}`);
+                        }
+                    });
+                    console.log("✅ [FCM] API de Notification prête.");
+                } else {
+                    console.warn("⚠️ [FCM] API de Notification NON SUPPORTÉE par ce navigateur (souvent dû à un navigateur in-app ou des restrictions de sécurité). La PWA va ignorer ce module.");
+                }
+            }).catch(err => {
+                console.error("❌ [FCM] Erreur lors du check de support :", err);
+            });
 
             // Enregistrement PWA OBLIGATOIRE (Dès le chargement)
             if ('serviceWorker' in navigator && isSupportedProtocol) {
@@ -1639,7 +1660,7 @@
                 userNotifs.enabled = document.getElementById('notifToggle').checked;
                 userNotifs.exerciseTime = document.getElementById('exerciseTimeInput').value;
                 
-                if (userNotifs.enabled && ("Notification" in window)) {
+                if (userNotifs.enabled && ("Notification" in window) && messaging) {
                     try {
                         const permission = await Notification.requestPermission();
                         if (permission === 'granted') {
@@ -1664,6 +1685,10 @@
                     }
                 } else if (!userNotifs.enabled) {
                     userNotifs.fcmToken = ""; 
+                } else if (userNotifs.enabled && !messaging) {
+                    showSysToast("Notifications non supportées sur ce navigateur.", true);
+                    document.getElementById('notifToggle').checked = false;
+                    userNotifs.enabled = false;
                 }
                 
                 await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "notifications"), userNotifs, { merge: true });
@@ -1671,15 +1696,6 @@
                 showSysToast(currentLang === 'fr' ? "Préférences sauvegardées" : "Preferences saved");
             };
 
-            onMessage(messaging, (payload) => {
-                if (payload.notification) {
-                    showSysToast(`📩 ${payload.notification.title} : ${payload.notification.body}`);
-                }
-            });
-            
-            document.getElementById('openFeedbackBtn').onclick = () => { closeSidebar(); feedbackModal.classList.remove('hidden'); };
-            document.getElementById('closeFeedbackBtn').onclick = () => feedbackModal.classList.add('hidden');
-            
             // FILTRES DE LA CONSOLE DEV
             document.querySelectorAll('.console-filter').forEach(btn => {
                 btn.addEventListener('click', (e) => {
