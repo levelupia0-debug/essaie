@@ -23,7 +23,7 @@ messaging.onBackgroundMessage((payload) => {
     const notificationTitle = payload.notification.title || 'Level IA';
     const notificationOptions = {
         body: payload.notification.body,
-        icon: 'https://www.le-monde-du-stickers.fr/13835/sticker-mural-etoile-violette.jpg' // Nouveau lien vers l'étoile violette
+        icon: './icon.png' // L'image locale PNG que tu as uploadée sur ton GitHub
     };
 
     self.registration.showNotification(notificationTitle, notificationOptions);
