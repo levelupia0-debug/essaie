@@ -992,7 +992,7 @@
                         document.getElementById('welcomeAvatar').src = avatarUrl;
                         
                         welcomePage.classList.remove('hidden'); 
-                        document.getElementById('supportMail').href = `mailto:levelup.iao@gmail.com?subject=Support (Clé: ${keyVal})`;
+                        document.getElementById('supportMail').href = `mailto:levelup.iao@gmail.com?subject=Support (ID: ${userId} - Nom: ${userName})`;
 
                         try {
                             const dnaDoc = await getDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"));
@@ -1746,7 +1746,7 @@ This is the very first time this user is interacting with you. You MUST suspend 
                             
                             let supportButtonHtml = "";
                             if (consecutiveErrors >= 2) {
-                                supportButtonHtml = `<br><br><a href="mailto:levelup.iao@gmail.com?subject=Urgence%20Technique%20-%20Level%20IA&body=Bonjour%20LevelUp,%0A%0AJe%20n'arrive%20plus%20à%20générer%20de%20réponses.%20L'IA%20semble%20bloquée.%0A%0A[Détails%20de%20l'erreur%20:%20${encodeURIComponent(lastApiError)}]" class="support-btn"><i class="fas fa-envelope"></i> Contacter le Support Technique</a>`;
+                                supportButtonHtml = `<br><br><a href="mailto:levelup.iao@gmail.com?subject=Urgence%20Technique%20-%20Level%20IA%20(ID:%20${userId})&body=Bonjour%20LevelUp,%0A%0AJe%20n'arrive%20plus%20à%20générer%20de%20réponses.%20L'IA%20semble%20bloquée.%0A%0A[Détails%20de%20l'erreur%20:%20${encodeURIComponent(lastApiError)}]" class="support-btn"><i class="fas fa-envelope"></i> Contacter le Support Technique</a>`;
                             }
                             
                             const errorMsg = currentLang === 'fr' 
