@@ -815,18 +815,16 @@
         if (window.visualViewport) {
             const resizeHandler = () => {
                 let vh = window.visualViewport.height;
-                let offsetTop = window.visualViewport.offsetTop;
                 
-                // Redimensionner et repositionner UNIQUEMENT l'application, pas le navigateur !
+                // Redimensionner UNIQUEMENT la hauteur de l'application, SANS TOUCHER au TOP !
+                // Cela empêche l'application de paniquer et de sauter de haut en bas.
                 const mainApp = document.getElementById('mainApp');
                 if (mainApp) {
                     mainApp.style.height = vh + 'px';
-                    mainApp.style.top = offsetTop + 'px';
                 }
                 const splashScreen = document.getElementById('splashScreen');
                 if (splashScreen && splashScreen.style.display !== 'none') {
                     splashScreen.style.height = vh + 'px';
-                    splashScreen.style.top = offsetTop + 'px';
                 }
                 
                 // Détection intelligente : si l'écran rétrécit (clavier ouvert), on active le mode "collé"
@@ -835,19 +833,14 @@
                 } else {
                     document.body.classList.remove('keyboard-open');
                 }
-
-                // Force le navigateur à ne pas scroller globalement
-                window.scrollTo(0, 0);
-                document.body.scrollTop = 0;
                 
-                // Fait scroller uniquement la conversation
+                // Fait scroller uniquement la conversation sans forcer le scroll du navigateur global
                 const chatArea = document.getElementById('chatArea');
                 if(chatArea) {
                     chatArea.scrollTop = chatArea.scrollHeight;
                 }
             };
             window.visualViewport.addEventListener('resize', resizeHandler);
-            window.visualViewport.addEventListener('scroll', resizeHandler); // Bloque le scroll fantôme d'iOS
             resizeHandler(); 
         }
         
@@ -932,16 +925,6 @@
 
             const isSupportedProtocol = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
             
-            // Fix clavier: Forcer le scroll tout en bas quand on clique sur le champ texte
-            if (userInput) {
-                userInput.addEventListener('focus', () => {
-                    setTimeout(() => {
-                        window.scrollTo(0,0);
-                        if(chatArea) chatArea.scrollTop = chatArea.scrollHeight;
-                    }, 100);
-                });
-            }
-
             // ---- INITIALISATION DE FIREBASE MESSAGING SECURISEE ----
             let messaging = null;
             isSupported().then(supported => {
