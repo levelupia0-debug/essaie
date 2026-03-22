@@ -1,224 +1,2385 @@
-import React, { useState, useEffect } from 'react';
-import { Gift, Heart, Sparkles, PartyPopper, Stars, MailOpen } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    
+    <!-- BALISE OBLIGATOIRE POUR CHROME -->
+    <meta name="theme-color" content="#020202">
+    
+    <title>Level IA</title>
+    
+    <!-- LIAISON DU MANIFEST POUR L'INSTALLATION PWA ET NOTIFICATIONS IOS -->
+    <link rel="manifest" href="manifest.json">
+    
+    <!-- Ajout du favicon Étoile Violette -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'><path fill='%23a855f7' d='M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z'/></svg>" type="image/svg+xml">
+    
+    <!-- CHANGEMENT ICI : On utilise la nouvelle image SVG pour l'iPhone -->
+    <link rel="apple-touch-icon" href="./icon.svg">
 
-// --- STYLES D'ANIMATION GLOBAUX ---
-// Sortir les styles du rendu est une meilleure pratique pour les performances
-const ANIMATION_STYLES = `
-  @keyframes float {
-    0% { transform: translateY(0) scale(1); opacity: 0.3; }
-    100% { transform: translateY(-20px) scale(1.2); opacity: 0.8; }
-  }
-  @keyframes shake {
-    0%, 100% { transform: translateX(0) rotate(0deg) scale(1.1); }
-    25% { transform: translateX(-5px) rotate(-5deg) scale(1.1); }
-    50% { transform: translateX(5px) rotate(5deg) scale(1.1); }
-    75% { transform: translateX(-5px) rotate(-5deg) scale(1.1); }
-  }
-  .animate-shake {
-    animation: shake 0.4s ease-in-out infinite;
-  }
-  @keyframes popIn {
-    0% { transform: scale(0.8); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
-  }
-  .animate-pop-in {
-    animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-  }
-  @keyframes levelUp {
-    0% { transform: scale(0.5); opacity: 0; }
-    20% { transform: scale(1.2); opacity: 1; }
-    80% { transform: scale(1); opacity: 1; }
-    100% { transform: scale(1.5); opacity: 0; }
-  }
-  .animate-level-up {
-    animation: levelUp 2s ease-in-out forwards;
-  }
-`;
-
-// Composant pour les petites particules flottantes en arrière-plan
-const FloatingParticles = () => {
-  const [particles, setParticles] = useState([]);
-
-  useEffect(() => {
-    const newParticles = Array.from({ length: 20 }).map((_, i) => ({
-      id: i,
-      x: Math.random() * 100,
-      y: Math.random() * 100,
-      size: Math.random() * 10 + 5,
-      animationDuration: Math.random() * 5 + 3,
-      delay: Math.random() * 2,
-    }));
-    setParticles(newParticles);
-  }, []);
-
-  return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden">
-      {particles.map((p) => (
-        <div
-          key={p.id}
-          className="absolute bg-white/30 rounded-full animate-pulse"
-          style={{
-            left: `${p.x}%`,
-            top: `${p.y}%`,
-            width: `${p.size}px`,
-            height: `${p.size}px`,
-            animation: `float ${p.animationDuration}s ease-in-out infinite alternate`,
-            animationDelay: `${p.delay}s`,
-          }}
-        />
-      ))}
-      <style>{ANIMATION_STYLES}</style>
-    </div>
-  );
-};
-
-export default function App() {
-  // 0: Intro Level Up, 1: Accueil, 2: Animation d'ouverture, 3: Message final
-  const [step, setStep] = useState(0);
-
-  // Gère le passage automatique de l'intro à la page d'accueil
-  useEffect(() => {
-    if (step === 0) {
-      const timer = setTimeout(() => {
-        setStep(1);
-      }, 2000); // L'animation d'intro dure 2 secondes pile
-      return () => clearTimeout(timer);
-    }
-  }, [step]);
-
-  const handleOpenGift = () => {
-    setStep(2);
-    // Après 3 secondes d'animation (le cadeau qui tremble), on passe au message
-    setTimeout(() => {
-      setStep(3);
-    }, 3000);
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-200 via-purple-300 to-indigo-300 flex items-center justify-center p-4 font-sans text-gray-800 relative">
-      <FloatingParticles />
-
-      <div className="max-w-md w-full relative z-10">
+    <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signInAnonymously, deleteUser } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, collectionGroup, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
         
-        {/* ÉTAPE 0 : ANIMATION LEVEL UP */}
-        {step === 0 && (
-          <div className="fixed inset-0 bg-black z-50 flex items-center justify-center">
-            <h1 className="text-6xl md:text-8xl font-black text-white tracking-widest uppercase animate-level-up drop-shadow-[0_0_30px_rgba(255,255,255,0.6)]">
-              LEVEL UP
-            </h1>
-          </div>
-        )}
+        // AJOUT DE isSupported POUR EVITER LE CRASH DE LA PWA
+        import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-messaging.js";
 
-        {/* ÉTAPE 1 : PAGE D'ACCUEIL */}
-        {step === 1 && (
-          <div className="bg-white/80 backdrop-blur-md p-8 rounded-3xl shadow-2xl text-center border border-white/50 animate-pop-in">
-            <div className="flex justify-center mb-6">
-              <div className="bg-gradient-to-tr from-pink-400 to-purple-500 p-4 rounded-full text-white shadow-lg animate-bounce">
-                <PartyPopper size={48} />
-              </div>
-            </div>
-            
-            <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-pink-600 to-purple-600 mb-2">
-              Joyeux Anniversaire
-            </h1>
-            <h2 className="text-5xl font-black text-purple-700 mb-8 tracking-wide">
-              CHANCELLE !
-            </h2>
-            
-            <p className="text-gray-600 mb-8 text-lg">
-              J'ai une petite surprise spéciale rien que pour toi...
-            </p>
-            
-            <button
-              onClick={handleOpenGift}
-              className="group relative inline-flex items-center justify-center px-8 py-4 font-bold text-white bg-gradient-to-r from-pink-500 to-purple-600 rounded-full overflow-hidden shadow-xl transition-transform hover:scale-105 active:scale-95"
-            >
-              <span className="absolute inset-0 w-full h-full -mt-1 rounded-lg opacity-30 bg-gradient-to-b from-transparent via-transparent to-black"></span>
-              <span className="relative flex items-center gap-2 text-lg">
-                <Gift className="group-hover:animate-spin" size={24} />
-                Voir mon cadeau
-              </span>
-            </button>
-          </div>
-        )}
+        // --- CONFIGURATION FIREBASE ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyA3JgvNu5p-43037jvm4WRDaJHI9ES7uGM",
+            authDomain: "levelup-ia.firebaseapp.com",
+            projectId: "levelup-ia",
+            storageBucket: "levelup-ia.firebasestorage.app",
+            messagingSenderId: "229420004282",
+            appId: "1:229420004282:web:6735f059a947f0936ae383",
+            measurementId: "G-MSRDY2574K"
+        };
 
-        {/* ÉTAPE 2 : ANIMATION D'OUVERTURE */}
-        {step === 2 && (
-          <div className="flex flex-col items-center justify-center h-64 animate-pop-in">
-            <div className="relative">
-              <div className="absolute inset-0 bg-pink-400 blur-3xl opacity-50 rounded-full animate-pulse"></div>
-              <div className="relative bg-white p-8 rounded-full shadow-2xl animate-shake border-4 border-pink-300">
-                <Gift size={80} className="text-pink-500" />
-              </div>
-            </div>
-            <p className="mt-8 text-2xl font-bold text-white tracking-widest animate-pulse">
-              Ouverture en cours...
-            </p>
-            <div className="flex gap-2 mt-4 text-yellow-300">
-              <Sparkles className="animate-ping" size={24} />
-              <Stars className="animate-ping" size={24} style={{ animationDelay: '0.2s' }} />
-              <Sparkles className="animate-ping" size={24} style={{ animationDelay: '0.4s' }} />
-            </div>
-          </div>
-        )}
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
 
-        {/* ÉTAPE 3 : LE MESSAGE D'AMOUR */}
-        {step === 3 && (
-          <div className="bg-white/90 backdrop-blur-xl p-8 md:p-10 rounded-3xl shadow-2xl border border-pink-200 animate-pop-in">
-            <div className="flex justify-center mb-6">
-              <div className="bg-pink-100 p-4 rounded-full text-pink-500 shadow-inner">
-                <MailOpen size={40} />
-              </div>
-            </div>
-            
-            <h2 className="text-3xl font-bold text-center text-purple-800 mb-6">
-              Ma chère Chancelle,
-            </h2>
-            
-            <div className="space-y-3 md:space-y-4 text-base md:text-lg text-gray-700 leading-relaxed text-justify">
-              <p>
-                Je te souhaite le plus merveilleux des anniversaires ! Aujourd'hui est ton jour, et je voulais prendre le temps de te dire à quel point tu comptes pour moi.
-              </p>
-              
-              <p>
-                Je me souviens encore de nos débuts sur HelloTalk... Tu m'avais confié que tu n'avais pas beaucoup d'amis à l'époque. C'est toi qui es venue me parler, et très vite, nous sommes devenus si proches. J'ai tout de suite senti que j'arrivais à te comprendre, à lire en toi, comme une évidence.
-              </p>
-              
-              <p>
-                J'ai fait de mon mieux pour t'aider et te soutenir quand tu essayais de conquérir le cœur de cet homme que tu aimais tant. Même si je n'ai pas pu faire grand-chose au final, je veux que tu saches que je serai toujours de ton côté. J'espère du fond du cœur que tu trouveras le meilleur, la personne qui te méritera vraiment.
-              </p>
-              
-              <p className="font-semibold text-pink-600 bg-pink-50 p-3 rounded-lg border-l-4 border-pink-400">
-                Tu es une personne si simple, authentique et infiniment précieuse. N'en doute jamais.
-              </p>
-              
-              <p>
-                Si jamais tu as un truc à partager, une peine, un doute ou une joie, n'hésite jamais. <span className="font-bold text-purple-700">Peu importe l'heure, je serai toujours là pour toi, pour t'écouter et t'aider.</span>
-              </p>
-              
-              <p>
-                Je sais que cette petite application ce n'est pas grand-chose... mais c'était mon seul moyen à moi de te souhaiter un joyeux anniversaire d'une façon un peu spéciale, et de te rappeler que je t'aiderai toujours à te faire plein d'amis qui verront ta vraie valeur.
-              </p>
-            </div>
-            
-            <div className="mt-8 pt-6 border-t border-pink-100 flex flex-col items-center justify-center">
-              <Heart className="text-red-500 fill-red-500 animate-pulse mb-2" size={32} />
-              <p className="text-xl font-bold text-purple-800 mb-1">Je t'adore très fort !</p>
-              <p className="text-md text-gray-500 italic mt-2 font-medium">— Ton ami, LevelUp bro</p>
-            </div>
-            
-            <div className="mt-8 flex justify-center">
-              <button 
-                onClick={() => setStep(1)}
-                className="text-sm text-gray-400 hover:text-pink-500 transition-colors flex items-center gap-1"
-              >
-                <Gift size={16} /> Refermer le cadeau
-              </button>
-            </div>
-          </div>
-        )}
+        // Export global
+        window.app = app;
+        window.auth = auth;
+        window.db = db;
+        window.signInAnonymously = signInAnonymously;
+        window.onAuthStateChanged = onAuthStateChanged;
+        window.deleteUser = deleteUser;
+        window.firestoreUtils = { collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, collectionGroup, updateDoc, arrayUnion };
+        
+        // Export de isSupported
+        window.messagingUtils = { getMessaging, getToken, onMessage, isSupported };
+        
+        window.__app_id = "level-ia-premium"; 
+    </script>
 
-      </div>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+        
+        :root { --primary: #a855f7; --dark: #020202; }
+        
+        html { 
+            background-color: var(--dark); 
+            overscroll-behavior: none;
+        }
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--dark); 
+            color: #ffffff; 
+            margin: 0; 
+            display: flex; 
+            flex-direction: column; 
+            overflow: hidden; 
+            overscroll-behavior: none; 
+            
+            /* 🚨 VEROUILLAGE ABSOLU DE L'APPLICATION 🚨 */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        /* 🚨 LA MAGIE APPLE EST ICI : Règle les marges en haut (batterie) et en bas 🚨 */
+        .safe-pt { padding-top: max(1rem, env(safe-area-inset-top, 0px)) !important; }
+        .safe-pb { padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)) !important; }
+        
+        /* 🚨 FIX CLAVIER : Plaque le champ de texte contre le clavier et cache le texte inutile 🚨 */
+        body.keyboard-open .safe-pb { padding-bottom: 8px !important; }
+        body.keyboard-open .hide-on-keyboard { display: none !important; }
+
+        .safe-sidebar { 
+            padding-top: calc(1.5rem + env(safe-area-inset-top, 0px)) !important; 
+            padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)) !important; 
+        }
+        
+        .bg-main { background: radial-gradient(circle at 50% 0%, #0d061a 0%, #020202 100%); }
+
+        #splashScreen { position: fixed; inset: 0; z-index: 9999; background: black; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity 0.4s ease-out; }
+        .splash-text { font-size: 1.8rem; font-weight: 800; letter-spacing: 0.6em; text-transform: uppercase; opacity: 0; position: absolute; transform: scale(0.85); filter: blur(15px); transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); text-align: center; }
+        .splash-text.active { opacity: 1; transform: scale(1); filter: blur(0px); }
+        .splash-text.exit { opacity: 0; transform: scale(1.2); filter: blur(30px); }
+
+        .glass { background: rgba(255, 255, 255, 0.02); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border: 1px solid rgba(255, 255, 255, 0.05); }
+        .overlay-active { pointer-events: auto; background: rgba(0,0,0,0.4); }
+        
+        #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: -20px 0 50px rgba(0,0,0,0.5); }
+        
+        #userInput { background: transparent !important; border: none !important; color: white !important; outline: none !important; width: 100%; padding: 12px; font-size: 15px !important; min-height: 44px; max-height: 120px; display: block; resize: none; overflow-y: hidden; }
+        
+        /* 🚨 FIX MAGIQUE : Verrouillage absolu des longs textes (anti-dépassement horizontal) 🚨 */
+        .message-bubble { 
+            max-width: 88%; 
+            animation: msgIn 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); 
+            overflow-wrap: anywhere !important; /* Coupe n'importe où si ça dépasse */
+            word-wrap: break-word !important;
+            word-break: break-word !important; 
+        }
+        .message-bubble * {
+            overflow-wrap: anywhere !important;
+            word-break: break-word !important;
+        }
+        /* On protège les blocs de code pour qu'ils puissent scroller en interne au lieu de casser l'écran */
+        .prose pre {
+            max-width: 100%;
+            overflow-x: auto;
+            white-space: pre !important;
+            word-break: normal !important;
+            overflow-wrap: normal !important;
+        }
+
+        @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .star-logo { animation: rotate360 8s linear infinite; color: #a855f7; filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.6)); }
+        @keyframes rotate360 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        
+        .typing-dots span { width: 4px; height: 4px; background: #a855f7; border-radius: 50%; display: inline-block; animation: typing 1.4s infinite; }
+        @keyframes typing { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.3); } }
+
+        .chat-item { background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s; }
+        .chat-item:hover { background: rgba(168, 85, 247, 0.08); border-color: rgba(168, 85, 247, 0.5); }
+        .chat-item.active { background: rgba(168, 85, 247, 0.12); border-color: var(--primary); }
+
+        .storage-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+        .storage-progress { height: 100%; background: var(--primary); transition: width 0.5s ease; }
+        
+        .star-rating i { cursor: pointer; transition: all 0.2s; }
+        .star-rating i:hover { transform: scale(1.2); }
+        .star-rating i.active { color: #f59e0b; }
+        
+        a[href="#switch-level-ia"], .support-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            padding: 8px 16px;
+            background: rgba(168, 85, 247, 0.15);
+            border: 1px solid rgba(168, 85, 247, 0.4);
+            color: #d8b4fe !important;
+            border-radius: 10px;
+            text-decoration: none !important;
+            font-weight: 700;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.2s;
+        }
+        a[href="#switch-level-ia"]:hover, .support-btn:hover {
+            background: rgba(168, 85, 247, 0.3);
+            border-color: #a855f7;
+            transform: translateY(-2px);
+        }
+
+        #attachMenu { transition: all 0.2s cubic-bezier(0.1, 0.9, 0.2, 1); transform-origin: bottom left; }
+        #attachMenu.hidden-menu { opacity: 0; transform: scale(0.9) translateY(10px); pointer-events: none; }
+
+        /* Style pour les textes en gras de l'IA (comme ChatGPT) */
+        .prose-strong {
+            color: #ffffff !important;
+            font-weight: 700 !important;
+        }
+        .prose-headings {
+            color: #ffffff !important;
+            font-weight: 700 !important;
+            margin-top: 1.5em !important;
+            margin-bottom: 0.5em !important;
+        }
+    </style>
+</head>
+<body class="bg-main">
+
+    <!-- TOAST DE NOTIFICATION SYSTEME -->
+    <div id="sysToast" class="fixed top-5 left-1/2 -translate-x-1/2 backdrop-blur-md border px-5 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest hidden z-[9999] shadow-2xl transition-all"></div>
+
+    <!-- SPLASH -->
+    <div id="splashScreen">
+        <div id="splash1" class="splash-text text-purple-500"><strong id="splashTitle">Level IA</strong></div>
+        <div id="splash2" class="splash-text flex flex-col items-center justify-center">
+            <span class="text-white font-bold tracking-[0.6em] text-xl">LevelUp</span>
+            <span class="text-[10px] font-semibold tracking-[0.4em] text-purple-400 mt-4 uppercase">Thiab's Mode</span>
+        </div>
     </div>
-  );
-}
+
+    <!-- LANGUAGE SELECTION PAGE -->
+    <div id="langPage" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-8 bg-black">
+        <div class="w-full max-w-sm text-center space-y-8">
+            <i class="fas fa-globe text-4xl text-purple-500 mb-4"></i>
+            <h2 class="text-xl font-bold uppercase tracking-widest text-white mb-8">
+                Language<br><span class="text-[11px] text-white/50 tracking-widest block mt-1">Choisissez / Choose</span>
+            </h2>
+            <div class="grid grid-cols-2 gap-4">
+                <button class="lang-btn bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-purple-600 hover:border-purple-500 transition-all flex flex-col items-center gap-3" data-lang="fr">
+                    <span class="text-4xl">🇫🇷</span>
+                    <span class="text-[11px] font-bold uppercase tracking-widest">Français</span>
+                </button>
+                <button class="lang-btn bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-purple-600 hover:border-purple-500 transition-all flex flex-col items-center gap-3" data-lang="en">
+                    <span class="text-4xl">🇬🇧</span>
+                    <span class="text-[11px] font-bold uppercase tracking-widest">English</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PROMO INSTALL MODAL (MUR D'INSTALLATION) -->
+    <div id="promoInstallModal" class="hidden fixed inset-0 z-[5500] flex items-end md:items-center justify-center p-4 md:p-8 bg-black/90 backdrop-blur-md">
+        <div class="glass p-6 rounded-[1.5rem] max-w-sm w-full text-center space-y-6 animate-in slide-in-from-bottom-10 md:zoom-in duration-500 shadow-[0_0_40px_rgba(168,85,247,0.15)] border-purple-500/30">
+            <div class="mx-auto w-16 h-16 rounded-2xl bg-purple-500/20 flex items-center justify-center mb-2 border border-purple-500/50 shadow-inner">
+                <i id="promoIcon" class="fas fa-rocket text-2xl text-purple-400"></i>
+            </div>
+            <h2 id="promoTitle" class="text-xl font-bold text-white uppercase tracking-widest leading-tight">Passe au niveau<br><span class="text-purple-400">Supérieur</span></h2>
+            <p id="promoDesc" class="text-[13px] text-white/70 leading-relaxed font-medium px-2">Pour une expérience fluide, rapide et des notifications intelligentes, installe l'application Level IA sur ton appareil dès maintenant.</p>
+            
+            <div class="space-y-3 pt-4">
+                <button id="promoInstallBtn" class="w-full bg-purple-600 text-white py-3.5 rounded-xl font-bold text-[12px] uppercase tracking-[0.1em] hover:bg-purple-500 active:scale-95 transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center justify-center gap-2">
+                    <i class="fas fa-download text-sm"></i> <span id="promoInstallText">Installer l'App</span>
+                </button>
+                <button id="promoSkipBtn" class="w-full bg-transparent text-white/40 py-3 rounded-xl font-semibold text-[11px] uppercase tracking-widest hover:text-white hover:bg-white/5 active:scale-95 transition-all">
+                    <span id="promoSkipText">Continuer sur le web</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUTH PAGE -->
+    <div id="authPage" class="hidden fixed inset-0 z-[5000] flex items-center justify-center p-8 bg-black">
+        <div class="w-full max-w-sm text-center">
+            <i class="fas fa-star text-4xl star-logo mb-8 block"></i>
+            <h1 class="text-2xl font-bold tracking-[0.3em] text-white uppercase mb-10"><strong id="authAppTitle">Level IA</strong></h1>
+            
+            <div class="space-y-6">
+                <p id="authTitle" class="text-[11px] font-bold text-white/40 uppercase tracking-[0.1em] mb-2">Entrez votre Clé d'Accès</p>
+                <input type="text" id="accessKeyInput" maxlength="15" placeholder="LVL-XXXXX-XXXXX" class="w-full bg-white/5 border border-white/10 rounded-xl py-4 px-5 text-center text-white font-mono text-base tracking-widest outline-none focus:border-purple-500 transition-all uppercase">
+                
+                <div class="space-y-3">
+                    <button id="verifyKeyBtn" class="w-full bg-purple-600 text-white py-3.5 rounded-xl font-bold text-[12px] uppercase tracking-[0.1em] hover:bg-purple-500 active:scale-95 transition-all shadow-[0_0_20px_rgba(168,85,247,0.3)]">
+                        Vérifier la clé
+                    </button>
+                    <a href="https://levelupia0-debug.github.io/levelupia/" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl border border-white/10 bg-white/5 text-[12px] font-bold uppercase tracking-[0.1em] hover:bg-white/10 hover:border-white/20 active:scale-95 transition-all text-white">
+                        <i class="fas fa-key text-purple-400 text-sm"></i> <span id="getKeyText">Obtenir ma clé</span>
+                    </a>
+                </div>
+                
+                <p id="keyError" class="text-[13px] text-red-400 font-medium hidden flex flex-col gap-1">
+                    <span id="keyErrorMain">Clé introuvable ou invalide.</span>
+                    <span id="keyErrorDetails" class="text-[10px] text-red-300 opacity-80 font-mono break-words w-full hidden"></span>
+                </p>
+                <p class="text-[10px] text-white/20 uppercase tracking-widest mt-10">Propulsé par <strong class="font-semibold">LevelUp</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- WELCOME PAGE -->
+    <div id="welcomePage" class="hidden fixed inset-0 z-[4500] flex items-center justify-center p-8 bg-black/80 backdrop-blur-md">
+        <div class="glass p-8 rounded-[1.5rem] max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-500 shadow-2xl border-white/10">
+            <div class="relative w-24 h-24 mx-auto mb-2">
+                <img id="welcomeAvatar" src="" class="w-full h-full rounded-full object-cover border-2 border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.4)]">
+                <div class="absolute -bottom-1 -right-1 bg-green-500 w-6 h-6 rounded-full border-2 border-black flex items-center justify-center">
+                    <i class="fas fa-check text-[10px] text-white"></i>
+                </div>
+            </div>
+            <h2 class="text-xl font-bold text-white uppercase tracking-widest leading-tight">
+                <span id="welcomeGreeting" class="text-[13px] text-white/50 tracking-widest font-medium">Bienvenue</span><br>
+                <span id="welcomeName" class="text-purple-400 truncate block mt-1"></span>
+            </h2>
+            <p id="welcomeDesc" class="text-[13px] text-white/60 leading-relaxed px-2">Prêt à vous assister. Découvrez une intelligence conçue pour vous accompagner au quotidien.</p>
+            <button id="startAppBtn" class="w-full bg-white text-black py-3.5 rounded-xl font-bold text-[12px] uppercase tracking-[0.1em] hover:bg-purple-500 hover:text-white active:scale-95 transition-all shadow-lg mt-4 flex justify-center items-center gap-2">
+                <span id="continueBtnText">Continuer</span> <i class="fas fa-arrow-right text-sm"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- LOGOUT CONFIRMATION MODAL -->
+    <div id="logoutModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+        <div class="glass p-6 rounded-2xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
+            <div class="mx-auto w-14 h-14 rounded-full bg-red-500/20 flex items-center justify-center mb-2 border border-red-500/50">
+                <i class="fas fa-sign-out-alt text-xl text-red-400"></i>
+            </div>
+            <h2 id="logoutModalTitle" class="text-lg font-bold text-white uppercase tracking-widest">Déconnexion</h2>
+            <p id="logoutModalDesc" class="text-[13px] text-white/60 leading-relaxed px-2">Voulez-vous vraiment quitter votre session actuelle ?</p>
+            <div class="flex gap-3 pt-4">
+                <button id="cancelLogoutBtn" class="flex-1 bg-white/10 text-white py-3 rounded-xl font-semibold text-[11px] uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all">Annuler</button>
+                <button id="confirmLogoutBtn" class="flex-1 bg-red-500/80 text-white py-3 rounded-xl font-semibold text-[11px] uppercase tracking-widest hover:bg-red-500 active:scale-95 transition-all shadow-md shadow-red-500/20">Quitter</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- INSTALL PWA MODAL -->
+    <div id="installModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+        <div class="glass p-6 rounded-2xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
+            <div class="mx-auto w-14 h-14 rounded-full bg-purple-500/20 flex items-center justify-center mb-2 border border-purple-500/50">
+                <i class="fas fa-mobile-alt text-xl text-purple-400"></i>
+            </div>
+            <h2 id="installModalTitle" class="text-lg font-bold text-white uppercase tracking-widest">Installer l'App</h2>
+            <p id="installModalDesc" class="text-[13px] text-white/60 leading-relaxed px-2">Ajoutez l'application sur votre écran d'accueil :</p>
+            <div class="space-y-4 text-left bg-black/40 p-4 rounded-xl border border-white/5">
+                <p id="installiOS" class="text-[12px] text-white/80 leading-relaxed font-medium">🍎 iOS (Safari) : Appuyez sur Partager <i class="fas fa-share-square mx-1"></i> puis 'Sur l'écran d'accueil'.</p>
+                <div class="w-full h-px bg-white/10"></div>
+                <p id="installAndroid" class="text-[12px] text-white/80 leading-relaxed font-medium">🤖 Android (Chrome) : Appuyez sur Menu <i class="fas fa-ellipsis-v mx-1"></i> puis 'Ajouter à l'écran d'accueil'.</p>
+            </div>
+            <button id="closeInstallModalBtn" class="w-full bg-white/10 text-white py-3.5 rounded-xl font-semibold text-[11px] uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all mt-4">Fermer</button>
+        </div>
+    </div>
+
+    <!-- CGU MODAL -->
+    <div id="cguModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div class="glass p-6 rounded-2xl max-w-lg w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10 max-h-[85vh] flex flex-col">
+            <div class="mx-auto w-14 h-14 shrink-0 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/50">
+                <i class="fas fa-scale-balanced text-xl text-blue-400"></i>
+            </div>
+            <h2 id="cguModalTitle" class="text-lg font-bold text-white uppercase tracking-widest shrink-0">Conditions (CGU)</h2>
+            <div class="space-y-4 text-left bg-black/40 p-5 rounded-xl border border-white/5 overflow-y-auto no-scrollbar flex-1">
+                <p id="cguText1" class="text-[13px] text-white/80 leading-relaxed text-justify">
+                    <strong class="text-blue-400 block mb-0.5">1. ÉTHIQUE ET BIENVEILLANCE :</strong> Notre application a été créée dans le but exclusif d'aider, de protéger, d'informer et de faire grandir ses utilisateurs. L'IA est programmée pour refuser toute requête malveillante, dangereuse ou illégale.
+                </p>
+                <div class="w-full h-px bg-white/10"></div>
+                <p id="cguText2" class="text-[13px] text-white/80 leading-relaxed text-justify">
+                    <strong class="text-blue-400 block mb-0.5">2. RESPONSABILITÉ DE L'UTILISATEUR :</strong> En utilisant Level IA, vous prenez l'entière responsabilité de vos actes et de la façon dont vous interprétez ou utilisez les réponses générées. Vous êtes maître de vos décisions.
+                </p>
+                <div class="w-full h-px bg-white/10"></div>
+                <p id="cguText3" class="text-[13px] text-white/80 leading-relaxed text-justify">
+                    <strong class="text-blue-400 block mb-0.5">3. ABSENCE DE GARANTIE :</strong> Bien que nos modèles soient très avancés, l'IA peut parfois commettre des erreurs. Ses conseils ne remplacent en aucun cas l'avis d'un professionnel qualifié.
+                </p>
+                <div class="w-full h-px bg-white/10"></div>
+                <p id="cguText4" class="text-[13px] text-white/80 leading-relaxed text-justify">
+                    <strong class="text-blue-400 block mb-0.5">4. PROTECTION LÉGALE :</strong> Les développeurs déclinent toute responsabilité en cas de dommages directs ou indirects liés à l'utilisation de ce service.
+                </p>
+                <div class="w-full h-px bg-white/10"></div>
+                <p id="cguText5" class="text-[13px] text-white/80 leading-relaxed text-justify">
+                    <strong class="text-blue-400 block mb-0.5">5. ÂGE REQUIS :</strong> Vous devez avoir au minimum 16 ans pour utiliser les services de cette intelligence artificielle.
+                </p>
+            </div>
+            <button id="closeCguModalBtn" class="w-full bg-white/10 text-white py-3.5 rounded-xl font-semibold text-[12px] uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all shrink-0">Accepter & Fermer</button>
+        </div>
+    </div>
+    
+    <!-- INFO MODAL -->
+    <div id="infoModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div class="glass p-6 rounded-2xl max-w-lg w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10 max-h-[85vh] flex flex-col">
+            <div class="mx-auto w-14 h-14 shrink-0 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/50">
+                <i class="fas fa-info-circle text-xl text-emerald-400"></i>
+            </div>
+            <h2 id="infoModalTitle" class="text-lg font-bold text-white uppercase tracking-widest shrink-0">À propos de l'Application</h2>
+            <div class="space-y-4 text-left bg-black/40 p-5 rounded-xl border border-white/5 overflow-y-auto no-scrollbar flex-1">
+                <p id="infoText1" class="text-[13px] text-white/80 leading-relaxed text-justify">
+                    <strong class="text-emerald-400 block mb-0.5">🧠 MOTEUR IA (GEMINI) :</strong> L'intelligence de l'application est propulsée par le puissant moteur <strong>Gemini 2.5 Flash</strong> (développé par Google). Ce moteur garantit une capacité d'analyse fulgurante et une connexion au Web en temps réel.
+                </p>
+                <div class="w-full h-px bg-white/10"></div>
+                <p id="infoText2" class="text-[13px] text-white/80 leading-relaxed text-justify">
+                    <strong class="text-emerald-400 block mb-0.5">🔒 ARCHITECTURE & SÉCURITÉ :</strong> Toutes vos données sont hébergées sur l'infrastructure ultra-sécurisée de <strong>Google Cloud (Firebase Firestore)</strong>. La sécurité est au cœur de notre développement.
+                </p>
+                <div class="w-full h-px bg-white/10"></div>
+                <p id="infoText3" class="text-[13px] text-white/80 leading-relaxed text-justify">
+                    <strong class="text-emerald-400 block mb-1">⚡ ÉCOSYSTÈME DUAL-PERSONA :</strong> Cette application intègre deux environnements distincts :<br>
+                    - <strong>Level IA :</strong> L'assistant pro (Normal, Travail, Expert) pour la productivité.<br>
+                    - <strong>Thiab's Mode :</strong> L'environnement de développement personnel (Motivation, Coach).
+                </p>
+                <div class="w-full h-px bg-white/10"></div>
+                <p class="text-[11px] text-white/60 leading-relaxed font-semibold text-center mt-4">
+                    Développé par LevelUp • Version 2.0 Premium
+                </p>
+            </div>
+            <button id="closeInfoModalBtn" class="w-full bg-white/10 text-white py-3.5 rounded-xl font-semibold text-[12px] uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all shrink-0">Fermer</button>
+        </div>
+    </div>
+
+    <!-- FEEDBACK MODAL -->
+    <div id="feedbackModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+        <div class="glass p-6 rounded-2xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
+            <div class="flex justify-between items-center mb-2">
+                <h2 id="feedbackModalTitle" class="text-lg font-bold text-white uppercase tracking-widest">Donner un avis</h2>
+                <button id="closeFeedbackBtn" class="text-white/40 hover:text-white"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            
+            <div class="star-rating flex justify-center gap-3 text-3xl text-white/20 my-6">
+                <i class="fas fa-star" data-rating="1"></i>
+                <i class="fas fa-star" data-rating="2"></i>
+                <i class="fas fa-star" data-rating="3"></i>
+                <i class="fas fa-star" data-rating="4"></i>
+                <i class="fas fa-star" data-rating="5"></i>
+            </div>
+            
+            <textarea id="feedbackText" placeholder="Que pensez-vous de l'application ? Comment l'améliorer ?" class="w-full h-24 bg-black/40 border border-white/10 rounded-xl p-4 text-[13px] text-white outline-none focus:border-yellow-500 transition-all resize-none"></textarea>
+            
+            <button id="submitFeedbackBtn" class="w-full bg-yellow-500 text-black py-3.5 rounded-xl font-bold text-[12px] uppercase tracking-widest hover:bg-yellow-400 active:scale-95 transition-all mt-2">Envoyer l'avis</button>
+        </div>
+    </div>
+
+    <!-- REPORT MODAL -->
+    <div id="reportModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+        <div class="glass p-6 rounded-2xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
+            <div class="flex justify-between items-center mb-2">
+                <h2 id="reportModalTitle" class="text-lg font-bold text-white uppercase tracking-widest">Signaler un problème</h2>
+                <button id="closeReportBtn" class="text-white/40 hover:text-white"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            
+            <div class="space-y-4">
+                <select id="reportCategory" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-[13px] text-white outline-none focus:border-red-500 transition-all cursor-pointer">
+                    <option value="ia_bug" class="bg-black">Problème avec l'IA (Réponses bizarres)</option>
+                    <option value="ui_bug" class="bg-black">Bug visuel / Interface</option>
+                    <option value="connexion" class="bg-black">Problème de connexion / Mémoire</option>
+                    <option value="other" class="bg-black">Autre chose</option>
+                </select>
+                
+                <textarea id="reportText" placeholder="Décrivez le problème en détail pour nous aider à le corriger..." class="w-full h-24 bg-black/40 border border-white/10 rounded-xl p-4 text-[13px] text-white outline-none focus:border-red-500 transition-all resize-none"></textarea>
+            </div>
+            
+            <button id="submitReportBtn" class="w-full bg-red-500 text-white py-3.5 rounded-xl font-bold text-[12px] uppercase tracking-widest hover:bg-red-400 active:scale-95 transition-all shadow-[0_0_15px_rgba(239,68,68,0.4)] mt-2">Envoyer</button>
+        </div>
+    </div>
+
+    <!-- NOTIF MODAL -->
+    <div id="notifModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+        <div class="glass p-6 rounded-2xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
+            <div class="flex justify-between items-center mb-2">
+                <h2 id="notifModalTitle" class="text-lg font-bold text-white uppercase tracking-widest">Notifications</h2>
+                <button id="closeNotifBtn" class="text-white/40 hover:text-white"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            
+            <div class="space-y-6 text-left">
+                <div class="flex items-center justify-between bg-white/5 border border-white/10 p-4 rounded-xl">
+                    <label id="lblNotifEnable" class="text-[12px] font-bold text-white uppercase tracking-widest">Activer les alertes</label>
+                    <label class="relative inline-flex items-center cursor-pointer">
+                        <input type="checkbox" id="notifToggle" class="sr-only peer">
+                        <div class="w-10 h-5 bg-black/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/50 after:border-white/10 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500 peer-checked:after:bg-white shadow-inner"></div>
+                    </label>
+                </div>
+                
+                <div class="space-y-3">
+                    <label id="lblNotifTime" class="text-[11px] font-bold text-white/60 uppercase tracking-widest">Heure de l'exercice (Thiab's)</label>
+                    <input type="time" id="exerciseTimeInput" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white outline-none focus:border-blue-500 transition-all font-bold text-lg text-center cursor-pointer">
+                </div>
+            </div>
+            
+            <div class="flex gap-3 pt-2">
+                <button id="testNotifBtn" class="hidden w-1/3 bg-white/10 text-white py-3.5 rounded-xl font-bold text-[11px] uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all border border-white/10">Tester</button>
+                <button id="saveNotifBtn" class="flex-1 bg-blue-500 text-white py-3.5 rounded-xl font-bold text-[12px] uppercase tracking-widest hover:bg-blue-400 active:scale-95 transition-all shadow-[0_0_15px_rgba(59,130,246,0.4)]">Enregistrer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PIN MODAL (DEV) -->
+    <div id="pinModal" class="hidden fixed inset-0 z-[7000] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
+        <div class="glass p-6 rounded-2xl max-w-xs w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-[0_0_30px_rgba(168,85,247,0.15)] border-purple-500/30">
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="text-sm font-bold text-white uppercase tracking-widest"><i class="fas fa-lock text-purple-400 mr-2"></i> Accès Dev</h2>
+                <button id="closePinBtn" class="text-white/40 hover:text-white"><i class="fas fa-times text-lg"></i></button>
+            </div>
+            <p id="pinModalDesc" class="text-[11px] text-white/60 font-medium leading-relaxed">⚠️ Accès restreint. Entrez le code PIN.</p>
+            <input type="password" id="pinInput" placeholder="••••" maxlength="4" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-center text-2xl tracking-[0.5em] font-mono text-white outline-none focus:border-purple-500 transition-all">
+            <button id="submitPinBtn" class="w-full bg-purple-600 text-white py-3.5 rounded-xl font-bold text-[12px] uppercase tracking-widest hover:bg-purple-500 active:scale-95 transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)] mt-2">Valider</button>
+        </div>
+    </div>
+
+    <!-- CONSOLE DEV MODAL (DASHBOARD PRO) -->
+    <div id="consoleModal" class="hidden fixed inset-0 z-[8000] flex items-center justify-center p-2 md:p-6 bg-black/90 backdrop-blur-xl">
+        <div class="bg-[#080808] border border-white/10 rounded-2xl w-full max-w-5xl h-[95vh] md:h-[90vh] flex flex-col shadow-2xl overflow-hidden relative ring-1 ring-white/5">
+            
+            <!-- HEADER CONSOLE -->
+            <div class="px-5 py-4 border-b border-white/10 flex flex-wrap items-center justify-between bg-white/5 shrink-0 gap-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center border border-purple-500/30 shadow-inner">
+                        <i class="fas fa-server text-purple-400 text-lg"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-[13px] font-bold text-white uppercase tracking-widest leading-tight">Contrôle</h2>
+                        <p class="text-[10px] text-purple-400 font-mono tracking-widest opacity-80 mt-0.5">LEVEL IA // DEV</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="copyTokenBtn" class="px-3 py-2 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30 text-[10px] uppercase font-bold hover:bg-blue-500/40 active:scale-95 transition-all flex items-center gap-2"><i class="fas fa-key"></i> <span class="hidden sm:inline">Token</span></button>
+                    <button id="clearConsoleBtn" class="px-3 py-2 rounded-lg bg-white/10 text-white/60 border border-white/10 text-[10px] uppercase font-bold hover:text-white hover:bg-white/20 active:scale-95 transition-all flex items-center gap-2"><i class="fas fa-broom"></i> <span class="hidden sm:inline">Vider</span></button>
+                    <button id="closeConsoleBtn" class="w-8 h-8 rounded-lg bg-red-500/20 text-red-400 flex items-center justify-center hover:bg-red-500/40 active:scale-95 border border-red-500/30 transition-all"><i class="fas fa-times"></i></button>
+                </div>
+            </div>
+
+            <!-- FILTRES & STATUS -->
+            <div class="px-5 py-3 border-b border-white/5 bg-black flex flex-wrap items-center justify-between gap-4 shrink-0 overflow-x-auto no-scrollbar">
+                <div class="flex gap-2" id="consoleFilters">
+                    <button class="console-filter active px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-white text-black transition-all" data-filter="all">Tout</button>
+                    <button class="console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all" data-filter="error">Erreurs</button>
+                    <button class="console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/20 transition-all" data-filter="warn">Alertes</button>
+                    <button class="console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition-all" data-filter="log">Infos</button>
+                </div>
+                
+                <div class="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest bg-white/5 px-4 py-2 rounded-lg border border-white/10">
+                    <div class="flex items-center gap-1.5"><span id="ind-net" class="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></span> Réseau</div>
+                    <div class="flex items-center gap-1.5"><span id="ind-pwa" class="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-[0_0_8px_#eab308]"></span> PWA</div>
+                    <div class="flex items-center gap-1.5"><span id="ind-db" class="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-[0_0_8px_#eab308]"></span> DB</div>
+                </div>
+            </div>
+
+            <!-- OUTPUT AREA -->
+            <div id="consoleOutput" class="flex-1 overflow-y-auto p-4 space-y-3 bg-[#030303] custom-scrollbar pb-20">
+                <div class="text-white/30 text-center py-4 border-b border-white/5 text-[10px] uppercase tracking-widest font-bold">--- Logs Système ---</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="mainApp" class="hidden flex-col h-full w-full relative overflow-hidden">
+        <div id="appOverlay" class="fixed inset-0 z-[2999] hidden transition-opacity"></div>
+
+        <!-- MENU LATÉRAL -->
+        <div id="sidebar" class="fixed inset-y-0 right-0 w-[85%] md:w-80 glass z-[3000] border-l border-white/10 px-6 flex flex-col transition-transform translate-x-full no-scrollbar overflow-y-auto safe-sidebar">
+            <div class="flex items-center justify-between mb-8">
+                <span id="menuTitle" class="text-[11px] font-bold uppercase tracking-widest opacity-40">Menu</span>
+                <button id="closeSidebar" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 active:scale-95 transition-all"><i class="fas fa-times text-sm"></i></button>
+            </div>
+
+            <div id="userCard" class="p-4 rounded-2xl bg-white/5 border border-white/5 mb-8 flex items-center gap-4">
+                <div id="userAvatar" class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center overflow-hidden border border-white/10 shadow-inner shrink-0">
+                    <i class="fas fa-user text-sm"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p id="userName" class="text-[13px] font-bold uppercase truncate">Utilisateur</p>
+                    <p id="userMail" class="text-[11px] text-white/50 truncate mt-0.5">---</p>
+                    <p id="userStatus" class="text-[9px] text-green-400 uppercase tracking-widest mt-1 font-semibold"><i class="fas fa-shield-alt"></i> Vérifié via clé</p>
+                </div>
+            </div>
+
+            <div class="space-y-6">
+                
+                <!-- TOGGLE THIAB'S MODE -->
+                <div class="space-y-2 mb-4">
+                    <div class="flex items-center justify-between bg-purple-500/10 border border-purple-500/30 p-3.5 rounded-xl">
+                        <div>
+                            <label id="thiabsModeTitle" class="text-[12px] font-bold uppercase tracking-widest text-purple-400">Mode Thiab's 🌟</label>
+                            <p id="thiabsModeDesc" class="text-[9px] text-white/50 uppercase tracking-widest mt-1 font-medium">Développement personnel</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="thiabsModeToggle" class="sr-only peer">
+                            <div class="w-10 h-5 bg-black/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/50 after:border-white/10 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-500 peer-checked:after:bg-white shadow-inner"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Langue -->
+                <div class="space-y-2">
+                    <label id="langTitle" class="text-[10px] font-bold uppercase tracking-widest opacity-40">Langue</label>
+                    <select id="langSelect" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-[13px] text-white outline-none focus:border-purple-500 transition-all font-medium appearance-none cursor-pointer">
+                        <option value="fr" class="bg-black text-white">Français</option>
+                        <option value="en" class="bg-black text-white">English</option>
+                    </select>
+                </div>
+
+                <!-- Modèles IA -->
+                <div class="space-y-2">
+                    <label id="modelTitle" class="text-[10px] font-bold uppercase tracking-widest opacity-40">Modèle IA</label>
+                    <select id="modelSelect" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-[13px] text-white outline-none focus:border-purple-500 transition-all font-medium appearance-none cursor-pointer">
+                        <!-- Options dynamically injected -->
+                    </select>
+                </div>
+
+                <!-- Longueur des réponses -->
+                <div class="space-y-2">
+                    <label id="lengthTitle" class="text-[10px] font-bold uppercase tracking-widest opacity-40">Taille des réponses</label>
+                    <select id="lengthSelect" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-[13px] text-white outline-none focus:border-purple-500 transition-all font-medium appearance-none cursor-pointer">
+                        <option value="medium" class="bg-black text-white">Moyenne (Chill & Pro)</option>
+                        <option value="long" class="bg-black text-white">Longue (Détaillée)</option>
+                        <option value="short" class="bg-black text-white">Courte (Directe)</option>
+                    </select>
+                </div>
+
+                <!-- TOGGLE MODE HARDCORE -->
+                <div class="space-y-2 pt-2 transition-all duration-300 hidden" id="hardcoreContainer">
+                    <div class="flex items-center justify-between bg-red-500/10 border border-red-500/20 p-3.5 rounded-xl">
+                        <div>
+                            <label id="hardcoreTitle" class="text-[12px] font-bold uppercase tracking-widest text-red-400">Mode Hardcore 🤬</label>
+                            <p id="hardcoreDesc" class="text-[9px] text-white/50 uppercase tracking-widest mt-1 font-medium">Désactiver la politesse</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="hardcoreToggle" class="sr-only peer">
+                            <div class="w-10 h-5 bg-black/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/50 after:border-white/10 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-500 peer-checked:after:bg-white shadow-inner"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center text-[10px] font-bold uppercase tracking-widest opacity-40">
+                        <span id="cloudSpace">Espace Cloud</span>
+                        <span id="storageLabel">0%</span>
+                    </div>
+                    <div class="storage-bar"><div id="storageBar" class="storage-progress" style="width: 0%"></div></div>
+                </div>
+
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center">
+                        <h4 id="historyTitle" class="text-[10px] font-bold uppercase tracking-widest opacity-40">Historique</h4>
+                    </div>
+                    <button id="newChatBtn" class="w-full flex items-center justify-center gap-2 py-3 bg-purple-500/10 border border-purple-500/30 rounded-xl text-purple-400 font-bold text-[11px] uppercase tracking-widest hover:bg-purple-600 hover:text-white hover:border-purple-500 active:scale-95 transition-all shadow-sm">
+                        <i class="fas fa-plus"></i> <span id="newChatText">Nouvelle session</span>
+                    </button>
+                    <div id="historyList" class="space-y-2 max-h-64 overflow-y-auto pr-2 mt-3 no-scrollbar">
+                        <!-- History items -->
+                    </div>
+                </div>
+
+                <div class="space-y-4 pt-5 border-t border-white/5">
+                    <div class="space-y-2">
+                        <label id="dnaTitle" class="text-[10px] font-bold uppercase tracking-widest opacity-40">DNA de <strong id="dnaAppBrand">Level IA</strong></label>
+                        <textarea id="customDNA" placeholder="..." class="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-3 text-[13px] text-white outline-none focus:border-purple-500 transition-all resize-none"></textarea>
+                        <button id="saveDNA" class="w-full py-3 bg-purple-600 rounded-xl text-[11px] font-bold uppercase tracking-widest hover:bg-purple-500 active:scale-95 transition-all">Mettre à jour</button>
+                    </div>
+
+                    <div class="pt-4 space-y-3">
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="openFeedbackBtn" class="w-full flex flex-col items-center justify-center p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 hover:bg-yellow-500/20 active:scale-95 transition-all group">
+                                <i class="fas fa-star text-sm text-yellow-500 mb-1.5"></i>
+                                <span id="feedbackMenuText" class="text-[9px] font-bold uppercase tracking-widest text-yellow-400">Avis</span>
+                            </button>
+                            <button id="openReportBtn" class="w-full flex flex-col items-center justify-center p-3 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 active:scale-95 transition-all group">
+                                <i class="fas fa-bug text-sm text-red-500 mb-1.5"></i>
+                                <span id="reportMenuText" class="text-[9px] font-bold uppercase tracking-widest text-red-400">Signaler</span>
+                            </button>
+                        </div>
+                        
+                        <button id="openNotifBtn" class="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-blue-500/40 active:scale-95 transition-all group">
+                            <span id="notifMenuText" class="text-[12px] font-medium tracking-wide">Rappels & Notifs</span>
+                            <i class="fas fa-bell text-sm opacity-30 group-hover:opacity-100 text-blue-400"></i>
+                        </button>
+                        <button id="installMenuBtn" class="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/40 active:scale-95 transition-all group">
+                            <span id="installAppMenuText" class="text-[12px] font-medium tracking-wide">Installer l'App</span>
+                            <i class="fas fa-mobile-alt text-sm opacity-30 group-hover:opacity-100"></i>
+                        </button>
+                        <button id="infoMenuBtn" class="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-emerald-500/40 active:scale-95 transition-all group">
+                            <span id="infoMenuText" class="text-[12px] font-medium tracking-wide">Informations App</span>
+                            <i class="fas fa-info-circle text-sm opacity-30 group-hover:opacity-100 text-emerald-400"></i>
+                        </button>
+                        <button id="cguMenuBtn" class="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/40 active:scale-95 transition-all group">
+                            <span id="cguMenuText" class="text-[12px] font-medium tracking-wide">Règles & Sécurité</span>
+                            <i class="fas fa-scale-balanced text-sm opacity-30 group-hover:opacity-100"></i>
+                        </button>
+                        <a id="supportMail" href="#" class="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/40 active:scale-95 transition-all group">
+                            <span id="supportTitle" class="text-[12px] font-medium tracking-wide">Support & Compte</span>
+                            <i class="fas fa-envelope text-sm opacity-30 group-hover:opacity-100"></i>
+                        </a>
+                        <button id="logoutBtn" class="w-full py-4 text-[11px] text-red-400 font-bold uppercase tracking-[0.1em] opacity-70 hover:opacity-100 active:scale-95 transition-all">Déconnexion</button>
+                        
+                        <!-- BOUTON CONSOLE -->
+                        <button id="openConsoleBtn" class="w-full py-3 mt-4 border-t border-white/5 text-[10px] text-gray-500 font-bold uppercase tracking-widest hover:text-green-400 active:scale-95 transition-all text-left flex items-center justify-center gap-2"><i class="fas fa-terminal"></i> <span id="consoleMenuText">Console Dev</span></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- HEADER -->
+        <header class="px-5 pb-4 flex items-center justify-between border-b border-white/5 bg-black/40 backdrop-blur-2xl shrink-0 z-40 safe-pt">
+            <div class="flex items-center gap-4">
+                <i class="fas fa-star text-xl star-logo"></i>
+                <div>
+                    <h2 class="text-base font-bold uppercase tracking-widest"><strong id="headerAppBrand">Level IA</strong></h2>
+                    <p id="headerModelName" class="text-[10px] font-semibold text-purple-400 uppercase tracking-widest mt-0.5">Modèle: Normal</p>
+                </div>
+            </div>
+            <button id="openSidebar" class="w-10 h-10 rounded-xl flex flex-col items-center justify-center gap-1.5 hover:bg-white/5 active:scale-90 transition-all">
+                <span class="w-5 h-0.5 bg-white rounded-full"></span>
+                <span class="w-5 h-0.5 bg-white rounded-full opacity-60"></span>
+            </button>
+        </header>
+
+        <main class="flex-1 overflow-y-auto overflow-x-hidden px-4 py-8 no-scrollbar space-y-8 relative" id="chatArea">
+            <div class="max-w-3xl mx-auto space-y-6 w-full" id="conversationContainer"></div>
+            
+            <div id="aiTyping" class="max-w-3xl mx-auto hidden pl-2 pb-6">
+                <div class="flex items-center gap-3">
+                    <i class="fas fa-star text-sm star-logo opacity-80"></i>
+                    <div class="typing-dots flex gap-1.5"><span></span><span></span><span></span></div>
+                </div>
+            </div>
+        </main>
+
+        <!-- FOOTER / ZONE DE SAISIE -->
+        <footer class="px-3 pt-3 pb-2 border-t border-white/5 bg-[#020202]/90 backdrop-blur-3xl shrink-0 z-50 relative safe-pb">
+            <div class="max-w-3xl mx-auto relative">
+                
+                <!-- PREVIEW ATTACHMENT -->
+                <div id="attachmentPreview" class="hidden absolute bottom-full mb-3 left-0 bg-white/10 backdrop-blur-md border border-white/20 p-2.5 rounded-2xl flex items-center gap-3 shadow-2xl">
+                    <div id="attachIcon" class="w-10 h-10 bg-black/50 rounded-xl flex items-center justify-center overflow-hidden"></div>
+                    <div class="text-xs truncate max-w-[180px]">
+                        <p id="attachName" class="font-bold text-white truncate text-[13px]"></p>
+                        <p id="attachSize" class="text-white/50 mt-0.5"></p>
+                    </div>
+                    <button id="removeAttachBtn" class="text-red-400 hover:text-red-300 p-2"><i class="fas fa-times text-base"></i></button>
+                </div>
+
+                <div class="glass rounded-3xl p-1.5 flex items-end gap-2 focus-within:border-purple-500/40 transition-all shadow-xl relative">
+                    
+                    <!-- BOUTON PLUS (+) -->
+                    <div class="relative">
+                        <button id="attachBtn" class="w-11 h-11 text-white/50 flex items-center justify-center hover:text-white transition-all ml-1 shrink-0 bg-transparent border-none outline-none focus:outline-none active:scale-90">
+                            <i class="fas fa-plus text-xl"></i>
+                        </button>
+                        
+                        <!-- MENU D'IMPORT -->
+                        <div id="attachMenu" class="hidden-menu absolute bottom-full left-0 mb-3 w-48 bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl flex flex-col gap-1 z-50">
+                            <button id="importImgBtn" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 active:scale-95 transition-all text-left group">
+                                <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all"><i class="fas fa-image text-sm"></i></div>
+                                <div>
+                                    <p class="text-[11px] font-bold text-white uppercase tracking-widest" id="lblImportImg">Image</p>
+                                </div>
+                            </button>
+                            <button id="importDocBtn" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 active:scale-95 transition-all text-left group">
+                                <div class="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center text-red-400 group-hover:bg-red-500 group-hover:text-white transition-all"><i class="fas fa-file-pdf text-sm"></i></div>
+                                <div>
+                                    <p class="text-[11px] font-bold text-white uppercase tracking-widest" id="lblImportDoc">Document (PDF)</p>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- INPUTS CACHÉS -->
+                    <input type="file" id="imgInput" accept="image/*" class="hidden">
+                    <input type="file" id="docInput" accept="application/pdf" class="hidden">
+
+                    <div class="flex-1 px-1.5"><textarea id="userInput" placeholder="Message..." rows="1" autocomplete="off"></textarea></div>
+                    <!-- BOUTON ENVOYER -->
+                    <button id="sendBtn" class="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center hover:bg-purple-500 hover:text-white active:scale-90 active:bg-purple-600 transition-all duration-150 shadow-md shrink-0 touch-manipulation select-none"><i class="fas fa-arrow-up text-base pointer-events-none"></i></button>
+                </div>
+                
+                <!-- AVERTISSEMENT -->
+                <div class="text-center mt-2.5 mb-1 hide-on-keyboard">
+                    <p class="text-[10px] font-semibold text-white/30 tracking-wide">Level peut faire des erreurs. Considérez vérifier les infos.</p>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script type="module">
+        // INTERCEPTION GLOBALE DE LA CONSOLE (AMELIOREE)
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+        window._logHistory = [];
+        let currentConsoleFilter = 'all';
+        
+        function safeStringify(arg) {
+            if (arg instanceof Error) return arg.stack || arg.message;
+            if (typeof arg === 'object') {
+                try { return JSON.stringify(arg, null, 2); } catch(e) { return String(arg); }
+            }
+            return String(arg);
+        }
+
+        function pushToVisualConsole(type, args) {
+            const msg = Array.from(args).map(safeStringify).join(' ');
+            window._logHistory.push({ type, msg, time: new Date() });
+            
+            const output = document.getElementById('consoleOutput');
+            if (output) {
+                const el = document.createElement('div');
+                const timeStr = new Date().toLocaleTimeString();
+                el.className = `log-entry log-${type} p-3 rounded-xl border font-mono text-[11px] break-words flex items-start gap-3 animate-in fade-in slide-in-from-bottom-2`;
+                
+                let icon = '', bgClass = '', textClass = '', badge = '';
+                if (type === 'error') {
+                    icon = '<i class="fas fa-times-circle text-red-500 text-sm mt-0.5"></i>';
+                    bgClass = 'bg-red-500/10 border-red-500/30';
+                    textClass = 'text-red-200';
+                    badge = '<span class="bg-red-500 text-white px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider shadow-[0_0_8px_rgba(239,68,68,0.5)]">ERROR</span>';
+                } else if (type === 'warn') {
+                    icon = '<i class="fas fa-exclamation-triangle text-yellow-500 text-sm mt-0.5"></i>';
+                    bgClass = 'bg-yellow-500/10 border-yellow-500/30';
+                    textClass = 'text-yellow-200';
+                    badge = '<span class="bg-yellow-500 text-black px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider">WARN</span>';
+                } else {
+                    icon = '<i class="fas fa-info-circle text-blue-500 text-sm mt-0.5"></i>';
+                    bgClass = 'bg-blue-500/5 border-blue-500/20';
+                    textClass = 'text-blue-100';
+                    badge = '<span class="bg-blue-500/40 text-blue-200 px-1.5 py-0.5 rounded text-[9px] font-bold uppercase tracking-wider">INFO</span>';
+                }
+
+                el.className += ` ${bgClass}`;
+                if (currentConsoleFilter !== 'all' && currentConsoleFilter !== type) el.classList.add('hidden');
+
+                el.innerHTML = `
+                    <div class="shrink-0 flex items-center justify-center">${icon}</div>
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1.5">
+                            ${badge}
+                            <span class="text-white/40 text-[9px] font-bold">[${timeStr}]</span>
+                        </div>
+                        <div class="${textClass} leading-relaxed whitespace-pre-wrap">${msg}</div>
+                    </div>
+                `;
+
+                output.appendChild(el);
+                
+                // Auto-scroll
+                const isScrolledToBottom = output.scrollHeight - output.clientHeight <= output.scrollTop + 50;
+                if(isScrolledToBottom) output.scrollTop = output.scrollHeight;
+            }
+        }
+
+        console.log = function() { originalLog.apply(console, arguments); pushToVisualConsole('log', arguments); };
+        console.warn = function() { originalWarn.apply(console, arguments); pushToVisualConsole('warn', arguments); };
+        console.error = function() { originalError.apply(console, arguments); pushToVisualConsole('error', arguments); };
+        
+        window.addEventListener('error', function(event) { console.error("Global Error:", event.message, "at", event.filename, ":", event.lineno); });
+        window.addEventListener('unhandledrejection', function(event) { console.error("Unhandled Promise:", event.reason); });
+
+        // FIX MAGIQUE POUR LE CLAVIER MOBILE
+        if (window.visualViewport) {
+            const resizeHandler = () => {
+                let vh = window.visualViewport.height;
+                document.body.style.height = vh + 'px';
+                
+                if (vh < window.screen.height - 150) {
+                    document.body.classList.add('keyboard-open');
+                } else {
+                    document.body.classList.remove('keyboard-open');
+                }
+
+                window.scrollTo(0, 0); 
+                const chatArea = document.getElementById('chatArea');
+                if(chatArea) {
+                    chatArea.scrollTop = chatArea.scrollHeight;
+                }
+            };
+            window.visualViewport.addEventListener('resize', resizeHandler);
+            window.visualViewport.addEventListener('scroll', resizeHandler); 
+            resizeHandler(); 
+        }
+        
+        document.addEventListener('scroll', () => {
+            if (window.scrollY > 0) window.scrollTo(0, 0);
+        }, { passive: false });
+
+        const checkReady = setInterval(() => {
+            if (window.auth && window.db && window.app && window.messagingUtils) {
+                clearInterval(checkReady);
+                initApp();
+            }
+        }, 100);
+
+        function initApp() {
+            const { app, auth, db, firestoreUtils, deleteUser } = window;
+            const { signInAnonymously } = window;
+            const { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, setDoc, getDoc, getDocs, collectionGroup, updateDoc, arrayUnion } = firestoreUtils;
+            const { getMessaging, getToken, onMessage, isSupported } = window.messagingUtils;
+            
+            const vapidKey = "BPc3w8mDuNONg6Wl5TyU_x-l8KfUAtd_D868u3PaPpgrM7HUBMJ5qmuCCmR_U05YZlzGdYfFHPoQEzCakFaTjGM";
+
+            const splashScreen = document.getElementById('splashScreen');
+            const langPage = document.getElementById('langPage');
+            const authPage = document.getElementById('authPage');
+            const promoInstallModal = document.getElementById('promoInstallModal');
+            const welcomePage = document.getElementById('welcomePage');
+            const logoutModal = document.getElementById('logoutModal');
+            const installModal = document.getElementById('installModal');
+            const cguModal = document.getElementById('cguModal');
+            const infoModal = document.getElementById('infoModal');
+            const feedbackModal = document.getElementById('feedbackModal');
+            const reportModal = document.getElementById('reportModal');
+            const notifModal = document.getElementById('notifModal');
+            const consoleModal = document.getElementById('consoleModal');
+            const pinModal = document.getElementById('pinModal');
+            const mainApp = document.getElementById('mainApp');
+            const conversationContainer = document.getElementById('conversationContainer');
+            const chatArea = document.getElementById('chatArea');
+            const userInput = document.getElementById('userInput');
+            const sidebar = document.getElementById('sidebar');
+            const appOverlay = document.getElementById('appOverlay');
+            const historyList = document.getElementById('historyList');
+            const hardcoreContainer = document.getElementById('hardcoreContainer');
+
+            const MODEL = "gemini-2.5-flash";
+            const appId = window.__app_id; 
+            
+            let apiKeys = []; 
+            let currentKeyIndex = 0;
+            let userId = null;
+            let currentLang = 'fr'; 
+            let currentSessionId = null; 
+            let consecutiveErrors = 0;
+            
+            let isThiabsMode = false;
+            let currentModel = 'normal'; 
+            let isHardcoreMode = false; 
+            let currentResponseLength = 'medium'; 
+            
+            let dnaPrompts = { 
+                level_normal: "", level_travail: "", level_expert: "",
+                thiabs_motivation: "", thiabs_coach: "", thiabs_procrastination: "" 
+            }; 
+            
+            let hasSeenGrandIntro = false;
+            let hasSeenWelcomeMsg = false;
+
+            let currentUserName = "Utilisateur";
+            let currentUserMail = "";
+            let currentSessionMessages = []; 
+            let currentStarRating = 0;
+            
+            let currentAttachment = null; 
+            const MAX_MSGS = 200;
+            const MAX_UPLOADS = 10;
+            let userUsage = { msgCount: 0, msgReset: 0, uploadCount: 0, uploadReset: 0 };
+            
+            let userNotifs = { enabled: false, exerciseTime: "08:00", lastQuotaNotif: "", lastExerciseNotif: "", fcmToken: "" };
+
+            const isSupportedProtocol = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+            
+            if (userInput) {
+                userInput.addEventListener('focus', () => {
+                    setTimeout(() => {
+                        window.scrollTo(0,0);
+                        if(chatArea) chatArea.scrollTop = chatArea.scrollHeight;
+                    }, 100);
+                });
+            }
+
+            let messaging = null;
+            isSupported().then(supported => {
+                if (supported) {
+                    messaging = getMessaging(app);
+                    onMessage(messaging, (payload) => {
+                        const title = payload.notification?.title || "Level IA Premium";
+                        const body = payload.notification?.body || "Nouvelle information disponible.";
+                        if (Notification.permission === 'granted' && navigator.serviceWorker) {
+                            navigator.serviceWorker.ready.then(reg => {
+                                reg.showNotification(title, { body: body, icon: './icon.svg', badge: './icon.svg', vibrate: [200, 100, 200, 100, 200] });
+                            });
+                        } else {
+                            showSysToast(`📩 ${title} : ${body}`);
+                        }
+                    });
+                }
+            }).catch(err => console.error("❌ [FCM] Erreur :", err));
+
+            if ('serviceWorker' in navigator && isSupportedProtocol) {
+                navigator.serviceWorker.register('./firebase-messaging-sw.js')
+                .then((reg) => { reg.update(); document.getElementById('ind-pwa').className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"; })
+                .catch((err) => { document.getElementById('ind-pwa').className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; });
+            }
+
+            window.addEventListener('online', () => document.getElementById('ind-net').className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]");
+            window.addEventListener('offline', () => document.getElementById('ind-net').className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]");
+            if(!navigator.onLine) document.getElementById('ind-net').className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]";
+
+            const ua = navigator.userAgent || navigator.vendor || window.opera;
+            const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
+            const isStandalone = window.matchMedia('(display-mode: standalone)').matches || !!window.navigator.standalone;
+            let deferredPrompt;
+
+            window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
+
+            marked.setOptions({ breaks: true });
+            
+            // --- FIX DES LIENS EN BOUTONS ET DU BUG ABOUT:BLANK ---
+            marked.use({
+                renderer: {
+                    link(href, title, text) {
+                        let actualHref = href;
+                        let actualTitle = title;
+                        let actualText = text;
+
+                        // Support des nouvelles versions de MarkedJS où le 1er argument est un objet token
+                        if (typeof href === 'object' && href !== null) {
+                            actualHref = href.href || "";
+                            actualTitle = href.title || "";
+                            actualText = href.text || "";
+                            if (href.tokens && this.parser) {
+                                try { actualText = this.parser.parseInline(href.tokens); } catch(e) {}
+                            }
+                        }
+
+                        actualHref = actualHref || "";
+                        
+                        if (actualHref.startsWith('#')) {
+                            // Bouton de redirection interne (Switch Mode)
+                            return `<a href="${actualHref}" title="${actualTitle || ''}" class="inline-flex items-center justify-center gap-2 px-4 py-2 mt-3 bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/40 rounded-xl text-[12px] font-bold text-purple-300 transition-all no-underline shadow-lg active:scale-95">${actualText}</a>`;
+                        }
+                        // Boutons pour les liens externes générés par l'IA (corrige le bug about:blank)
+                        return `<a href="${actualHref}" target="_blank" rel="noopener noreferrer" title="${actualTitle || ''}" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-[11px] font-bold text-blue-300 transition-all no-underline active:scale-95 mx-1 shadow-sm"><i class="fas fa-external-link-alt text-[9px] opacity-70"></i> ${actualText}</a>`;
+                    }
+                }
+            });
+
+            function showSysToast(msg, isError = false) {
+                const t = document.getElementById('sysToast');
+                t.innerText = msg;
+                if(isError) {
+                    t.className = `fixed top-6 left-1/2 -translate-x-1/2 backdrop-blur-md border px-5 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest z-[9999] shadow-2xl transition-all bg-red-500/20 border-red-500/50 text-red-200`;
+                } else {
+                    t.className = `fixed top-6 left-1/2 -translate-x-1/2 backdrop-blur-md border px-5 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest z-[9999] shadow-2xl transition-all bg-emerald-500/20 border-emerald-500/50 text-emerald-200`;
+                }
+                t.classList.remove('hidden');
+                setTimeout(() => t.classList.add('hidden'), 5000);
+            }
+
+            const aiModels = {
+                level: {
+                    normal: { fr: "Normal (Intelligent)", en: "Normal (Smart)", promptFR: "Tu es un assistant généraliste ultra-intelligent, créatif et expert.", promptEN: "You are an ultra-intelligent, creative, and expert generalist assistant." },
+                    travail: { fr: "Travail (Vision & Projets)", en: "Work (Vision & Projects)", promptFR: "Tu es un expert en productivité, gestion de projets, vision stratégique et collaboration d'entreprise.", promptEN: "You are an expert in productivity, project management, strategic vision, and corporate collaboration." },
+                    expert: { fr: "Expert (Analytique)", en: "Expert (Analytical)", promptFR: "Tu es un expert technique et analytique. Tes réponses sont d'une précision et d'une rigueur absolues.", promptEN: "You are a technical and analytical expert. Your answers are absolutely precise and rigorous." }
+                },
+                thiabs: {
+                    motivation: { fr: "Motivation (Inspiration)", en: "Motivation (Inspiring)", promptFR: "Tu es un motivateur hors pair. Tu inspires, tu donnes de l'énergie et tu pousses l'utilisateur à croire en ses rêves.", promptEN: "You are an outstanding motivator. You inspire, energize, and push the user to believe in their dreams." },
+                    coach: { fr: "Coach (Développement)", en: "Coach (Development)", promptFR: "Tu es un Master Coach de développement personnel. Tu donnes de la force et des conseils concrets pour atteindre le sommet.", promptEN: "You are a Master Personal Development Coach. You give strength and concrete advice to reach the top." },
+                    procrastination: { fr: "Anti-Procrastination", en: "Anti-Procrastination", promptFR: "Tu es un coach anti-procrastination implacable. Tu refuses les excuses et tu forces à l'action immédiate.", promptEN: "You are a formidable anti-procrastination coach. You accept no excuses and force immediate action." }
+                }
+            };
+
+            const i18n = {
+                fr: {
+                    authTitle: "Entrez votre Clé d'Accès", verifyBtn: "Vérifier la clé", getKeyText: "Obtenir ma clé", menuTitle: "Menu",
+                    thiabsModeTitle: "Mode Thiab's 🌟", thiabsModeDesc: "Activer le développement personnel",
+                    langTitle: "Langue", modelTitle: "Modèle IA", lengthTitle: "Taille des réponses", cloudSpace: "Espace Cloud", historyTitle: "Historique des sessions", newChatText: "Nouvelle session",
+                    dnaTitle: "DNA de <strong id='dnaAppBrand'>{app}</strong>", saveDNA: "Mettre à jour", supportTitle: "Support & Compte", logoutBtn: "Déconnexion", placeholder: "Message...", dnaPlaceholder: "Ex: Parle-moi comme à un ami...",
+                    invalidFormat: "Format invalide. Exemple: LVL-XXXXX-XXXXX", keyNotFound: "Clé introuvable ou incorrecte.", welcomeGreeting: "Bienvenue", welcomeDesc: "Prêt à vous assister. Découvrez une intelligence conçu pour vous accompagner au quotidien.", continueBtn: "Continuer", footerBranding: "Propulsé par <strong>LevelUp</strong>",
+                    logoutModalTitle: "Déconnexion", logoutModalDesc: "Voulez-vous vraiment quitter votre session actuelle ?", cancelBtn: "Annuler", confirmLogout: "Quitter", verifiedStatus: "Vérifié via clé",
+                    installAppMenuText: "Installer l'App", installModalTitle: "Installer l'App", installModalDesc: "Ajoutez l'application sur votre écran d'accueil :",
+                    installiOS: "🍎 iOS (Safari) : Appuyez sur Partager <i class='fas fa-share-square mx-1'></i> puis 'Sur l'écran d'accueil'.", installAndroid: "🤖 Android (Chrome) : Appuyez sur Menu <i class='fas fa-ellipsis-v mx-1'></i> puis 'Ajouter à l'écran d'accueil'.",
+                    cguMenuText: "Règles & Sécurité", cguModalTitle: "Conditions (CGU)",
+                    cguText1: "🔞 <strong class='text-white'>Âge requis :</strong> Vous devez avoir 16 ans ou plus pour utiliser cette application.",
+                    cguText2: "⚖️ <strong class='text-white'>Responsabilité :</strong> En utilisant Level IA, vous prenez l'entière responsabilité.",
+                    cguText3: "⚖️ <strong class='text-white'>Absence de garantie :</strong> Bien que nos modèles soient très avancés, l'IA peut parfois commettre des erreurs.",
+                    cguText4: "⚖️ <strong class='text-white'>Protection Légale :</strong> Les développeurs déclinent toute responsabilité.",
+                    cguText5: "🔞 <strong class='text-white'>Accès restreint :</strong> L'utilisation implique l'acceptation de ces termes.",
+                    infoMenuText: "Informations App", infoModalTitle: "À propos de l'Application", closeBtn: "Accepter & Fermer", closeInfoBtn: "Fermer",
+                    infoText1: "🧠 <strong class='text-white'>Moteur IA (GEMINI) :</strong> Propulsé par le puissant moteur <strong>Gemini 2.5 Flash</strong> (développé par Google).",
+                    infoText2: "🔒 <strong class='text-white'>Architecture & Sécurité :</strong> Hébergé sur l'infrastructure ultra-sécurisée de <strong>Google Cloud</strong>.",
+                    infoText3: "⚡ <strong class='text-white'>Écosystème Dual-Persona :</strong> Deux environnements distincts : Level IA (Productivité) et Thiab's Mode (Dev Perso).",
+                    hardcoreTitle: "Mode Hardcore 🤬", hardcoreDesc: "Désactiver la politesse", feedbackMenuText: "Avis", reportMenuText: "Signaler",
+                    lblImportImg: "Image", lblImportDoc: "Document (PDF)",
+                    notifMenuText: "Rappels & Notifs", notifModalTitle: "Notifications", notifEnable: "Activer les alertes", notifTime: "Heure de l'exercice", notifSave: "Enregistrer",
+                    promoTitle: "Passe au niveau<br><span class='text-purple-400'>Supérieur</span>",
+                    promoDesc: "Pour une expérience fluide, un accès ultra-rapide et recevoir des notifications, installe l'app.",
+                    promoInstallText: "Installer l'App", promoSkipText: "Continuer sur le web",
+                    consoleMenuText: "Console Dev",
+                    pinModalDesc: "⚠️ Accès restreint au développeur.",
+                    lengthOptions: { medium: "Moyenne (Chill & Pro)", long: "Longue (Détaillée)", short: "Courte (Directe)" }
+                },
+                en: {
+                    authTitle: "Enter your Access Key", verifyBtn: "Verify Key", getKeyText: "Get my Key", menuTitle: "Menu",
+                    thiabsModeTitle: "Thiab's Mode 🌟", thiabsModeDesc: "Activate personal development",
+                    langTitle: "Language", modelTitle: "AI Model", lengthTitle: "Response Length", cloudSpace: "Cloud Space", historyTitle: "Session History", newChatText: "New session",
+                    dnaTitle: "<strong id='dnaAppBrand'>{app}</strong> DNA", saveDNA: "Update", supportTitle: "Support & Account", logoutBtn: "Log out", placeholder: "Message...", dnaPlaceholder: "Ex: Speak to me like a friend...",
+                    invalidFormat: "Invalid format. Example: LVL-XXXXX-XXXXX", keyNotFound: "Key not found or incorrect.", welcomeGreeting: "Welcome", welcomeDesc: "Ready to assist you. Discover an intelligence designed to support you daily.", continueBtn: "Continue", footerBranding: "Powered by <strong>LevelUp</strong>",
+                    logoutModalTitle: "Log out", logoutModalDesc: "Are you sure you want to leave your current session?", cancelBtn: "Cancel", confirmLogout: "Leave", verifiedStatus: "Key verified",
+                    installAppMenuText: "Install App", installModalTitle: "Install App", installModalDesc: "Add the app to your home screen:",
+                    installiOS: "🍎 iOS (Safari): Tap Share <i class='fas fa-share-square mx-1'></i> then 'Add to Home Screen'.", installAndroid: "🤖 Android (Chrome): Tap Menu <i class='fas fa-ellipsis-v mx-1'></i> then 'Add to Home Screen'.",
+                    cguMenuText: "Rules & Security", cguModalTitle: "Terms of Use (CGU)",
+                    cguText1: "🔞 <strong class='text-white'>Age requirement:</strong> You must be 16 years or older to use this application.",
+                    cguText2: "⚖️ <strong class='text-white'>Liability:</strong> By using Level IA, you take full responsibility.",
+                    cguText3: "⚖️ <strong class='text-white'>No warranty:</strong> AI can sometimes make errors.",
+                    cguText4: "⚖️ <strong class='text-white'>Legal Protection:</strong> Developers decline any responsibility.",
+                    cguText5: "🔞 <strong class='text-white'>Restricted access:</strong> Using implies unconditional acceptance.",
+                    infoMenuText: "App Information", infoModalTitle: "About the Application", closeBtn: "Accept & Close", closeInfoBtn: "Close",
+                    infoText1: "🧠 <strong class='text-white'>AI Engine (GEMINI):</strong> Powered by <strong>Gemini 2.5 Flash</strong> (Google).",
+                    infoText2: "🔒 <strong class='text-white'>Architecture & Security:</strong> Hosted on <strong>Google Cloud</strong>.",
+                    infoText3: "⚡ <strong class='text-white'>Dual-Persona Ecosystem:</strong> Level IA (Productivity) and Thiab's Mode.",
+                    hardcoreTitle: "Hardcore Mode 🤬", hardcoreDesc: "Disable politeness", feedbackMenuText: "Feedback", reportMenuText: "Report",
+                    lblImportImg: "Image", lblImportDoc: "Document (PDF)",
+                    notifMenuText: "Reminders & Notifs", notifModalTitle: "Notifications", notifEnable: "Enable alerts", notifTime: "Exercise Time", notifSave: "Save",
+                    promoTitle: "Level Up your<br><span class='text-purple-400'>Experience</span>",
+                    promoDesc: "Install the Level IA application on your device right now.",
+                    promoInstallText: "Install App", promoSkipText: "Continue on web",
+                    consoleMenuText: "Dev Console",
+                    pinModalDesc: "⚠️ Restricted access to developer.",
+                    lengthOptions: { medium: "Medium (Chill & Pro)", long: "Long (Detailed)", short: "Short (Direct)" }
+                }
+            };
+
+            const setSafeText = (id, text) => { const el = document.getElementById(id); if (el && text) el.innerText = text; };
+            const setSafeHTML = (id, text) => { const el = document.getElementById(id); if (el && text) el.innerHTML = text; };
+
+            const applyLanguage = (lang) => {
+                currentLang = lang;
+                const t = i18n[lang];
+                
+                setSafeHTML('authTitle', t.authTitle);
+                setSafeText('verifyKeyBtn', t.verifyBtn);
+                setSafeText('getKeyText', t.getKeyText);
+                setSafeText('menuTitle', t.menuTitle);
+                setSafeText('thiabsModeTitle', t.thiabsModeTitle);
+                setSafeText('thiabsModeDesc', t.thiabsModeDesc);
+                setSafeText('langTitle', t.langTitle);
+                setSafeText('modelTitle', t.modelTitle);
+                setSafeText('lengthTitle', t.lengthTitle);
+                setSafeText('cloudSpace', t.cloudSpace);
+                setSafeText('historyTitle', t.historyTitle);
+                setSafeText('newChatText', t.newChatText);
+                
+                const appName = isThiabsMode ? "Thiab's" : "Level IA";
+                setSafeHTML('dnaTitle', t.dnaTitle.replace("{app}", appName));
+                
+                setSafeText('saveDNA', t.saveDNA);
+                setSafeText('supportTitle', t.supportTitle);
+                setSafeText('logoutBtn', t.logoutBtn);
+                const uiInput = document.getElementById('userInput'); if(uiInput) uiInput.placeholder = t.placeholder;
+                const cdInput = document.getElementById('customDNA'); if(cdInput) cdInput.placeholder = t.dnaPlaceholder;
+                setSafeText('welcomeGreeting', t.welcomeGreeting);
+                setSafeText('welcomeDesc', t.welcomeDesc);
+                setSafeText('continueBtnText', t.continueBtn);
+                setSafeHTML('footerBranding', t.footerBranding);
+                
+                setSafeText('logoutModalTitle', t.logoutModalTitle);
+                setSafeText('logoutModalDesc', t.logoutModalDesc);
+                setSafeText('cancelLogoutBtn', t.cancelBtn);
+                setSafeText('confirmLogoutBtn', t.confirmLogout);
+                setSafeText('installAppMenuText', t.installAppMenuText);
+                setSafeText('installModalTitle', t.installModalTitle);
+                setSafeText('installModalDesc', t.installModalDesc);
+                setSafeHTML('installiOS', t.installiOS);
+                setSafeHTML('installAndroid', t.installAndroid);
+                setSafeText('closeInstallModalBtn', t.closeBtn);
+                setSafeText('cguMenuText', t.cguMenuText);
+                setSafeText('cguModalTitle', t.cguModalTitle);
+                setSafeHTML('cguText1', t.cguText1);
+                setSafeHTML('cguText2', t.cguText2);
+                setSafeHTML('cguText3', t.cguText3);
+                setSafeHTML('cguText4', t.cguText4);
+                setSafeHTML('cguText5', t.cguText5);
+                setSafeText('closeCguModalBtn', t.closeBtn);
+                
+                setSafeText('infoMenuText', t.infoMenuText);
+                setSafeText('infoModalTitle', t.infoModalTitle);
+                setSafeHTML('infoText1', t.infoText1);
+                setSafeHTML('infoText2', t.infoText2);
+                setSafeHTML('infoText3', t.infoText3);
+                setSafeText('closeInfoModalBtn', t.closeInfoBtn);
+                
+                setSafeText('feedbackMenuText', t.feedbackMenuText);
+                setSafeText('reportMenuText', t.reportMenuText);
+                setSafeText('lblImportImg', t.lblImportImg);
+                setSafeText('lblImportDoc', t.lblImportDoc);
+
+                setSafeText('hardcoreTitle', t.hardcoreTitle);
+                setSafeText('hardcoreDesc', t.hardcoreDesc);
+                
+                setSafeText('notifMenuText', t.notifMenuText);
+                setSafeText('notifModalTitle', t.notifModalTitle);
+                setSafeText('lblNotifEnable', t.notifEnable);
+                setSafeText('lblNotifTime', t.notifTime);
+                setSafeText('saveNotifBtn', t.notifSave);
+
+                setSafeHTML('promoTitle', t.promoTitle);
+                setSafeText('promoDesc', t.promoDesc);
+                setSafeText('promoInstallText', t.promoInstallText);
+                setSafeText('promoSkipText', t.promoSkipText);
+                setSafeText('consoleMenuText', t.consoleMenuText);
+                setSafeText('pinModalDesc', t.pinModalDesc);
+                
+                const userStatusEl = document.getElementById('userStatus');
+                if(userStatusEl) userStatusEl.innerHTML = `<i class="fas fa-shield-alt"></i> ${t.verifiedStatus}`;
+                
+                const lSelect = document.getElementById('langSelect'); if(lSelect) lSelect.value = lang;
+                
+                const selectLength = document.getElementById('lengthSelect');
+                if(selectLength && selectLength.options.length >= 3) {
+                    selectLength.options[0].text = t.lengthOptions.medium;
+                    selectLength.options[1].text = t.lengthOptions.long;
+                    selectLength.options[2].text = t.lengthOptions.short;
+                }
+                
+                populateModels();
+                updateBranding();
+            };
+
+            const populateModels = () => {
+                const selectModel = document.getElementById('modelSelect');
+                if(!selectModel) return;
+                selectModel.innerHTML = '';
+                const category = isThiabsMode ? 'thiabs' : 'level';
+                const models = aiModels[category];
+                
+                for (const [key, value] of Object.entries(models)) {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.className = "bg-black text-white";
+                    option.text = value[currentLang];
+                    selectModel.appendChild(option);
+                }
+                selectModel.value = currentModel;
+            };
+
+            const updateBranding = () => {
+                const appName = isThiabsMode ? "Thiab's" : "Level IA";
+                const category = isThiabsMode ? 'thiabs' : 'level';
+                
+                setSafeText('headerAppBrand', appName);
+                setSafeText('dnaAppBrand', appName);
+                setSafeText('authAppTitle', appName);
+                
+                if(aiModels[category] && aiModels[category][currentModel]) {
+                    setSafeText('headerModelName', aiModels[category][currentModel][currentLang]);
+                }
+                
+                const hardcoreContainer = document.getElementById('hardcoreContainer');
+                if (hardcoreContainer) {
+                    if (currentModel === 'coach' || currentModel === 'procrastination' || currentModel === 'expert') {
+                        hardcoreContainer.classList.remove('hidden');
+                    } else {
+                        hardcoreContainer.classList.add('hidden');
+                    }
+                }
+                
+                const dnaKey = `${category}_${currentModel}`;
+                const customDNA = document.getElementById('customDNA');
+                if(customDNA) customDNA.value = dnaPrompts[dnaKey] || "";
+            };
+
+            window.switchToLevelIA = async () => {
+                isThiabsMode = false;
+                currentModel = 'normal';
+                const toggle = document.getElementById('thiabsModeToggle');
+                if(toggle) toggle.checked = false;
+                populateModels();
+                updateBranding();
+                if (userId) {
+                    await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { isThiabsMode: false, model: 'normal' }, { merge: true });
+                }
+                
+                // Effacer l'écran et la mémoire pour repartir à zéro (Clean Slate)
+                currentSessionId = null;
+                currentSessionMessages = [];
+                const conversationContainer = document.getElementById('conversationContainer');
+                if (conversationContainer) conversationContainer.innerHTML = '';
+                document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+
+                const transitionMsg = currentLang === 'fr'
+                    ? "🔄 **Bascule effectuée.** Je suis de retour en mode **Level IA (Normal)**. La discussion précédente a été mise de côté pour qu'on reparte sur de bonnes bases ! Que souhaites-tu savoir ?"
+                    : "🔄 **Switch complete.** I am back in **Level IA (Normal)** mode. The previous history has been set aside so we can start fresh! What would you like to know?";
+
+                displayAIMessage(transitionMsg, true);
+                
+                const chatArea = document.getElementById('chatArea');
+                if(chatArea) chatArea.scrollTop = chatArea.scrollHeight;
+            };
+
+            const convContainer = document.getElementById('conversationContainer');
+            if(convContainer) {
+                convContainer.addEventListener('click', (e) => {
+                    if (e.target.tagName === 'A' && e.target.getAttribute('href') === '#switch-level-ia') {
+                        e.preventDefault();
+                        window.switchToLevelIA();
+                    }
+                });
+            }
+
+            const savedLang = localStorage.getItem('thiabs_saved_lang');
+            if (savedLang) {
+                applyLanguage(savedLang);
+            } else {
+                applyLanguage('fr');
+            }
+
+            document.getElementById('langSelect').addEventListener('change', (e) => {
+                applyLanguage(e.target.value);
+                localStorage.setItem('thiabs_saved_lang', e.target.value);
+            });
+
+            document.getElementById('thiabsModeToggle').addEventListener('change', async (e) => {
+                isThiabsMode = e.target.checked;
+                currentModel = isThiabsMode ? 'motivation' : 'normal';
+                
+                populateModels();
+                updateBranding();
+                
+                if (userId) {
+                    await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { isThiabsMode: isThiabsMode, model: currentModel }, { merge: true });
+                }
+                startNewChat();
+                closeSidebar();
+            });
+
+            document.getElementById('modelSelect').addEventListener('change', async (e) => {
+                currentModel = e.target.value;
+                updateBranding();
+                if (userId) {
+                    await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { model: currentModel }, { merge: true });
+                }
+                startNewChat();
+                closeSidebar();
+            });
+
+            document.getElementById('lengthSelect').addEventListener('change', async (e) => {
+                currentResponseLength = e.target.value;
+                if (userId) {
+                    await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { responseLength: currentResponseLength }, { merge: true });
+                }
+            });
+
+            document.getElementById('hardcoreToggle').addEventListener('change', async (e) => {
+                isHardcoreMode = e.target.checked;
+                if (userId) {
+                    await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { hardcore: isHardcoreMode }, { merge: true });
+                }
+            });
+
+            async function checkUsage(type) {
+                const now = Date.now();
+                const DAY_MS = 24 * 60 * 60 * 1000;
+                let updated = false;
+
+                if (now > userUsage.msgReset) { userUsage.msgCount = 0; userUsage.msgReset = now + DAY_MS; updated = true; }
+                if (now > userUsage.uploadReset) { userUsage.uploadCount = 0; userUsage.uploadReset = now + DAY_MS; updated = true; }
+
+                if (type === 'msg') {
+                    if (userUsage.msgCount >= MAX_MSGS) return { allowed: false, resetDate: new Date(userUsage.msgReset) };
+                    userUsage.msgCount++;
+                    updated = true;
+                } else if (type === 'upload') {
+                    if (userUsage.uploadCount >= MAX_UPLOADS) return { allowed: false, resetDate: new Date(userUsage.uploadReset) };
+                    userUsage.uploadCount++;
+                    updated = true;
+                }
+
+                if (updated && userId) {
+                    await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "usage"), userUsage);
+                }
+                return { allowed: true };
+            }
+
+            setInterval(() => {
+                if (!userNotifs.enabled || !("Notification" in window) || Notification.permission !== "granted") return;
+                
+                const now = new Date();
+                const todayStr = now.toDateString();
+
+                const fireNotification = (title, body) => {
+                    if (navigator.serviceWorker) {
+                        navigator.serviceWorker.ready.then(reg => {
+                            reg.showNotification(title, { body: body, icon: './icon.svg', badge: './icon.svg', vibrate: [200, 100, 200, 100, 200] });
+                        }).catch(() => {
+                            new Notification(title, { body: body, icon: './icon.svg' });
+                        });
+                    } else {
+                        new Notification(title, { body: body, icon: './icon.svg' });
+                    }
+                };
+
+                if (userUsage.msgCount >= MAX_MSGS && now.getTime() > userUsage.msgReset && userNotifs.lastQuotaNotif !== todayStr) {
+                    fireNotification("Level IA", currentLang === 'fr' ? "Tes quotas sont réinitialisés ! Tu peux de nouveau discuter." : "Your quotas are reset! You can chat again.");
+                    userNotifs.lastQuotaNotif = todayStr;
+                    if(userId) setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "notifications"), userNotifs, { merge: true });
+                }
+
+                if (userNotifs.exerciseTime) {
+                    const currentMins = now.getHours() * 60 + now.getMinutes();
+                    const [exH, exM] = userNotifs.exerciseTime.split(':').map(Number);
+                    const exTotalMins = exH * 60 + exM;
+                    const diff = currentMins - exTotalMins;
+                    
+                    if (diff >= 0 && diff <= 60 && userNotifs.lastExerciseNotif !== todayStr) {
+                        fireNotification("Thiab's Mode 🌟", currentLang === 'fr' ? "C'est l'heure de ton exercice ! Ne remets pas à plus tard, ouvre Level IA." : "It's time for your exercise! Don't procrastinate, open Level IA.");
+                        userNotifs.lastExerciseNotif = todayStr;
+                        if(userId) setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "notifications"), userNotifs, { merge: true });
+                    }
+                }
+            }, 30000);
+
+            document.getElementById('promoSkipBtn').onclick = () => {
+                localStorage.setItem('thiabs_skipped_install', 'true');
+                promoInstallModal.classList.add('hidden');
+                authPage.classList.remove('hidden');
+            };
+
+            document.getElementById('promoInstallBtn').onclick = async () => {
+                if (deferredPrompt) {
+                    deferredPrompt.prompt();
+                    const { outcome } = await deferredPrompt.userChoice;
+                    if (outcome === 'accepted') {
+                        localStorage.setItem('thiabs_skipped_install', 'true');
+                        promoInstallModal.classList.add('hidden');
+                        authPage.classList.remove('hidden');
+                    }
+                    deferredPrompt = null;
+                } else {
+                    promoInstallModal.classList.add('hidden');
+                    installModal.classList.remove('hidden');
+                    document.getElementById('closeInstallModalBtn').onclick = () => {
+                        localStorage.setItem('thiabs_skipped_install', 'true');
+                        installModal.classList.add('hidden');
+                        authPage.classList.remove('hidden');
+                        document.getElementById('closeInstallModalBtn').onclick = () => installModal.classList.add('hidden');
+                    };
+                }
+            };
+
+            async function processLogin(keyVal, isAutoLogin = false) {
+                const btn = document.getElementById('verifyKeyBtn');
+                const errorMsg = document.getElementById('keyError');
+                const errorDetailsSpan = document.getElementById('keyErrorDetails');
+                
+                const keyFormatRegex = /^(LVL|THB)-[A-Z0-9]{3,6}-[A-Z0-9]{3,6}$/;
+                if (!keyFormatRegex.test(keyVal)) {
+                    if (!isAutoLogin) {
+                        document.getElementById('keyErrorMain').innerText = currentLang === 'fr' ? "Format de code invalide." : "Invalid code format.";
+                        errorDetailsSpan.innerText = "Attendu: LVL-XXXXX-XXXXX";
+                        errorDetailsSpan.classList.remove('hidden');
+                        errorMsg.classList.remove('hidden');
+                    }
+                    return;
+                }
+                
+                if (!isAutoLogin) {
+                    btn.innerText = "Recherche..."; btn.disabled = true; errorMsg.classList.add('hidden');
+                }
+                
+                try {
+                    if (!auth.currentUser) {
+                        await signInAnonymously(auth);
+                    }
+
+                    const q = collectionGroup(db, 'security');
+                    const querySnapshot = await getDocs(q);
+                    let foundUserData = null;
+                    
+                    querySnapshot.forEach(docSnap => {
+                        if (docSnap.data().key === keyVal) foundUserData = docSnap.data();
+                    });
+                    
+                    if (foundUserData) {
+                        userId = foundUserData.uid;
+                        document.getElementById('ind-db').className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"; 
+                        authPage.classList.add('hidden');
+                        langPage.classList.add('hidden'); 
+                        promoInstallModal.classList.add('hidden');
+                        
+                        try {
+                            const configDoc = await getDoc(doc(db, "artifacts", appId, "system", "config"));
+                            if (configDoc.exists()) {
+                                const data = configDoc.data();
+                                const rawKeys = data.gemini_api_keys || data.gemini_api_key;
+                                
+                                if (Array.isArray(rawKeys) && rawKeys.length > 0) {
+                                    apiKeys = rawKeys.map(k => k.trim());
+                                } else if (typeof rawKeys === 'string' && rawKeys.trim() !== '') {
+                                    apiKeys = [rawKeys.trim()];
+                                }
+                            }
+                        } catch(err) { console.error("Config Firebase refusée", err); }
+                        
+                        const userEmail = foundUserData.owner || "email@inconnu.com";
+                        const userName = foundUserData.name || foundUserData.displayName || userEmail.split('@')[0] || "Utilisateur";
+                        
+                        currentUserName = userName;
+                        currentUserMail = userEmail;
+                        
+                        document.getElementById('userName').innerText = userName;
+                        document.getElementById('userMail').innerText = userEmail;
+                        
+                        const avatarUrl = foundUserData.photoURL || foundUserData.picture || `https://ui-avatars.com/api/?name=${userName}&background=a855f7&color=fff`;
+                        document.getElementById('userAvatar').innerHTML = `<img src="${avatarUrl}" class="w-full h-full object-cover">`;
+                        
+                        document.getElementById('welcomeName').innerText = userName;
+                        document.getElementById('welcomeAvatar').src = avatarUrl;
+                        
+                        welcomePage.classList.remove('hidden'); 
+                        document.getElementById('supportMail').href = `mailto:levelup.iao@gmail.com?subject=Support (ID: ${userId} - Nom: ${userName})`;
+
+                        try {
+                            const dnaDoc = await getDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"));
+                            if (dnaDoc.exists()) {
+                                const d = dnaDoc.data();
+                                hasSeenGrandIntro = d.hasSeenGrandIntro || false;
+                                if (d.prompts) dnaPrompts = { ...dnaPrompts, ...d.prompts };
+                                if (d.isThiabsMode !== undefined) { isThiabsMode = d.isThiabsMode; document.getElementById('thiabsModeToggle').checked = isThiabsMode; }
+                                if (d.model) {
+                                    const category = isThiabsMode ? 'thiabs' : 'level';
+                                    currentModel = aiModels[category][d.model] ? d.model : (isThiabsMode ? 'motivation' : 'normal');
+                                }
+                                if (d.hardcore !== undefined) { isHardcoreMode = d.hardcore; document.getElementById('hardcoreToggle').checked = isHardcoreMode; }
+                                if (d.responseLength) { currentResponseLength = d.responseLength; document.getElementById('lengthSelect').value = currentResponseLength; }
+                            }
+                            
+                            const usageDoc = await getDoc(doc(db, "artifacts", appId, "users", userId, "settings", "usage"));
+                            if(usageDoc.exists()) userUsage = usageDoc.data();
+                            
+                            const notifDoc = await getDoc(doc(db, "artifacts", appId, "users", userId, "settings", "notifications"));
+                            if(notifDoc.exists()) {
+                                userNotifs = { ...userNotifs, ...notifDoc.data() };
+                                document.getElementById('notifToggle').checked = userNotifs.enabled;
+                                document.getElementById('exerciseTimeInput').value = userNotifs.exerciseTime;
+                            }
+                            
+                        } catch(e) {}
+                        
+                        populateModels();
+                        updateBranding();
+
+                        localStorage.setItem('thiabs_saved_key', keyVal);
+                        localStorage.setItem('thiabs_saved_lang', currentLang);
+
+                        setupHistoryListener();
+                    } else {
+                        document.getElementById('ind-db').className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; 
+                        if (!isAutoLogin) {
+                            document.getElementById('keyErrorMain').innerText = currentLang === 'fr' ? "Code d'accès incorrect ou expiré." : "Access code incorrect or expired.";
+                            errorDetailsSpan.innerText = "[DEBUG] Clé non trouvée en base de données.";
+                            errorDetailsSpan.classList.remove('hidden');
+                            errorMsg.classList.remove('hidden');
+                        } else {
+                            localStorage.removeItem('thiabs_saved_key');
+                            checkPromoInstall();
+                        }
+                    }
+                } catch (e) {
+                    document.getElementById('ind-db').className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; 
+                    if (!isAutoLogin) {
+                        document.getElementById('keyErrorMain').innerText = "Erreur de connexion (Base de données).";
+                        errorDetailsSpan.innerText = `Détails: ${e.message || e.code}`;
+                        errorDetailsSpan.classList.remove('hidden');
+                        errorMsg.classList.remove('hidden');
+                    } else {
+                        checkPromoInstall();
+                    }
+                }
+                
+                if (!isAutoLogin) {
+                    btn.innerText = i18n[currentLang].verifyBtn; btn.disabled = false;
+                }
+            }
+
+            const checkPromoInstall = () => {
+                langPage.classList.add('hidden');
+                const skipped = localStorage.getItem('thiabs_skipped_install');
+                
+                if (!isStandalone && !skipped) {
+                    promoInstallModal.classList.remove('hidden');
+                } else {
+                    authPage.classList.remove('hidden');
+                }
+            };
+
+            const startIntro = () => {
+                const s1 = document.getElementById('splash1');
+                const s2 = document.getElementById('splash2');
+                
+                setTimeout(() => s1.classList.add('active'), 200);
+                setTimeout(() => { s1.classList.remove('active'); s1.classList.add('exit'); }, 1200);
+                setTimeout(() => s2.classList.add('active'), 1500);
+                setTimeout(() => { s2.classList.remove('active'); s2.classList.add('exit'); }, 2800);
+                setTimeout(() => {
+                    splashScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        splashScreen.style.display = 'none';
+                        const savedKey = localStorage.getItem('thiabs_saved_key');
+                        if (!savedKey) {
+                            langPage.classList.remove('hidden');
+                        }
+                    }, 400); 
+                }, 3000);
+            };
+            startIntro();
+
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.onclick = () => {
+                    applyLanguage(btn.dataset.lang);
+                    checkPromoInstall();
+                };
+            });
+
+            const initAuth = async () => {
+                try {
+                    if (!auth.currentUser) await signInAnonymously(auth);
+                    const savedKey = localStorage.getItem('thiabs_saved_key');
+                    if (savedKey) await processLogin(savedKey, true);
+                } catch(e) {
+                    showSysToast("❌ ERREUR: Connexion anonyme désactivée", true);
+                }
+            };
+            initAuth();
+
+            const accessKeyInput = document.getElementById('accessKeyInput');
+            accessKeyInput.addEventListener('input', function(e) {
+                let val = this.value.toUpperCase();
+                val = val.replace(/[^A-Z0-9-]/g, '');
+                
+                if (val.length > 0) {
+                    const isOldFormat = val.startsWith('T') || val.startsWith('TH') || val.startsWith('THB');
+                    const isNewFormat = val.startsWith('L') || val.startsWith('LV') || val.startsWith('LVL');
+                    
+                    if (!isOldFormat && !isNewFormat) {
+                        val = 'LVL-' + val.replace(/^-+/, ''); 
+                    }
+                }
+                this.value = val.substring(0, 16);
+            });
+
+            document.getElementById('verifyKeyBtn').onclick = () => {
+                const keyVal = document.getElementById('accessKeyInput').value.trim().toUpperCase();
+                if (!keyVal) return;
+                processLogin(keyVal, false);
+            };
+
+            document.getElementById('startAppBtn').onclick = () => {
+                welcomePage.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                mainApp.classList.add('flex');
+                startNewChat();
+            };
+
+            function setupHistoryListener() {
+                if (!userId) return;
+                const q = query(collection(db, "artifacts", appId, "users", userId, "sessions"), orderBy("updatedAt", "desc"));
+                
+                onSnapshot(q, (snap) => {
+                    let totalSize = 0;
+                    historyList.innerHTML = '';
+
+                    snap.forEach(d => {
+                        const data = d.data();
+                        totalSize += JSON.stringify(data).length;
+                        
+                        const isThiabs = data.isThiabsMode === true;
+                        const cat = isThiabs ? 'thiabs' : 'level';
+                        const m = data.model || 'normal';
+                        const modelTitle = aiModels[cat] && aiModels[cat][m] ? aiModels[cat][m][currentLang] : m;
+                        
+                        const badgeHTML = isThiabs 
+                            ? `<span class="px-2 py-1 rounded bg-purple-500/20 text-purple-300 text-[9px] font-bold tracking-widest border border-purple-500/30">THIAB'S</span>` 
+                            : `<span class="px-2 py-1 rounded bg-white/10 text-white/50 text-[9px] font-bold tracking-widest border border-white/10">LEVEL IA</span>`;
+
+                        const item = document.createElement('div');
+                        const isActive = currentSessionId === d.id ? 'active' : '';
+                        item.className = `chat-item p-3.5 rounded-xl flex items-center justify-between group cursor-pointer animate-in fade-in ${isActive}`;
+                        
+                        item.innerHTML = `
+                            <div class="flex-1 min-w-0 pr-3">
+                                <p class="text-[13px] font-bold text-white truncate">${data.title}</p>
+                                <div class="flex items-center gap-2 mt-1.5">
+                                    ${badgeHTML}
+                                    <span class="text-[10px] text-white/40 uppercase truncate font-semibold">${modelTitle} • ${new Date(data.updatedAt).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                            <button class="delete-msg opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:text-red-300 transition-all">
+                                <i class="fas fa-trash-alt text-sm"></i>
+                            </button>
+                        `;
+                        item.onclick = (e) => {
+                            if (e.target.closest('.delete-msg')) {
+                                deleteDoc(doc(db, "artifacts", appId, "users", userId, "sessions", d.id));
+                                if (currentSessionId === d.id) startNewChat();
+                            } else {
+                                loadSession(d.id, data.messages, data.isThiabsMode, data.model);
+                                closeSidebar();
+                            }
+                        };
+                        historyList.appendChild(item);
+                    });
+
+                    document.getElementById('storageBar').style.width = Math.min((totalSize / 300000) * 100, 100) + '%';
+                    document.getElementById('storageLabel').innerText = Math.round(Math.min((totalSize / 300000) * 100, 100)) + '%';
+                });
+            }
+
+            function startNewChat() {
+                currentSessionId = null;
+                currentSessionMessages = []; 
+                conversationContainer.innerHTML = '';
+                
+                if (!hasSeenWelcomeMsg && hasSeenGrandIntro) {
+                    const welcomeMsg = currentLang === 'fr' 
+                        ? "Salut bro ! Que puis-je faire pour toi aujourd'hui ?" 
+                        : "Hey bro! What can I do for you today?";
+                    displayAIMessage(welcomeMsg, true);
+                    hasSeenWelcomeMsg = true;
+                }
+                
+                document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+            }
+
+            document.getElementById('newChatBtn').onclick = () => {
+                startNewChat();
+                closeSidebar();
+            };
+
+            function loadSession(id, messages, sessionIsThiabsMode, sessionModel) {
+                currentSessionId = id;
+                currentSessionMessages = []; 
+                conversationContainer.innerHTML = '';
+                
+                const modeToLoad = sessionIsThiabsMode === true; 
+                let modelToLoad = sessionModel || 'normal'; 
+                
+                const catToLoad = modeToLoad ? 'thiabs' : 'level';
+                if (!aiModels[catToLoad][modelToLoad]) {
+                    modelToLoad = modeToLoad ? 'motivation' : 'normal';
+                }
+                
+                isThiabsMode = modeToLoad;
+                currentModel = modelToLoad;
+                
+                const toggle = document.getElementById('thiabsModeToggle');
+                if(toggle) toggle.checked = isThiabsMode;
+                populateModels();
+                const mSelect = document.getElementById('modelSelect');
+                if(mSelect) mSelect.value = currentModel;
+                updateBranding();
+                
+                if (userId) {
+                    setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { isThiabsMode: isThiabsMode, model: currentModel }, { merge: true }).catch(e=>console.error(e));
+                }
+
+                if(messages && messages.length > 0) {
+                    messages.forEach(m => {
+                        displayUserMessage(m.user, m.attachmentHtml);
+                        displayAIMessage(m.ai, false, m.sources || "");
+                        
+                        currentSessionMessages.push({ role: "user", parts: [{ text: m.user }] });
+                        currentSessionMessages.push({ role: "model", parts: [{ text: m.ai }] });
+                    });
+                }
+                document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+                chatArea.scrollTop = chatArea.scrollHeight;
+            }
+
+            document.getElementById('openSidebar').onclick = () => { sidebar.classList.remove('translate-x-full'); appOverlay.classList.remove('hidden', 'overlay-active'); setTimeout(() => appOverlay.classList.add('overlay-active'), 10); };
+            const closeSidebar = () => { sidebar.classList.add('translate-x-full'); appOverlay.classList.remove('overlay-active'); setTimeout(() => appOverlay.classList.add('hidden'), 400); };
+            document.getElementById('closeSidebar').onclick = closeSidebar;
+            appOverlay.onclick = closeSidebar;
+            
+            document.getElementById('logoutBtn').onclick = () => { closeSidebar(); logoutModal.classList.remove('hidden'); };
+            document.getElementById('cancelLogoutBtn').onclick = () => logoutModal.classList.add('hidden');
+            document.getElementById('confirmLogoutBtn').onclick = async () => {
+                document.getElementById('confirmLogoutBtn').innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+                localStorage.removeItem('thiabs_saved_key');
+                localStorage.removeItem('thiabs_saved_lang');
+                if (auth.currentUser) {
+                    try { await deleteUser(auth.currentUser); } catch(e) {}
+                }
+                window.location.reload();
+            };
+
+            document.getElementById('installMenuBtn').onclick = () => { closeSidebar(); installModal.classList.remove('hidden'); };
+            document.getElementById('closeInstallModalBtn').onclick = () => installModal.classList.add('hidden');
+            document.getElementById('cguMenuBtn').onclick = () => { closeSidebar(); cguModal.classList.remove('hidden'); };
+            document.getElementById('closeCguModalBtn').onclick = () => cguModal.classList.add('hidden');
+            document.getElementById('infoMenuBtn').onclick = () => { closeSidebar(); infoModal.classList.remove('hidden'); };
+            document.getElementById('closeInfoModalBtn').onclick = () => infoModal.classList.add('hidden');
+            
+            document.getElementById('openNotifBtn').onclick = () => { 
+                closeSidebar(); 
+                notifModal.classList.remove('hidden'); 
+                if (document.getElementById('notifToggle').checked) {
+                    document.getElementById('testNotifBtn').classList.remove('hidden');
+                }
+            };
+            document.getElementById('closeNotifBtn').onclick = () => notifModal.classList.add('hidden');
+            
+            document.getElementById('notifToggle').addEventListener('change', (e) => {
+                if (e.target.checked) document.getElementById('testNotifBtn').classList.remove('hidden');
+                else document.getElementById('testNotifBtn').classList.add('hidden');
+            });
+
+            document.getElementById('testNotifBtn').onclick = () => {
+                if (Notification.permission === 'granted') {
+                    showSysToast(currentLang === 'fr' ? "Ferme l'app vite ! Notif dans 3 sec..." : "Close app fast! Notif in 3 sec...");
+                    setTimeout(() => {
+                        if (navigator.serviceWorker) {
+                            navigator.serviceWorker.ready.then(reg => {
+                                reg.showNotification("🌟 Level IA Premium", {
+                                    body: currentLang === 'fr' ? "Ceci est une notification système de test." : "This is a test system notification.",
+                                    icon: './icon.svg',
+                                    badge: './icon.svg',
+                                    vibrate: [300, 100, 400, 100, 400, 100, 300]
+                                });
+                            });
+                        } else {
+                            new Notification("🌟 Level IA Premium", { body: "Test de notification réussi !", icon: './icon.svg' });
+                        }
+                    }, 3000);
+                } else {
+                    showSysToast(currentLang === 'fr' ? "Active et enregistre d'abord." : "Enable and save first.", true);
+                }
+            };
+            
+            document.getElementById('saveNotifBtn').onclick = async () => {
+                userNotifs.enabled = document.getElementById('notifToggle').checked;
+                userNotifs.exerciseTime = document.getElementById('exerciseTimeInput').value;
+                
+                if (userNotifs.enabled) {
+                    if (!("Notification" in window)) {
+                        showSysToast(currentLang === 'fr' ? "Installez l'app pour activer les notifs (iOS)." : "Install the app to enable notifs (iOS).", true);
+                        document.getElementById('notifToggle').checked = false;
+                        userNotifs.enabled = false;
+                    } else if (!messaging) {
+                        showSysToast(currentLang === 'fr' ? "Notifications bloquées par le navigateur." : "Notifications blocked by browser.", true);
+                        document.getElementById('notifToggle').checked = false;
+                        userNotifs.enabled = false;
+                    } else {
+                        try {
+                            const permission = await Notification.requestPermission();
+                            if (permission === 'granted') {
+                                let registration = undefined;
+                                if ('serviceWorker' in navigator && isSupportedProtocol) {
+                                    registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js', { scope: './' });
+                                    await registration.update();
+                                }
+                                
+                                showSysToast(currentLang === 'fr' ? "Génération du token..." : "Generating token...");
+                                
+                                const currentToken = await getToken(messaging, { vapidKey: vapidKey, serviceWorkerRegistration: registration });
+                                if (currentToken) {
+                                    userNotifs.fcmToken = currentToken;
+                                    showSysToast(currentLang === 'fr' ? "Notifications activées !" : "Notifications enabled!");
+                                } else {
+                                    showSysToast(currentLang === 'fr' ? "Erreur: Impossible d'obtenir le token FCM." : "Error: Cannot get FCM token.", true);
+                                }
+                            } else {
+                                userNotifs.enabled = false;
+                                document.getElementById('notifToggle').checked = false;
+                                showSysToast(currentLang === 'fr' ? "Permission refusée." : "Permission denied.", true);
+                            }
+                        } catch (err) {
+                            showSysToast(currentLang === 'fr' ? "Erreur d'activation." : "Activation error.", true);
+                            userNotifs.enabled = false;
+                            document.getElementById('notifToggle').checked = false;
+                        }
+                    }
+                } else {
+                    userNotifs.fcmToken = ""; 
+                }
+                
+                await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "notifications"), userNotifs, { merge: true });
+                notifModal.classList.add('hidden');
+            };
+
+            document.querySelectorAll('.console-filter').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.console-filter').forEach(b => {
+                        b.classList.remove('active', 'bg-white', 'text-black');
+                        if (b.dataset.filter === 'error') b.className = "console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all";
+                        if (b.dataset.filter === 'warn') b.className = "console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/20 transition-all";
+                        if (b.dataset.filter === 'log') b.className = "console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition-all";
+                        if (b.dataset.filter === 'all') b.className = "console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-white/50 border border-white/20 hover:bg-white/10 transition-all";
+                    });
+
+                    const target = e.target;
+                    target.className = "console-filter active px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all";
+                    
+                    currentConsoleFilter = target.dataset.filter;
+                    
+                    document.querySelectorAll('.log-entry').forEach(log => {
+                        if (currentConsoleFilter === 'all' || log.classList.contains(`log-${currentConsoleFilter}`)) {
+                            log.classList.remove('hidden');
+                        } else {
+                            log.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
+            document.getElementById('openConsoleBtn').onclick = () => { 
+                closeSidebar(); 
+                document.getElementById('pinInput').value = '';
+                pinModal.classList.remove('hidden'); 
+            };
+            
+            document.getElementById('closePinBtn').onclick = () => pinModal.classList.add('hidden');
+            
+            document.getElementById('submitPinBtn').onclick = () => {
+                if (document.getElementById('pinInput').value === '1994') {
+                    pinModal.classList.add('hidden');
+                    consoleModal.classList.remove('hidden');
+                    const out = document.getElementById('consoleOutput');
+                    out.scrollTop = out.scrollHeight;
+                } else {
+                    showSysToast(currentLang === 'fr' ? "Code PIN incorrect 🔒" : "Incorrect PIN 🔒", true);
+                    document.getElementById('pinInput').value = '';
+                }
+            };
+            
+            document.getElementById('pinInput').onkeydown = (e) => { 
+                if(e.key === 'Enter') document.getElementById('submitPinBtn').click(); 
+            };
+
+            document.getElementById('closeConsoleBtn').onclick = () => consoleModal.classList.add('hidden');
+            document.getElementById('clearConsoleBtn').onclick = () => { 
+                document.getElementById('consoleOutput').innerHTML = '<div class="text-white/30 text-center py-4 border-b border-white/5 text-[10px] uppercase tracking-widest font-bold">--- Système de Logs Démarré ---</div>'; 
+                window._logHistory = []; 
+                localStorage.removeItem('thiabs_skipped_install');
+            };
+
+            document.getElementById('copyTokenBtn').onclick = () => {
+                if (userNotifs && userNotifs.fcmToken) {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = userNotifs.fcmToken;
+                    textArea.style.position = "fixed"; textArea.style.left = "-9999px";
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        showSysToast(currentLang === 'fr' ? "Token FCM copié !" : "FCM Token copied!");
+                    } catch (e) {}
+                    document.body.removeChild(textArea);
+                } else {
+                    showSysToast(currentLang === 'fr' ? "Aucun Token." : "No Token.", true);
+                }
+            };
+
+            const cOutput = document.getElementById('consoleOutput');
+            if (window._logHistory.length > 0 && cOutput.children.length <= 1) {
+                window._logHistory.forEach(log => {
+                    const el = document.createElement('div');
+                    el.className = 'py-1 border-b border-white/5 leading-relaxed text-[11px]';
+                    if (log.type === 'error') el.innerHTML = `<span class="text-red-500 font-bold">ERR:</span> <span class="text-red-300 ml-1">${log.msg}</span>`;
+                    else if (log.type === 'warn') el.innerHTML = `<span class="text-yellow-500 font-bold">WRN:</span> <span class="text-yellow-200 ml-1">${log.msg}</span>`;
+                    else el.innerHTML = `<span class="text-blue-400 font-bold">LOG:</span> <span class="text-green-300 ml-1">${log.msg}</span>`;
+                    cOutput.appendChild(el);
+                });
+            }
+
+            const stars = document.querySelectorAll('.star-rating i');
+            stars.forEach(star => {
+                star.onclick = (e) => {
+                    currentStarRating = parseInt(e.target.getAttribute('data-rating'));
+                    stars.forEach(s => {
+                        if(parseInt(s.getAttribute('data-rating')) <= currentStarRating) s.classList.add('active');
+                        else s.classList.remove('active');
+                    });
+                };
+            });
+            
+            document.getElementById('submitFeedbackBtn').onclick = async () => {
+                const text = document.getElementById('feedbackText').value.trim();
+                if (currentStarRating === 0 && text === '') return;
+                try {
+                    await addDoc(collection(db, "artifacts", appId, "users", userId, "feedbacks"), { rating: currentStarRating, comment: text, date: Date.now() });
+                    feedbackModal.classList.add('hidden'); document.getElementById('feedbackText').value = '';
+                    stars.forEach(s => s.classList.remove('active')); currentStarRating = 0; showSysToast("Merci pour votre avis ! ⭐");
+                } catch(e) { showSysToast("Erreur d'envoi", true); }
+            };
+            
+            document.getElementById('openReportBtn').onclick = () => { closeSidebar(); reportModal.classList.remove('hidden'); };
+            document.getElementById('closeReportBtn').onclick = () => reportModal.classList.add('hidden');
+            
+            document.getElementById('submitReportBtn').onclick = async () => {
+                const category = document.getElementById('reportCategory').value;
+                const text = document.getElementById('reportText').value.trim();
+                if (text === '') return;
+                try {
+                    await addDoc(collection(db, "artifacts", appId, "users", userId, "reports"), { category: category, description: text, date: Date.now() });
+                    reportModal.classList.add('hidden'); document.getElementById('reportText').value = ''; showSysToast("Rapport envoyé. 🛠️");
+                } catch(e) { showSysToast("Erreur d'envoi", true); }
+            };
+
+            document.getElementById('saveDNA').onclick = async () => {
+                const btn = document.getElementById('saveDNA'); btn.innerHTML = '<i class="fas fa-check text-sm"></i>';
+                const category = isThiabsMode ? 'thiabs' : 'level';
+                const dnaKey = `${category}_${currentModel}`;
+                dnaPrompts[dnaKey] = document.getElementById('customDNA').value;
+                await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { prompts: dnaPrompts }, { merge: true });
+                setTimeout(() => btn.innerText = i18n[currentLang].saveDNA, 2000);
+            };
+
+            const attachBtn = document.getElementById('attachBtn');
+            const attachMenu = document.getElementById('attachMenu');
+            const imgInput = document.getElementById('imgInput');
+            const docInput = document.getElementById('docInput');
+            const attachPreview = document.getElementById('attachmentPreview');
+            const attachIcon = document.getElementById('attachIcon');
+            const attachName = document.getElementById('attachName');
+            const attachSize = document.getElementById('attachSize');
+            const removeAttachBtn = document.getElementById('removeAttachBtn');
+
+            attachBtn.onclick = (e) => {
+                e.stopPropagation();
+                attachMenu.classList.toggle('hidden-menu');
+            };
+
+            document.addEventListener('click', (e) => {
+                if(!attachMenu.contains(e.target) && !attachBtn.contains(e.target)) {
+                    attachMenu.classList.add('hidden-menu');
+                }
+            });
+
+            document.getElementById('importImgBtn').onclick = () => { attachMenu.classList.add('hidden-menu'); imgInput.click(); };
+            document.getElementById('importDocBtn').onclick = () => { attachMenu.classList.add('hidden-menu'); docInput.click(); };
+
+            const processFile = async (file) => {
+                if(!file) return;
+
+                const usage = await checkUsage('upload');
+                if(!usage.allowed) { showLimitMessage('upload', usage.resetDate); imgInput.value = ''; docInput.value = ''; return; }
+                if(file.size > 5 * 1024 * 1024) { showSysToast(currentLang === 'fr' ? "Fichier trop lourd (Max 5Mo)" : "File too large (Max 5MB)", true); imgInput.value = ''; docInput.value = ''; return; }
+
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const base64Full = e.target.result;
+                    const base64Data = base64Full.split(',')[1];
+                    
+                    currentAttachment = { name: file.name, mimeType: file.type, base64: base64Data, isImage: file.type.startsWith('image/') };
+
+                    attachName.innerText = file.name;
+                    attachSize.innerText = (file.size / 1024).toFixed(1) + ' KB';
+                    
+                    if(currentAttachment.isImage) {
+                        attachIcon.innerHTML = `<img src="${base64Full}" class="w-full h-full object-cover">`;
+                    } else {
+                        attachIcon.innerHTML = `<i class="fas fa-file-pdf text-red-400 text-xl"></i>`;
+                    }
+                    attachPreview.classList.remove('hidden');
+                };
+                reader.readAsDataURL(file);
+                imgInput.value = ''; docInput.value = '';
+            };
+
+            imgInput.onchange = (e) => processFile(e.target.files[0]);
+            docInput.onchange = (e) => processFile(e.target.files[0]);
+
+            removeAttachBtn.onclick = () => { currentAttachment = null; attachPreview.classList.add('hidden'); };
+
+            function showLimitMessage(type, resetDate) {
+                const formatter = new Intl.DateTimeFormat(currentLang, { weekday: 'long', hour: '2-digit', minute: '2-digit' });
+                const dateStr = formatter.format(resetDate);
+                let msg = "";
+                if(type === 'upload') {
+                    msg = currentLang === 'fr' ? `🚫 Limite de 10 fichiers/jour.\n\nRevenez ${dateStr}.` : `🚫 Limit of 10 files/day.\n\nCome back ${dateStr}.`;
+                } else {
+                    msg = currentLang === 'fr' ? `🚫 Limite de 200 messages/jour.\n\nRevenez ${dateStr}.` : `🚫 Limit of 200 messages/day.\n\nCome back ${dateStr}.`;
+                }
+                displayAIMessage(msg, true);
+            }
+
+            function displayUserMessage(text, attachmentHtml = "") {
+                const safeText = text ? text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+                const div = document.createElement('div'); div.className = "flex justify-end w-full overflow-hidden";
+                div.innerHTML = `<div class="bg-white/10 border border-white/10 px-5 py-3.5 rounded-3xl text-[15px] message-bubble text-white shadow-md flex flex-col gap-2 overflow-hidden">
+                    ${attachmentHtml}
+                    ${safeText ? `<span class="leading-relaxed font-medium whitespace-pre-wrap break-words max-w-full">${safeText}</span>` : ''}
+                </div>`;
+                conversationContainer.appendChild(div); chatArea.scrollTop = chatArea.scrollHeight;
+            }
+
+            function displayAIMessage(text, animate, sourcesHtml = "") {
+                const wrap = document.createElement('div'); 
+                wrap.className = "flex flex-col gap-2 w-full group pl-1 overflow-hidden";
+                
+                const content = document.createElement('div'); 
+                content.className = "prose prose-invert prose-slate text-[15px] max-w-full message-bubble leading-relaxed tracking-normal prose-p:my-3 prose-headings:font-bold prose-headings:text-white prose-strong:text-white prose-strong:font-bold prose-a:text-purple-400 break-words overflow-hidden";
+                
+                const sourcesContainer = document.createElement('div');
+                if (sourcesHtml) {
+                    sourcesContainer.innerHTML = sourcesHtml;
+                    sourcesContainer.style.opacity = animate ? "0" : "1";
+                    sourcesContainer.style.transition = "opacity 0.6s ease-in";
+                }
+
+                const actions = document.createElement('div');
+                actions.className = "flex items-center justify-start opacity-0 group-hover:opacity-100 transition-opacity mt-1";
+                
+                const copyBtn = document.createElement('button');
+                copyBtn.className = "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-white/40 hover:bg-white/10 hover:text-white active:scale-95 transition-all text-[11px] font-bold uppercase tracking-widest";
+                copyBtn.innerHTML = '<i class="fas fa-copy text-xs"></i> Copier';
+                copyBtn.onclick = () => {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    textArea.style.position = "fixed"; textArea.style.left = "-9999px";
+                    document.body.appendChild(textArea); textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        copyBtn.innerHTML = '<i class="fas fa-check text-green-400 text-xs"></i> <span class="text-green-400">Copié</span>';
+                        setTimeout(() => copyBtn.innerHTML = '<i class="fas fa-copy text-xs"></i> Copier', 2000);
+                    } catch (e) {} document.body.removeChild(textArea);
+                };
+                actions.appendChild(copyBtn);
+
+                wrap.appendChild(content); 
+                if (sourcesHtml) wrap.appendChild(sourcesContainer); 
+                wrap.appendChild(actions); 
+                conversationContainer.appendChild(wrap);
+                
+                if (animate) {
+                    streamText(content, text, () => { if (sourcesHtml) sourcesContainer.style.opacity = "1"; });
+                } else {
+                    content.innerHTML = marked.parse(text);
+                }
+            }
+
+            function streamText(container, text, callback) {
+                let i = 0; container.innerHTML = '';
+                const interval = setInterval(() => {
+                    if (i < text.length) {
+                        container.innerHTML = marked.parse(text.substring(0, i + 1)); i += 3; chatArea.scrollTop = chatArea.scrollHeight;
+                    } else {
+                        container.innerHTML = marked.parse(text); clearInterval(interval); chatArea.scrollTop = chatArea.scrollHeight;
+                        if(callback) callback(); 
+                    }
+                }, 5);
+            }
+
+            async function send() {
+                const val = userInput.value.trim();
+                const attachment = currentAttachment; 
+                
+                if (!val && !attachment) return;
+                if (!userId) return;
+                
+                if (apiKeys.length === 0) {
+                    displayAIMessage(currentLang === 'fr' ? "Erreur: Aucune clé API chargée." : "Error: No API key loaded.", true);
+                    return;
+                }
+                
+                const msgUsage = await checkUsage('msg');
+                if(!msgUsage.allowed) { showLimitMessage('msg', msgUsage.resetDate); return; }
+
+                userInput.value = ''; userInput.style.height = '44px';
+                currentAttachment = null;
+                attachPreview.classList.add('hidden');
+                
+                if(!currentSessionId && conversationContainer.children.length === 1 && hasSeenWelcomeMsg) {
+                    const firstMsg = conversationContainer.querySelector('.prose');
+                    if(firstMsg && (firstMsg.innerText.includes("Salut bro") || firstMsg.innerText.includes("Hey bro"))) {
+                        conversationContainer.innerHTML = '';
+                    }
+                }
+
+                let userAttachHtml = "";
+                let dbAttachMarker = "";
+                if(attachment) {
+                    const iconClass = attachment.isImage ? "fa-image text-blue-400" : "fa-file-pdf text-red-400";
+                    userAttachHtml = `<div class="flex items-center gap-2 bg-black/40 p-2.5 rounded-xl w-fit mb-1 border border-white/5"><i class="fas ${iconClass} text-base"></i> <span class="text-[11px] font-bold">${attachment.name}</span></div>`;
+                    dbAttachMarker = attachment.isImage ? `[🖼️ Image jointe : ${attachment.name}]` : `[📄 Document joint : ${attachment.name}]`;
+                }
+
+                displayUserMessage(val, userAttachHtml);
+                
+                document.getElementById('aiTyping').classList.remove('hidden');
+                chatArea.scrollTop = chatArea.scrollHeight;
+
+                const sysLang = currentLang === 'fr' ? 'français' : 'english';
+                const category = isThiabsMode ? 'thiabs' : 'level';
+                let modelPrompt = currentLang === 'fr' ? aiModels[category][currentModel].promptFR : aiModels[category][currentModel].promptEN;
+
+                if (!isThiabsMode && currentModel === 'normal') {
+                    modelPrompt += currentLang === 'fr' ? " Reste toujours respectueux, pro et chill." : " Always remain respectful, pro and chill.";
+                }
+
+                let lengthInstruction = "";
+                if (currentResponseLength === 'long') {
+                    lengthInstruction = currentLang === 'fr' ? "Tes réponses DOIVENT être TRÈS LONGUES et détaillées." : "Your responses MUST be VERY LONG and detailed.";
+                } else if (currentResponseLength === 'short') {
+                    lengthInstruction = currentLang === 'fr' ? "Tes réponses DOIVENT être TRÈS COURTES et directes." : "Your responses MUST be VERY SHORT and direct.";
+                } else {
+                    lengthInstruction = currentLang === 'fr' ? "Taille de réponse : Moyenne et équilibrée." : "Response length: Medium and balanced.";
+                }
+
+                let hardcoreInstruction = "";
+                if (isHardcoreMode && (currentModel === 'coach' || currentModel === 'procrastination' || currentModel === 'expert')) {
+                    hardcoreInstruction = currentLang === 'fr' 
+                        ? "\n\n⚠️ CHANGEMENT D'ATTITUDE IMMÉDIAT (MODE HARDCORE ACTIVÉ) : IGNORE totalement la façon dont tu as parlé précédemment dans cette conversation. À partir de MAINTENANT, tu es un mentor d'élite, exigeant mais hyper-constructif. S'il est paresseux, se plaint ou cherche des excuses, deviens piquant, sarcastique et remets-le à sa place avec un langage familier et sans pitié. Adapte ton attitude : sois un guide expert s'il travaille sérieusement, sois un punisseur s'il a la flemme."
+                        : "\n\n⚠️ IMMEDIATE ATTITUDE CHANGE (HARDCORE MODE ACTIVATED): COMPLETELY IGNORE how you spoke previously in this conversation. From NOW ON, you are an elite mentor, demanding but highly constructive. If he is lazy, complains, or makes excuses, become edgy, sarcastic, and put him in his place mercilessly. Adapt your attitude: be an expert guide if he works, be a punisher if he slacks.";
+                } else {
+                    hardcoreInstruction = currentLang === 'fr' 
+                        ? "\n\n⚠️ RAPPEL DE TON : IGNORE toute agressivité ou sarcasme que tu aurais pu avoir dans les messages précédents de cet historique. Redeviens IMMÉDIATEMENT respectueux, chaleureux, pro et bienveillant."
+                        : "\n\n⚠️ TONE REMINDER: IGNORE any aggressiveness or sarcasm you might have used in previous messages in this history. IMMEDIATELY return to being respectful, warm, pro, and kind.";
+                }
+                
+                let redirectionInstruction = "";
+                if (isThiabsMode) {
+                    redirectionInstruction = currentLang === 'fr' 
+                        ? "\n\n⚠️ RÈGLE DE REDIRECTION : Si la question concerne le travail, les études ou un domaine technique (hors de ton mode), ASSISTE L'UTILISATEUR AU MAXIMUM DE TES CAPACITÉS. Ne le bloque jamais. Puis, tout à la fin, propose ce lien : '\n\n[👉 Voir avec l'expert Level IA](#switch-level-ia)'."
+                        : "\n\n⚠️ REDIRECTION RULE: If the question is technical or work-related (off-topic for you), ASSIST HIM FULLY FIRST. Never block him. Then, at the very end, offer this link: '\n\n[👉 Ask the Level IA Expert](#switch-level-ia)'.";
+                } else if (!isThiabsMode && currentModel === 'travail') {
+                    redirectionInstruction = currentLang === 'fr'
+                        ? "\n\n⚠️ RÈGLE DE REDIRECTION : Si la question n'a STRICTEMENT AUCUN rapport avec le travail, ASSISTE-LE COMPLÈTEMENT D'ABORD, puis ajoute ce lien : '\n\n[👉 Basculer vers Mode Normal](#switch-level-ia)'."
+                        : "\n\n⚠️ REDIRECTION RULE: If off-topic, ASSIST FULLY FIRST, then add this link: '\n\n[👉 Switch to Normal Mode](#switch-level-ia)'.";
+                }
+
+                const firstName = currentUserName.split(' ')[0];
+                const dnaKey = `${category}_${currentModel}`;
+                const currentDna = dnaPrompts[dnaKey] || "";
+                let dnaBlock = "";
+                if (currentDna && currentDna.trim() !== "") {
+                    dnaBlock = `\n🚨 DIRECTIVE SUPRÊME ABSOLUE (DNA UTILISATEUR) 🚨\n"""\n${currentDna}\n"""\n🚨 FIN DE LA DIRECTIVE SUPRÊME 🚨`;
+                }
+
+                let firstContactInstruction = "";
+                if (!hasSeenGrandIntro) {
+                    firstContactInstruction = currentLang === 'fr' ? `
+🚨 INSTRUCTION SPÉCIALE : Présente ton écosystème au complet de façon très pro (Level IA pour le travail, Thiab's Mode pour le mindset). Ensuite, réponds à sa question.` : `
+🚨 SPECIAL INSTRUCTION: Present your full ecosystem professionally (Level IA for work, Thiab's Mode for mindset). Then answer the question.`;
+                }
+
+                const currentModeName = isThiabsMode ? "le mode secret Thiab's (Développement Personnel)" : "le mode classique Level IA (Productivity)";
+                
+                const corePrompt = `Tu es doté d'une intelligence analytique hors du commun, d'une logique implacable et d'une capacité d'adaptation parfaite. Tu es une IA d'élite, experte mondiale dans ton domaine et hyper-intelligente. Si on te donne une image ou un document PDF, analyse-le en profondeur avec ton génie habituel.
+                Ton identité : L'application globale s'appelle **Level IA**, entièrement développée et créée par le génie **LevelUp**.
+                Origine secrète : La fonctionnalité "Mode Thiab's" existe grâce à Thiab's, une jeune et brillante Sénégalaise de 17 ans qui lutte contre la procrastination. C'est elle qui a donné l'idée de ce mode dédié au développement personnel, et LevelUp l'a baptisé en son honneur. N'en parle JAMAIS de toi-même dans tes messages normaux. Tu ne peux raconter cette histoire QUE si l'utilisateur te demande explicitement d'où vient le mode Thiab's ou qui est Thiab's.
+                Actuellement, l'utilisateur a activé ${currentModeName}. Tu dois donc agir selon les règles de ce mode spécifique.
+                
+                🧠 BOOST D'INTELLIGENCE & COMPRÉHENSION : Tu es extrêmement perspicace. Tu comprends parfaitement le langage SMS, les fautes de frappe, les erreurs de syntaxe et les abréviations (ett, tkt, prk, oé, mtn, bcp, etc.). Ne corrige jamais l'utilisateur de manière hautaine. Déduis son intention réelle grâce au contexte de la conversation et fournis une assistance magistrale. 
+                
+                🔗 GESTION INTELLIGENTE DES LIENS : Ne donne pas de liens au hasard. Sois précis et stratégique :
+                1. Actualités & Infos : Si tu donnes des news ou des faits précis, inclus les liens sources pertinents à la fin de ta réponse (Maximum 3 liens).
+                2. Adresses & Lieux : Si tu parles d'un lieu physique ou d'une adresse, génère TOUJOURS un lien direct cliquable vers Google Maps (ex: "[📍 Ouvrir sur Google Maps](https://www.google.com/maps/search/?api=1&query=adresse+exacte+ici)").
+                3. Pertinence : Ne donne un lien vers un outil ou un site que si c'est ultra-pertinent pour aider l'utilisateur. Format Markdown obligatoire : "[Nom du site](URL)".
+                
+                🛑 RÈGLES DE COMPORTEMENT :
+                1. CONVERSATIONNEL ET ÉQUILIBRÉ : Parle comme un pote hyper-intelligent ou un mentor charismatique.
+                2. DISCRÉTION SUR TON IDENTITÉ : Ne dis JAMAIS "Je suis Level IA" de façon robotique.
+                3. PROPRETÉ VISUELLE (MARKDOWN) : Utilise massivement le **gras** pour les mots-clés, les concepts importants et les noms propres pour rendre la lecture hyper professionnelle.
+                
+                👤 INTERLOCUTEUR :
+                - Prénom : ${firstName}
+                
+                🛠️ CAPACITÉS :
+                - Tu es pro-actif. Tu as accès à Internet en temps réel grâce à la recherche Google.
+                
+                ${lengthInstruction}
+                ${hardcoreInstruction}
+                ${redirectionInstruction}
+                
+                LANGUE DEMANDÉE : ${sysLang}.
+                MODE ACTUEL : ${modelPrompt}
+                
+                ${firstContactInstruction}
+                ${dnaBlock}`;
+
+                let success = false;
+                let aiText = "";
+                let sourcesHtml = ""; 
+                let attempts = 0;
+                const maxAttempts = apiKeys.length;
+                let lastApiError = ""; 
+                
+                let requestParts = [];
+                if (val) requestParts.push({ text: val });
+                if (attachment) {
+                    requestParts.push({ inlineData: { mimeType: attachment.mimeType, data: attachment.base64 } });
+                }
+                
+                const apiContents = [...currentSessionMessages, { role: "user", parts: requestParts }];
+
+                while (!success && attempts < maxAttempts) {
+                    const apiKey = apiKeys[currentKeyIndex];
+                    try {
+                        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`, {
+                            method: 'POST', 
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ 
+                                contents: apiContents, 
+                                systemInstruction: { parts: [{ text: corePrompt }] },
+                                tools: [{ google_search: {} }],
+                                safetySettings: [
+                                    { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+                                    { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+                                    { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+                                    { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+                                ]
+                            })
+                        });
+
+                        if (!res.ok) {
+                            let errorDetails;
+                            try { errorDetails = await res.json(); } catch(parseErr) { errorDetails = { status: res.status, text: res.statusText }; }
+                            lastApiError = errorDetails.error ? errorDetails.error.message : JSON.stringify(errorDetails);
+                            throw new Error("API_ERROR"); 
+                        }
+
+                        const data = await res.json();
+                        aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "Erreur réseau.";
+                        
+                        const groundingAttributions = data.candidates?.[0]?.groundingMetadata?.groundingAttributions;
+                        if (groundingAttributions && groundingAttributions.length > 0) {
+                            const uniqueSources = [];
+                            groundingAttributions.forEach(attr => {
+                                if (attr.web && attr.web.uri && attr.web.title) {
+                                    if (!uniqueSources.find(s => s.uri === attr.web.uri)) uniqueSources.push({ uri: attr.web.uri, title: attr.web.title });
+                                }
+                            });
+                            
+                            if (uniqueSources.length > 0) {
+                                sourcesHtml += `<div class="mt-4 pt-3 border-t border-white/10 w-full max-w-full">`;
+                                sourcesHtml += `<div class="flex items-center gap-1.5 mb-2.5">`;
+                                sourcesHtml += `<i class="fas fa-search text-[10px] text-blue-400"></i>`;
+                                sourcesHtml += `<span class="text-[10px] font-bold uppercase tracking-widest text-white/60">${currentLang === 'fr' ? 'Sources Web' : 'Web Sources'}</span>`;
+                                sourcesHtml += `</div><div class="flex flex-wrap gap-2 overflow-hidden">`;
+                                
+                                // LIMITATION A 3 SOURCES ET FORMATAGE EN PETITS BOUTONS PROS
+                                uniqueSources.slice(0, 3).forEach((s) => {
+                                    let domain = "";
+                                    try { 
+                                        domain = new URL(s.uri).hostname.replace('www.', ''); 
+                                    } catch(e) { 
+                                        domain = s.title.substring(0, 15); 
+                                    }
+                                    
+                                    sourcesHtml += `<a href="${s.uri}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 hover:border-white/20 transition-all no-underline group active:scale-95 shadow-sm"><i class="fas fa-external-link-alt text-[9px] text-blue-400 group-hover:text-blue-300"></i><span class="text-[10px] text-white/80 font-bold truncate max-w-[120px] tracking-wide">${domain}</span></a>`;
+                                });
+                                sourcesHtml += `</div></div>`;
+                            }
+                        }
+                        success = true;
+                        consecutiveErrors = 0; 
+                    } catch (e) {
+                        if (e.message !== "API_ERROR") lastApiError = e.message; 
+                        attempts++;
+                        if (attempts < maxAttempts) {
+                            currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
+                        } else {
+                            consecutiveErrors++;
+                            document.getElementById('aiTyping').classList.add('hidden');
+                            let supportButtonHtml = "";
+                            if (consecutiveErrors >= 2) {
+                                supportButtonHtml = `<br><br><a href="mailto:levelup.iao@gmail.com?subject=Urgence%20Technique%20-%20Level%20IA%20(ID:%20${userId})&body=Bonjour%20LevelUp,%0A%0AJe%20n'arrive%20plus%20à%20générer%20de%20réponses.%20L'IA%20semble%20bloquée.%0A%0A[Détails%20de%20l'erreur%20:%20${encodeURIComponent(lastApiError)}]" class="support-btn"><i class="fas fa-envelope"></i> Support</a>`;
+                            }
+                            const errorMsg = `Oups ! 😅 Surcharge cognitive. Erreur : '${lastApiError}'${supportButtonHtml}`;
+                            displayAIMessage(errorMsg, true);
+                            return; 
+                        }
+                    }
+                }
+                
+                if (success) {
+                    if (!hasSeenGrandIntro) {
+                        hasSeenGrandIntro = true;
+                        try { await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { hasSeenGrandIntro: true }, { merge: true }); } catch(err) {}
+                    }
+
+                    document.getElementById('aiTyping').classList.add('hidden');
+                    displayAIMessage(aiText, true, sourcesHtml);
+                    
+                    const userDbText = val + (dbAttachMarker ? `\n\n${dbAttachMarker}` : "");
+                    currentSessionMessages.push({ role: "user", parts: [{ text: userDbText }] });
+                    currentSessionMessages.push({ role: "model", parts: [{ text: aiText }] });
+                    
+                    const messageObj = { user: val, attachmentHtml: userAttachHtml, ai: aiText, sources: sourcesHtml, timestamp: Date.now() };
+                    
+                    try {
+                        if (!currentSessionId) {
+                            const title = val ? (val.length > 25 ? val.substring(0, 25) + "..." : val) : (attachment ? `Fichier: ${attachment.name}` : "Nouvelle session");
+                            const docRef = await addDoc(collection(db, "artifacts", appId, "users", userId, "sessions"), {
+                                title: title, updatedAt: Date.now(), isThiabsMode: isThiabsMode, model: currentModel, messages: [messageObj]
+                            });
+                            currentSessionId = docRef.id;
+                        } else {
+                            await updateDoc(doc(db, "artifacts", appId, "users", userId, "sessions", currentSessionId), { updatedAt: Date.now(), messages: arrayUnion(messageObj) });
+                        }
+                    } catch(fbErr) {}
+                }
+            }
+
+            userInput.oninput = function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; };
+            userInput.onkeydown = (e) => { 
+                if (e.key === 'Enter' && !e.shiftKey) { 
+                    e.preventDefault(); 
+                    if (navigator.vibrate) navigator.vibrate(40); 
+                    send(); 
+                } 
+            };
+            
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (navigator.vibrate) navigator.vibrate(40); 
+                send();
+            });
+        }
+    </script>
+</body>
+</html>
