@@ -115,7 +115,28 @@
         #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: -20px 0 50px rgba(0,0,0,0.5); }
         
         #userInput { background: transparent !important; border: none !important; color: white !important; outline: none !important; width: 100%; padding: 12px; font-size: 15px !important; min-height: 44px; max-height: 120px; display: block; resize: none; overflow-y: hidden; }
-        .message-bubble { max-width: 88%; animation: msgIn 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); word-break: break-word; overflow-wrap: break-word; }
+        
+        /* 🚨 FIX MAGIQUE : Verrouillage absolu des longs textes (anti-dépassement horizontal) 🚨 */
+        .message-bubble { 
+            max-width: 88%; 
+            animation: msgIn 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); 
+            overflow-wrap: anywhere !important; /* Coupe n'importe où si ça dépasse */
+            word-wrap: break-word !important;
+            word-break: break-word !important; 
+        }
+        .message-bubble * {
+            overflow-wrap: anywhere !important;
+            word-break: break-word !important;
+        }
+        /* On protège les blocs de code pour qu'ils puissent scroller en interne au lieu de casser l'écran */
+        .prose pre {
+            max-width: 100%;
+            overflow-x: auto;
+            white-space: pre !important;
+            word-break: normal !important;
+            overflow-wrap: normal !important;
+        }
+
         @keyframes msgIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
         .star-logo { animation: rotate360 8s linear infinite; color: #a855f7; filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.6)); }
@@ -505,7 +526,7 @@
     </div>
 
     <!-- MAIN APP -->
-    <div id="mainApp" class="hidden flex-col h-full w-full relative">
+    <div id="mainApp" class="hidden flex-col h-full w-full relative overflow-hidden">
         <div id="appOverlay" class="fixed inset-0 z-[2999] hidden transition-opacity"></div>
 
         <!-- MENU LATÉRAL -->
@@ -667,7 +688,7 @@
         </header>
 
         <main class="flex-1 overflow-y-auto overflow-x-hidden px-4 py-8 no-scrollbar space-y-8 relative" id="chatArea">
-            <div class="max-w-3xl mx-auto space-y-6" id="conversationContainer"></div>
+            <div class="max-w-3xl mx-auto space-y-6 w-full" id="conversationContainer"></div>
             
             <div id="aiTyping" class="max-w-3xl mx-auto hidden pl-2 pb-6">
                 <div class="flex items-center gap-3">
@@ -1996,20 +2017,20 @@
 
             function displayUserMessage(text, attachmentHtml = "") {
                 const safeText = text ? text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
-                const div = document.createElement('div'); div.className = "flex justify-end w-full";
-                div.innerHTML = `<div class="bg-white/10 border border-white/10 px-5 py-3.5 rounded-3xl text-[15px] message-bubble text-white shadow-md flex flex-col gap-2">
+                const div = document.createElement('div'); div.className = "flex justify-end w-full overflow-hidden";
+                div.innerHTML = `<div class="bg-white/10 border border-white/10 px-5 py-3.5 rounded-3xl text-[15px] message-bubble text-white shadow-md flex flex-col gap-2 overflow-hidden">
                     ${attachmentHtml}
-                    ${safeText ? `<span class="leading-relaxed font-medium whitespace-pre-wrap break-words">${safeText}</span>` : ''}
+                    ${safeText ? `<span class="leading-relaxed font-medium whitespace-pre-wrap break-words max-w-full">${safeText}</span>` : ''}
                 </div>`;
                 conversationContainer.appendChild(div); chatArea.scrollTop = chatArea.scrollHeight;
             }
 
             function displayAIMessage(text, animate, sourcesHtml = "") {
                 const wrap = document.createElement('div'); 
-                wrap.className = "flex flex-col gap-2 w-full group pl-1";
+                wrap.className = "flex flex-col gap-2 w-full group pl-1 overflow-hidden";
                 
                 const content = document.createElement('div'); 
-                content.className = "prose prose-invert prose-slate text-[15px] max-w-none message-bubble leading-relaxed tracking-normal prose-p:my-3 prose-headings:font-bold prose-headings:text-white prose-strong:text-white prose-strong:font-bold prose-a:text-purple-400 break-words";
+                content.className = "prose prose-invert prose-slate text-[15px] max-w-full message-bubble leading-relaxed tracking-normal prose-p:my-3 prose-headings:font-bold prose-headings:text-white prose-strong:text-white prose-strong:font-bold prose-a:text-purple-400 break-words overflow-hidden";
                 
                 const sourcesContainer = document.createElement('div');
                 if (sourcesHtml) {
