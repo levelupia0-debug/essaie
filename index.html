@@ -2,7 +2,8 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <!-- 🚨 BALISE MAGIQUE : interactive-widget=resizes-content empêche l'iPhone de paniquer 🚨 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
@@ -29,7 +30,6 @@
         import { getAuth, onAuthStateChanged, signInAnonymously, deleteUser } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, collectionGroup, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
         
-        // AJOUT DE isSupported POUR EVITER LE CRASH DE LA PWA
         import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-messaging.js";
 
         // --- CONFIGURATION FIREBASE ---
@@ -56,7 +56,6 @@
         window.deleteUser = deleteUser;
         window.firestoreUtils = { collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, collectionGroup, updateDoc, arrayUnion };
         
-        // Export de isSupported
         window.messagingUtils = { getMessaging, getToken, onMessage, isSupported };
         
         window.__app_id = "level-ia-premium"; 
@@ -71,17 +70,19 @@
         *::-webkit-scrollbar { display: none !important; }
         * { -ms-overflow-style: none; scrollbar-width: none; }
 
+        /* 🚨 SUPPRESSION DU MODE PAYSAGE (100vw) ET DE LA PANIQUE 🚨 */
         html, body { 
             background-color: var(--dark); 
             color: #ffffff; 
             margin: 0; 
             padding: 0;
-            width: 100%;
-            height: 100%;
+            width: 100%; /* Remplacement de 100vw qui causait le défilement horizontal (paysage) */
+            height: 100%; /* Hauteur absolue, s'adapte au clavier sans panique */
             overflow: hidden !important; /* AUCUN SCROLL GLOBAL AUTORISÉ */
             overscroll-behavior: none; 
+            touch-action: none; /* Bloque les zooms et scrolls natifs indésirables */
             
-            /* 🚨 VERROUILLAGE ABSOLU DE L'APPLICATION (Évite de monter vers "Léo" 😂) 🚨 */
+            /* VERROUILLAGE ABSOLU DE L'APPLICATION */
             position: fixed;
             top: 0;
             left: 0;
@@ -91,29 +92,38 @@
 
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
-            display: flex; 
-            flex-direction: column; 
         }
 
-        /* Conteneur principal qui s'adapte au millimètre près au clavier */
+        /* Conteneur principal géré par Flexbox pour une fluidité absolue */
         #mainApp {
-            position: absolute !important;
+            position: absolute;
             top: 0;
             left: 0;
-            width: 100%;
+            right: 0;
             height: 100%;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
+            overflow: hidden;
+            touch-action: auto;
+        }
+        
+        /* Seule la zone de conversation a le droit de scroller */
+        #chatArea {
+            overflow-x: hidden; /* Coupe tout dépassement horizontal */
+            touch-action: pan-y; /* Ne permet QUE le scroll de haut en bas */
         }
 
         /* 🚨 LA MAGIE APPLE EST ICI : Règle les marges en haut (batterie) et en bas 🚨 */
         .safe-pt { padding-top: max(1.25rem, env(safe-area-inset-top, 0px)) !important; }
-        .safe-pb { padding-bottom: max(0.25rem, env(safe-area-inset-bottom, 0px)) !important; }
+        .safe-pb { padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)) !important; }
         
-        /* 🚨 FIX CLAVIER : Plaque le champ de texte contre le clavier et cache le texte inutile 🚨 */
-        body.keyboard-open .safe-pb { padding-bottom: 8px !important; }
-        body.keyboard-open .hide-on-keyboard { display: none !important; }
+        /* 🚨 FIX CLAVIER 100% CSS : Doux, fluide et sans Javascript 🚨 */
+        footer:focus-within {
+            padding-bottom: 0.5rem !important; /* Retire le vide d'Apple en bas quand on écrit */
+        }
+        footer:focus-within .hide-on-keyboard {
+            display: none !important; /* Cache le texte instantanément quand on écrit */
+        }
 
         .safe-sidebar { 
             padding-top: calc(1.5rem + env(safe-area-inset-top, 0px)) !important; 
@@ -138,7 +148,6 @@
 
         .star-logo { animation: rotate360 8s linear infinite; color: #a855f7; filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.6)); }
         @keyframes rotate360 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
         
         .typing-dots span { width: 3px; height: 3px; background: #a855f7; border-radius: 50%; display: inline-block; animation: typing 1.4s infinite; }
         @keyframes typing { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.3); } }
@@ -811,13 +820,13 @@
         window.addEventListener('error', function(event) { console.error("Global Error:", event.message, "at", event.filename, ":", event.lineno); });
         window.addEventListener('unhandledrejection', function(event) { console.error("Unhandled Promise:", event.reason); });
 
-        // FIX MAGIQUE POUR LE CLAVIER MOBILE (STYLE CHATGPT & WHATSAPP)
+        // 🚨 FIX MAGIQUE POUR LE CLAVIER MOBILE (SANS PANIQUE ET SANS TREMBLEMENT) 🚨
         if (window.visualViewport) {
             const resizeHandler = () => {
                 let vh = window.visualViewport.height;
                 
-                // Redimensionner UNIQUEMENT la hauteur de l'application, SANS TOUCHER au TOP !
-                // Cela empêche l'application de paniquer et de sauter de haut en bas.
+                // Redimensionner UNIQUEMENT la hauteur de l'application. 
+                // FINI LA PANIQUE : On ne touche plus au "top", le logo restera cloué en haut !
                 const mainApp = document.getElementById('mainApp');
                 if (mainApp) {
                     mainApp.style.height = vh + 'px';
@@ -833,8 +842,11 @@
                 } else {
                     document.body.classList.remove('keyboard-open');
                 }
+
+                // Force le navigateur à ne pas faire défiler la page globalement
+                window.scrollTo(0, 0);
                 
-                // Fait scroller uniquement la conversation sans forcer le scroll du navigateur global
+                // Fait scroller uniquement la conversation pour voir le dernier message
                 const chatArea = document.getElementById('chatArea');
                 if(chatArea) {
                     chatArea.scrollTop = chatArea.scrollHeight;
@@ -844,9 +856,9 @@
             resizeHandler(); 
         }
         
-        // Empêcher manuellement le scroll global quand on tape
-        document.addEventListener('scroll', () => {
-            if (window.scrollY > 0) window.scrollTo(0, 0);
+        // Empêcher totalement le défilement global de la page
+        window.addEventListener('scroll', () => {
+            window.scrollTo(0, 0);
         }, { passive: false });
 
         const checkReady = setInterval(() => {
@@ -925,6 +937,16 @@
 
             const isSupportedProtocol = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
             
+            // Fix clavier : force gentiment le défilement de la conversation uniquement !
+            if (userInput) {
+                userInput.addEventListener('focus', () => {
+                    if (chatArea) {
+                        setTimeout(() => chatArea.scrollTop = chatArea.scrollHeight, 100);
+                        setTimeout(() => chatArea.scrollTop = chatArea.scrollHeight, 300);
+                    }
+                });
+            }
+
             // ---- INITIALISATION DE FIREBASE MESSAGING SECURISEE ----
             let messaging = null;
             isSupported().then(supported => {
