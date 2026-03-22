@@ -70,7 +70,6 @@
         html { 
             background-color: var(--dark); 
             overscroll-behavior: none;
-            height: 100%;
         }
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
@@ -81,19 +80,13 @@
             flex-direction: column; 
             overflow: hidden; 
             overscroll-behavior: none; 
-            /* LA CORRECTION MAGIQUE POUR DESCENDRE L'APPLICATION */
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
             width: 100%;
-            height: 100%;
+            height: 100dvh; /* Le Javascript prendra le relais pour le clavier */
         }
 
-        /* 🚨 ESPACEMENTS PARFAITS POUR DÉCOLLER DU HAUT ET DU BAS 🚨 */
-        .safe-pt { padding-top: calc(1.5rem + env(safe-area-inset-top, 0px)) !important; }
-        .safe-pb { padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px)) !important; }
+        /* 🚨 LA MAGIE APPLE EST ICI : Règle les marges en haut (batterie) et en bas 🚨 */
+        .safe-pt { padding-top: max(1.25rem, env(safe-area-inset-top, 0px)) !important; }
+        .safe-pb { padding-bottom: max(0.25rem, env(safe-area-inset-bottom, 0px)) !important; }
         .safe-sidebar { 
             padding-top: calc(1.5rem + env(safe-area-inset-top, 0px)) !important; 
             padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)) !important; 
@@ -784,6 +777,17 @@
         
         window.addEventListener('error', function(event) { console.error("Global Error:", event.message, "at", event.filename, ":", event.lineno); });
         window.addEventListener('unhandledrejection', function(event) { console.error("Unhandled Promise:", event.reason); });
+
+        // FIX MAGIQUE POUR LE CLAVIER MOBILE (STYLE CHATGPT)
+        if (window.visualViewport) {
+            const resizeHandler = () => {
+                document.body.style.height = window.visualViewport.height + 'px';
+                const chatArea = document.getElementById('chatArea');
+                if(chatArea) chatArea.scrollTop = chatArea.scrollHeight;
+            };
+            window.visualViewport.addEventListener('resize', resizeHandler);
+            resizeHandler(); // Exécuter une fois au démarrage
+        }
 
         const checkReady = setInterval(() => {
             if (window.auth && window.db && window.app && window.messagingUtils) {
