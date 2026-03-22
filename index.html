@@ -974,6 +974,36 @@
             window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
 
             marked.setOptions({ breaks: true });
+            
+            // --- FIX DES LIENS EN BOUTONS ET DU BUG ABOUT:BLANK ---
+            marked.use({
+                renderer: {
+                    link(href, title, text) {
+                        let actualHref = href;
+                        let actualTitle = title;
+                        let actualText = text;
+
+                        // Support des nouvelles versions de MarkedJS où le 1er argument est un objet token
+                        if (typeof href === 'object' && href !== null) {
+                            actualHref = href.href || "";
+                            actualTitle = href.title || "";
+                            actualText = href.text || "";
+                            if (href.tokens && this.parser) {
+                                try { actualText = this.parser.parseInline(href.tokens); } catch(e) {}
+                            }
+                        }
+
+                        actualHref = actualHref || "";
+                        
+                        if (actualHref.startsWith('#')) {
+                            // Bouton de redirection interne (Switch Mode)
+                            return `<a href="${actualHref}" title="${actualTitle || ''}" class="inline-flex items-center justify-center gap-2 px-4 py-2 mt-3 bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/40 rounded-xl text-[12px] font-bold text-purple-300 transition-all no-underline shadow-lg active:scale-95">${actualText}</a>`;
+                        }
+                        // Boutons pour les liens externes générés par l'IA (corrige le bug about:blank)
+                        return `<a href="${actualHref}" target="_blank" rel="noopener noreferrer" title="${actualTitle || ''}" class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg text-[11px] font-bold text-blue-300 transition-all no-underline active:scale-95 mx-1 shadow-sm"><i class="fas fa-external-link-alt text-[9px] opacity-70"></i> ${actualText}</a>`;
+                    }
+                }
+            });
 
             function showSysToast(msg, isError = false) {
                 const t = document.getElementById('sysToast');
@@ -2152,12 +2182,12 @@
                 let redirectionInstruction = "";
                 if (isThiabsMode) {
                     redirectionInstruction = currentLang === 'fr' 
-                        ? "\n\n⚠️ RÈGLE DE REDIRECTION : Si la question est TOTALEMENT HORS-SUJET, RÉPONDS D'ABORD, puis ajoute ce lien à la fin : `\n\n[👉 Basculer vers Level IA (Mode Normal)](#switch-level-ia)`."
-                        : "\n\n⚠️ REDIRECTION RULE: If the question is TOTALLY OFF-TOPIC, ANSWER FIRST, then add this link: `\n\n[👉 Switch to Level IA (Normal Mode)](#switch-level-ia)`.";
+                        ? "\n\n⚠️ RÈGLE DE REDIRECTION : Si la question concerne le travail, les études ou un domaine technique (hors de ton mode), ASSISTE L'UTILISATEUR AU MAXIMUM DE TES CAPACITÉS. Ne le bloque jamais. Puis, tout à la fin, propose ce lien : `\n\n[👉 Voir avec l'expert Level IA](#switch-level-ia)`."
+                        : "\n\n⚠️ REDIRECTION RULE: If the question is technical or work-related (off-topic for you), ASSIST HIM FULLY FIRST. Never block him. Then, at the very end, offer this link: `\n\n[👉 Ask the Level IA Expert](#switch-level-ia)`.";
                 } else if (!isThiabsMode && currentModel === 'travail') {
                     redirectionInstruction = currentLang === 'fr'
-                        ? "\n\n⚠️ RÈGLE DE REDIRECTION : Si la question n'a STRICTEMENT AUCUN rapport avec le travail, RÉPONDS D'ABORD, puis ajoute ce lien : `\n\n[👉 Basculer vers Mode Normal](#switch-level-ia)`."
-                        : "\n\n⚠️ REDIRECTION RULE: If the question is OFF-TOPIC, ANSWER FIRST, then add this link: `\n\n[👉 Switch to Normal Mode](#switch-level-ia)`.";
+                        ? "\n\n⚠️ RÈGLE DE REDIRECTION : Si la question n'a STRICTEMENT AUCUN rapport avec le travail, ASSISTE-LE COMPLÈTEMENT D'ABORD, puis ajoute ce lien : `\n\n[👉 Basculer vers Mode Normal](#switch-level-ia)`."
+                        : "\n\n⚠️ REDIRECTION RULE: If off-topic, ASSIST FULLY FIRST, then add this link: `\n\n[👉 Switch to Normal Mode](#switch-level-ia)`.";
                 }
 
                 const firstName = currentUserName.split(' ')[0];
@@ -2175,12 +2205,16 @@
 🚨 SPECIAL INSTRUCTION: Present your full ecosystem professionally (Level IA for work, Thiab's Mode for mindset). Then answer the question.`;
                 }
 
-                const currentModeName = isThiabsMode ? "le mode secret Thiab's (Développement Personnel)" : "le mode classique Level IA (Productivité)";
+                const currentModeName = isThiabsMode ? "le mode secret Thiab's (Développement Personnel)" : "le mode classique Level IA (Productivity)";
                 
                 const corePrompt = `Tu es doté d'une intelligence analytique hors du commun, d'une logique implacable et d'une capacité d'adaptation parfaite. Tu es une IA d'élite, experte mondiale dans ton domaine et hyper-intelligente. Si on te donne une image ou un document PDF, analyse-le en profondeur avec ton génie habituel.
                 Ton identité : L'application globale s'appelle **Level IA**, entièrement développée et créée par le génie **LevelUp**.
                 Origine secrète : La fonctionnalité "Mode Thiab's" existe grâce à Thiab's, une jeune et brillante Sénégalaise de 17 ans qui lutte contre la procrastination. C'est elle qui a donné l'idée de ce mode dédié au développement personnel, et LevelUp l'a baptisé en son honneur. N'en parle JAMAIS de toi-même dans tes messages normaux. Tu ne peux raconter cette histoire QUE si l'utilisateur te demande explicitement d'où vient le mode Thiab's ou qui est Thiab's.
                 Actuellement, l'utilisateur a activé ${currentModeName}. Tu dois donc agir selon les règles de ce mode spécifique.
+                
+                🧠 BOOST D'INTELLIGENCE & COMPRÉHENSION : Tu es extrêmement perspicace. Tu comprends parfaitement le langage SMS, les fautes de frappe, les erreurs de syntaxe et les abréviations (ett, tkt, prk, oé, mtn, bcp, etc.). Ne corrige jamais l'utilisateur de manière hautaine. Déduis son intention réelle grâce au contexte de la conversation et fournis une assistance magistrale. 
+                
+                🔗 GESTION DES LIENS : Si tu recommandes un site web, un outil ou une ressource, inclus TOUJOURS le lien en format Markdown standard : \`[Nom du site](https://lien.com)\`. Fais un maximum de 3 liens par réponse.
                 
                 🛑 RÈGLES DE COMPORTEMENT :
                 1. CONVERSATIONNEL ET ÉQUILIBRÉ : Parle comme un pote hyper-intelligent ou un mentor charismatique.
@@ -2258,12 +2292,21 @@
                             
                             if (uniqueSources.length > 0) {
                                 sourcesHtml += `<div class="mt-4 pt-3 border-t border-white/10 w-full max-w-full">`;
-                                sourcesHtml += `<div class="flex items-center gap-2 mb-2.5">`;
-                                sourcesHtml += `<svg viewBox="0 0 24 24" class="w-4 h-4"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>`;
-                                sourcesHtml += `<span class="text-[10px] font-bold uppercase tracking-widest text-white/60">${currentLang === 'fr' ? 'Sources' : 'Sources'}</span>`;
-                                sourcesHtml += `</div><div class="flex flex-col gap-1.5 overflow-hidden">`;
-                                uniqueSources.forEach((s) => {
-                                    sourcesHtml += `<a href="${s.uri}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-[11px] text-blue-400 hover:text-blue-300 hover:bg-white/5 p-2 rounded-lg truncate w-fit max-w-full transition-all"><i class="fas fa-link text-[10px] opacity-50 shrink-0"></i><span class="truncate">${s.title}</span></a>`;
+                                sourcesHtml += `<div class="flex items-center gap-1.5 mb-2.5">`;
+                                sourcesHtml += `<i class="fas fa-search text-[10px] text-blue-400"></i>`;
+                                sourcesHtml += `<span class="text-[10px] font-bold uppercase tracking-widest text-white/60">${currentLang === 'fr' ? 'Sources Web' : 'Web Sources'}</span>`;
+                                sourcesHtml += `</div><div class="flex flex-wrap gap-2 overflow-hidden">`;
+                                
+                                // LIMITATION A 3 SOURCES ET FORMATAGE EN PETITS BOUTONS PROS
+                                uniqueSources.slice(0, 3).forEach((s) => {
+                                    let domain = "";
+                                    try { 
+                                        domain = new URL(s.uri).hostname.replace('www.', ''); 
+                                    } catch(e) { 
+                                        domain = s.title.substring(0, 15); 
+                                    }
+                                    
+                                    sourcesHtml += `<a href="${s.uri}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 hover:border-white/20 transition-all no-underline group active:scale-95 shadow-sm"><i class="fas fa-external-link-alt text-[9px] text-blue-400 group-hover:text-blue-300"></i><span class="text-[10px] text-white/80 font-bold truncate max-w-[120px] tracking-wide">${domain}</span></a>`;
                                 });
                                 sourcesHtml += `</div></div>`;
                             }
