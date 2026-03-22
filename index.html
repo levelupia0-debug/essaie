@@ -2182,12 +2182,12 @@
                 let redirectionInstruction = "";
                 if (isThiabsMode) {
                     redirectionInstruction = currentLang === 'fr' 
-                        ? "\n\n⚠️ RÈGLE DE REDIRECTION : Si la question concerne le travail, les études ou un domaine technique (hors de ton mode), ASSISTE L'UTILISATEUR AU MAXIMUM DE TES CAPACITÉS. Ne le bloque jamais. Puis, tout à la fin, propose ce lien : `\n\n[👉 Voir avec l'expert Level IA](#switch-level-ia)`."
-                        : "\n\n⚠️ REDIRECTION RULE: If the question is technical or work-related (off-topic for you), ASSIST HIM FULLY FIRST. Never block him. Then, at the very end, offer this link: `\n\n[👉 Ask the Level IA Expert](#switch-level-ia)`.";
+                        ? "\n\n⚠️ RÈGLE DE REDIRECTION : Si la question concerne le travail, les études ou un domaine technique (hors de ton mode), ASSISTE L'UTILISATEUR AU MAXIMUM DE TES CAPACITÉS. Ne le bloque jamais. Puis, tout à la fin, propose ce lien : '\n\n[👉 Voir avec l'expert Level IA](#switch-level-ia)'."
+                        : "\n\n⚠️ REDIRECTION RULE: If the question is technical or work-related (off-topic for you), ASSIST HIM FULLY FIRST. Never block him. Then, at the very end, offer this link: '\n\n[👉 Ask the Level IA Expert](#switch-level-ia)'.";
                 } else if (!isThiabsMode && currentModel === 'travail') {
                     redirectionInstruction = currentLang === 'fr'
-                        ? "\n\n⚠️ RÈGLE DE REDIRECTION : Si la question n'a STRICTEMENT AUCUN rapport avec le travail, ASSISTE-LE COMPLÈTEMENT D'ABORD, puis ajoute ce lien : `\n\n[👉 Basculer vers Mode Normal](#switch-level-ia)`."
-                        : "\n\n⚠️ REDIRECTION RULE: If off-topic, ASSIST FULLY FIRST, then add this link: `\n\n[👉 Switch to Normal Mode](#switch-level-ia)`.";
+                        ? "\n\n⚠️ RÈGLE DE REDIRECTION : Si la question n'a STRICTEMENT AUCUN rapport avec le travail, ASSISTE-LE COMPLÈTEMENT D'ABORD, puis ajoute ce lien : '\n\n[👉 Basculer vers Mode Normal](#switch-level-ia)'."
+                        : "\n\n⚠️ REDIRECTION RULE: If off-topic, ASSIST FULLY FIRST, then add this link: '\n\n[👉 Switch to Normal Mode](#switch-level-ia)'.";
                 }
 
                 const firstName = currentUserName.split(' ')[0];
@@ -2214,7 +2214,10 @@
                 
                 🧠 BOOST D'INTELLIGENCE & COMPRÉHENSION : Tu es extrêmement perspicace. Tu comprends parfaitement le langage SMS, les fautes de frappe, les erreurs de syntaxe et les abréviations (ett, tkt, prk, oé, mtn, bcp, etc.). Ne corrige jamais l'utilisateur de manière hautaine. Déduis son intention réelle grâce au contexte de la conversation et fournis une assistance magistrale. 
                 
-                🔗 GESTION DES LIENS : Si tu recommandes un site web, un outil ou une ressource, inclus TOUJOURS le lien en format Markdown standard : \`[Nom du site](https://lien.com)\`. Fais un maximum de 3 liens par réponse.
+                🔗 GESTION INTELLIGENTE DES LIENS : Ne donne pas de liens au hasard. Sois précis et stratégique :
+                1. Actualités & Infos : Si tu donnes des news ou des faits précis, inclus les liens sources pertinents à la fin de ta réponse (Maximum 3 liens).
+                2. Adresses & Lieux : Si tu parles d'un lieu physique ou d'une adresse, génère TOUJOURS un lien direct cliquable vers Google Maps (ex: "[📍 Ouvrir sur Google Maps](https://www.google.com/maps/search/?api=1&query=adresse+exacte+ici)").
+                3. Pertinence : Ne donne un lien vers un outil ou un site que si c'est ultra-pertinent pour aider l'utilisateur. Format Markdown obligatoire : "[Nom du site](URL)".
                 
                 🛑 RÈGLES DE COMPORTEMENT :
                 1. CONVERSATIONNEL ET ÉQUILIBRÉ : Parle comme un pote hyper-intelligent ou un mentor charismatique.
@@ -2325,7 +2328,7 @@
                             if (consecutiveErrors >= 2) {
                                 supportButtonHtml = `<br><br><a href="mailto:levelup.iao@gmail.com?subject=Urgence%20Technique%20-%20Level%20IA%20(ID:%20${userId})&body=Bonjour%20LevelUp,%0A%0AJe%20n'arrive%20plus%20à%20générer%20de%20réponses.%20L'IA%20semble%20bloquée.%0A%0A[Détails%20de%20l'erreur%20:%20${encodeURIComponent(lastApiError)}]" class="support-btn"><i class="fas fa-envelope"></i> Support</a>`;
                             }
-                            const errorMsg = `Oups ! 😅 Surcharge cognitive. Erreur : \`${lastApiError}\`${supportButtonHtml}`;
+                            const errorMsg = `Oups ! 😅 Surcharge cognitive. Erreur : '${lastApiError}'${supportButtonHtml}`;
                             displayAIMessage(errorMsg, true);
                             return; 
                         }
