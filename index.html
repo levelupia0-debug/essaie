@@ -82,7 +82,6 @@
             overscroll-behavior: none; 
             
             /* 🚨 VEROUILLAGE ABSOLU DE L'APPLICATION 🚨 */
-            /* Empêche l'application entière de monter vers le haut ("Léo" 😂) */
             position: fixed;
             top: 0;
             left: 0;
@@ -91,22 +90,22 @@
         }
 
         /* 🚨 LA MAGIE APPLE EST ICI : Règle les marges en haut (batterie) et en bas 🚨 */
-        .safe-pt { padding-top: max(1.25rem, env(safe-area-inset-top, 0px)) !important; }
-        .safe-pb { padding-bottom: max(0.25rem, env(safe-area-inset-bottom, 0px)) !important; }
+        .safe-pt { padding-top: max(1.5rem, env(safe-area-inset-top, 0px)) !important; }
+        .safe-pb { padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)) !important; }
         
         /* 🚨 FIX CLAVIER : Plaque le champ de texte contre le clavier et cache le texte inutile 🚨 */
-        body.keyboard-open .safe-pb { padding-bottom: 8px !important; }
+        body.keyboard-open .safe-pb { padding-bottom: 12px !important; }
         body.keyboard-open .hide-on-keyboard { display: none !important; }
 
         .safe-sidebar { 
-            padding-top: calc(1.5rem + env(safe-area-inset-top, 0px)) !important; 
-            padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)) !important; 
+            padding-top: calc(2rem + env(safe-area-inset-top, 0px)) !important; 
+            padding-bottom: calc(2rem + env(safe-area-inset-bottom, 0px)) !important; 
         }
         
         .bg-main { background: radial-gradient(circle at 50% 0%, #0d061a 0%, #020202 100%); }
 
         #splashScreen { position: fixed; inset: 0; z-index: 9999; background: black; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity 0.4s ease-out; }
-        .splash-text { font-size: 1.8rem; font-weight: 900; letter-spacing: 0.6em; text-transform: uppercase; opacity: 0; position: absolute; transform: scale(0.85); filter: blur(15px); transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); text-align: center; }
+        .splash-text { font-size: 2.2rem; font-weight: 900; letter-spacing: 0.6em; text-transform: uppercase; opacity: 0; position: absolute; transform: scale(0.85); filter: blur(15px); transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); text-align: center; }
         .splash-text.active { opacity: 1; transform: scale(1); filter: blur(0px); }
         .splash-text.exit { opacity: 0; transform: scale(1.2); filter: blur(30px); }
 
@@ -115,22 +114,22 @@
         
         #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: -20px 0 50px rgba(0,0,0,0.5); }
         
-        #userInput { background: transparent !important; border: none !important; color: white !important; outline: none !important; width: 100%; padding: 12px; font-size: 16px !important; min-height: 44px; max-height: 120px; display: block; resize: none; overflow-y: hidden; }
-        .message-bubble { max-width: 88%; animation: msgIn 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); }
+        #userInput { background: transparent !important; border: none !important; color: white !important; outline: none !important; width: 100%; padding: 14px; font-size: 16px !important; min-height: 52px; max-height: 140px; display: block; resize: none; overflow-y: hidden; }
+        .message-bubble { max-width: 90%; animation: msgIn 0.4s cubic-bezier(0.1, 0.9, 0.2, 1); }
         @keyframes msgIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
-        .star-logo { animation: rotate360 8s linear infinite; color: #a855f7; filter: drop-shadow(0 0 8px rgba(168, 85, 247, 0.6)); }
+        .star-logo { animation: rotate360 8s linear infinite; color: #a855f7; filter: drop-shadow(0 0 10px rgba(168, 85, 247, 0.6)); }
         @keyframes rotate360 { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .no-scrollbar::-webkit-scrollbar { display: none; }
         
-        .typing-dots span { width: 3px; height: 3px; background: #a855f7; border-radius: 50%; display: inline-block; animation: typing 1.4s infinite; }
+        .typing-dots span { width: 4px; height: 4px; background: #a855f7; border-radius: 50%; display: inline-block; animation: typing 1.4s infinite; }
         @keyframes typing { 0%, 100% { opacity: 0.3; transform: scale(1); } 50% { opacity: 1; transform: scale(1.3); } }
 
         .chat-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s; }
         .chat-item:hover { background: rgba(168, 85, 247, 0.1); border-color: var(--primary); }
         .chat-item.active { background: rgba(168, 85, 247, 0.15); border-color: var(--primary); }
 
-        .storage-bar { height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+        .storage-bar { height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden; }
         .storage-progress { height: 100%; background: var(--primary); transition: width 0.5s ease; }
         
         .star-rating i { cursor: pointer; transition: all 0.2s; }
@@ -140,18 +139,18 @@
         a[href="#switch-level-ia"], .support-btn {
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            margin-top: 12px;
-            padding: 10px 18px;
+            gap: 10px;
+            margin-top: 14px;
+            padding: 12px 20px;
             background: rgba(168, 85, 247, 0.15);
             border: 1px solid rgba(168, 85, 247, 0.4);
             color: #d8b4fe !important;
-            border-radius: 12px;
+            border-radius: 14px;
             text-decoration: none !important;
             font-weight: 800;
-            font-size: 11px;
+            font-size: 14px; /* Agrandissement net */
             text-transform: uppercase;
-            letter-spacing: 0.1em;
+            letter-spacing: 0.05em;
             transition: all 0.2s;
         }
         a[href="#switch-level-ia"]:hover, .support-btn:hover {
@@ -167,32 +166,32 @@
 <body class="bg-main">
 
     <!-- TOAST DE NOTIFICATION SYSTEME -->
-    <div id="sysToast" class="fixed top-5 left-1/2 -translate-x-1/2 backdrop-blur-md border px-6 py-3 rounded-full font-bold text-[10px] uppercase tracking-widest hidden z-[9999] shadow-2xl transition-all"></div>
+    <div id="sysToast" class="fixed top-6 left-1/2 -translate-x-1/2 backdrop-blur-md border px-6 py-4 rounded-full font-bold text-sm uppercase tracking-widest hidden z-[9999] shadow-2xl transition-all"></div>
 
     <!-- SPLASH -->
     <div id="splashScreen">
         <div id="splash1" class="splash-text text-purple-500"><strong id="splashTitle">Level IA</strong></div>
         <div id="splash2" class="splash-text flex flex-col items-center justify-center">
-            <span class="text-white font-black tracking-[0.6em]">LevelUp</span>
-            <span class="text-[10px] font-bold tracking-[0.4em] text-purple-400 mt-4 uppercase">Thiab's Mode</span>
+            <span class="text-white font-black tracking-[0.6em] text-3xl">LevelUp</span>
+            <span class="text-sm font-bold tracking-[0.4em] text-purple-400 mt-6 uppercase">Thiab's Mode</span>
         </div>
     </div>
 
     <!-- LANGUAGE SELECTION PAGE -->
     <div id="langPage" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-8 bg-black">
-        <div class="w-full max-w-sm text-center space-y-8">
-            <i class="fas fa-globe text-4xl text-purple-500 mb-6"></i>
-            <h2 class="text-xl font-bold uppercase tracking-widest text-white mb-8">
-                Language<br><span class="text-[10px] text-white/50 tracking-widest">Choisissez / Choose</span>
+        <div class="w-full max-w-md text-center space-y-10">
+            <i class="fas fa-globe text-6xl text-purple-500 mb-6"></i>
+            <h2 class="text-2xl font-bold uppercase tracking-widest text-white mb-10">
+                Language<br><span class="text-sm text-white/50 tracking-widest block mt-2">Choisissez / Choose</span>
             </h2>
-            <div class="grid grid-cols-2 gap-4">
-                <button class="lang-btn bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-purple-600 hover:border-purple-500 transition-all flex flex-col items-center gap-3" data-lang="fr">
-                    <span class="text-4xl">🇫🇷</span>
-                    <span class="text-[10px] font-black uppercase tracking-widest">Français</span>
+            <div class="grid grid-cols-2 gap-6">
+                <button class="lang-btn bg-white/5 border border-white/10 p-8 rounded-3xl hover:bg-purple-600 hover:border-purple-500 transition-all flex flex-col items-center gap-4" data-lang="fr">
+                    <span class="text-5xl">🇫🇷</span>
+                    <span class="text-sm font-black uppercase tracking-widest">Français</span>
                 </button>
-                <button class="lang-btn bg-white/5 border border-white/10 p-6 rounded-2xl hover:bg-purple-600 hover:border-purple-500 transition-all flex flex-col items-center gap-3" data-lang="en">
-                    <span class="text-4xl">🇬🇧</span>
-                    <span class="text-[10px] font-black uppercase tracking-widest">English</span>
+                <button class="lang-btn bg-white/5 border border-white/10 p-8 rounded-3xl hover:bg-purple-600 hover:border-purple-500 transition-all flex flex-col items-center gap-4" data-lang="en">
+                    <span class="text-5xl">🇬🇧</span>
+                    <span class="text-sm font-black uppercase tracking-widest">English</span>
                 </button>
             </div>
         </div>
@@ -200,18 +199,18 @@
 
     <!-- PROMO INSTALL MODAL (MUR D'INSTALLATION) -->
     <div id="promoInstallModal" class="hidden fixed inset-0 z-[5500] flex items-end md:items-center justify-center p-4 md:p-8 bg-black/90 backdrop-blur-md">
-        <div class="glass p-8 rounded-3xl max-w-sm w-full text-center space-y-6 animate-in slide-in-from-bottom-10 md:zoom-in duration-500 shadow-[0_0_50px_rgba(168,85,247,0.15)] border-purple-500/30">
-            <div class="mx-auto w-20 h-20 rounded-2xl bg-purple-500/20 flex items-center justify-center mb-2 border border-purple-500/50 shadow-inner">
-                <i id="promoIcon" class="fas fa-rocket text-3xl text-purple-400"></i>
+        <div class="glass p-8 rounded-[2rem] max-w-md w-full text-center space-y-8 animate-in slide-in-from-bottom-10 md:zoom-in duration-500 shadow-[0_0_60px_rgba(168,85,247,0.2)] border-purple-500/30">
+            <div class="mx-auto w-24 h-24 rounded-3xl bg-purple-500/20 flex items-center justify-center mb-4 border border-purple-500/50 shadow-inner">
+                <i id="promoIcon" class="fas fa-rocket text-4xl text-purple-400"></i>
             </div>
-            <h2 id="promoTitle" class="text-2xl font-black text-white uppercase tracking-widest leading-tight">Passe au niveau<br><span class="text-purple-400">Supérieur</span></h2>
-            <p id="promoDesc" class="text-xs text-white/70 leading-relaxed font-bold px-2">Pour une expérience fluide, rapide et des notifications intelligentes, installe l'application Level IA sur ton appareil dès maintenant.</p>
+            <h2 id="promoTitle" class="text-3xl font-black text-white uppercase tracking-widest leading-tight">Passe au niveau<br><span class="text-purple-400">Supérieur</span></h2>
+            <p id="promoDesc" class="text-sm text-white/70 leading-relaxed font-bold px-2">Pour une expérience fluide, rapide et des notifications intelligentes, installe l'application Level IA sur ton appareil dès maintenant.</p>
             
-            <div class="space-y-3 pt-4">
-                <button id="promoInstallBtn" class="w-full bg-purple-600 text-white py-4 rounded-xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-purple-500 transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)] flex items-center justify-center gap-2">
-                    <i class="fas fa-download"></i> <span id="promoInstallText">Installer l'App</span>
+            <div class="space-y-4 pt-6">
+                <button id="promoInstallBtn" class="w-full bg-purple-600 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-purple-500 active:scale-95 transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)] flex items-center justify-center gap-3">
+                    <i class="fas fa-download text-lg"></i> <span id="promoInstallText">Installer l'App</span>
                 </button>
-                <button id="promoSkipBtn" class="w-full bg-transparent text-white/40 py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:text-white hover:bg-white/5 transition-all">
+                <button id="promoSkipBtn" class="w-full bg-transparent text-white/40 py-4 rounded-2xl font-bold text-xs uppercase tracking-widest hover:text-white hover:bg-white/5 active:scale-95 transition-all">
                     <span id="promoSkipText">Continuer sur le web</span>
                 </button>
             </div>
@@ -220,155 +219,155 @@
 
     <!-- AUTH PAGE -->
     <div id="authPage" class="hidden fixed inset-0 z-[5000] flex items-center justify-center p-8 bg-black">
-        <div class="w-full max-w-sm text-center">
-            <i class="fas fa-star text-5xl star-logo mb-10 block"></i>
-            <h1 class="text-2xl font-bold tracking-[0.4em] text-white uppercase mb-12"><strong id="authAppTitle">Level IA</strong></h1>
+        <div class="w-full max-w-md text-center">
+            <i class="fas fa-star text-6xl star-logo mb-10 block"></i>
+            <h1 class="text-3xl font-bold tracking-[0.4em] text-white uppercase mb-12"><strong id="authAppTitle">Level IA</strong></h1>
             
-            <div class="space-y-6">
-                <p id="authTitle" class="text-[10px] font-bold text-white/40 uppercase tracking-[0.2em] mb-4">Entrez votre Clé d'Accès</p>
-                <input type="text" id="accessKeyInput" maxlength="15" placeholder="LVL-XXXXX-XXXXX" class="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-center text-white font-mono text-lg tracking-widest outline-none focus:border-purple-500 transition-all uppercase">
+            <div class="space-y-8">
+                <p id="authTitle" class="text-sm font-bold text-white/40 uppercase tracking-[0.2em] mb-4">Entrez votre Clé d'Accès</p>
+                <input type="text" id="accessKeyInput" maxlength="15" placeholder="LVL-XXXXX-XXXXX" class="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-6 text-center text-white font-mono text-xl tracking-widest outline-none focus:border-purple-500 transition-all uppercase">
                 
-                <div class="space-y-3">
-                    <button id="verifyKeyBtn" class="w-full bg-purple-600 text-white py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-purple-500 transition-all shadow-[0_0_30px_rgba(168,85,247,0.3)]">
+                <div class="space-y-4">
+                    <button id="verifyKeyBtn" class="w-full bg-purple-600 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-purple-500 active:scale-95 transition-all shadow-[0_0_30px_rgba(168,85,247,0.3)]">
                         Vérifier la clé
                     </button>
-                    <a href="https://levelupia0-debug.github.io/levelupia/" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center gap-3 py-4 rounded-2xl border border-white/10 bg-white/5 text-[10px] font-black uppercase tracking-[0.2em] hover:bg-white/10 hover:border-white/20 transition-all text-white">
-                        <i class="fas fa-key text-purple-400"></i> <span id="getKeyText">Obtenir ma clé</span>
+                    <a href="https://levelupia0-debug.github.io/levelupia/" target="_blank" rel="noopener noreferrer" class="w-full flex items-center justify-center gap-3 py-5 rounded-2xl border border-white/10 bg-white/5 text-sm font-black uppercase tracking-[0.2em] hover:bg-white/10 hover:border-white/20 active:scale-95 transition-all text-white">
+                        <i class="fas fa-key text-purple-400 text-lg"></i> <span id="getKeyText">Obtenir ma clé</span>
                     </a>
                 </div>
                 
-                <p id="keyError" class="text-xs text-red-400 font-bold hidden flex flex-col gap-1">
+                <p id="keyError" class="text-sm text-red-400 font-bold hidden flex flex-col gap-2">
                     <span id="keyErrorMain">Clé introuvable ou invalide.</span>
-                    <span id="keyErrorDetails" class="text-[8px] text-red-300 opacity-80 font-mono break-words w-full hidden"></span>
+                    <span id="keyErrorDetails" class="text-xs text-red-300 opacity-80 font-mono break-words w-full hidden"></span>
                 </p>
-                <p class="text-[8px] text-white/20 uppercase tracking-widest mt-8">Propulsé par <strong>LevelUp</strong></p>
+                <p class="text-xs text-white/20 uppercase tracking-widest mt-12">Propulsé par <strong>LevelUp</strong></p>
             </div>
         </div>
     </div>
 
     <!-- WELCOME PAGE -->
     <div id="welcomePage" class="hidden fixed inset-0 z-[4500] flex items-center justify-center p-8 bg-black/80 backdrop-blur-md">
-        <div class="glass p-8 rounded-3xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-500 shadow-2xl border-white/10">
-            <div class="relative w-24 h-24 mx-auto mb-2">
-                <img id="welcomeAvatar" src="" class="w-full h-full rounded-full object-cover border-2 border-purple-500 shadow-[0_0_20px_rgba(168,85,247,0.4)]">
-                <div class="absolute -bottom-2 -right-2 bg-green-500 w-6 h-6 rounded-full border-2 border-black flex items-center justify-center">
-                    <i class="fas fa-check text-[10px] text-white"></i>
+        <div class="glass p-10 rounded-[2rem] max-w-md w-full text-center space-y-8 animate-in fade-in zoom-in duration-500 shadow-2xl border-white/10">
+            <div class="relative w-32 h-32 mx-auto mb-4">
+                <img id="welcomeAvatar" src="" class="w-full h-full rounded-full object-cover border-4 border-purple-500 shadow-[0_0_30px_rgba(168,85,247,0.4)]">
+                <div class="absolute -bottom-2 -right-2 bg-green-500 w-8 h-8 rounded-full border-4 border-black flex items-center justify-center">
+                    <i class="fas fa-check text-xs text-white"></i>
                 </div>
             </div>
-            <h2 class="text-2xl font-black text-white uppercase tracking-widest leading-tight">
-                <span id="welcomeGreeting" class="text-sm text-white/50 tracking-widest">Bienvenue</span><br>
-                <span id="welcomeName" class="text-purple-400 truncate block"></span>
+            <h2 class="text-3xl font-black text-white uppercase tracking-widest leading-tight">
+                <span id="welcomeGreeting" class="text-base text-white/50 tracking-widest">Bienvenue</span><br>
+                <span id="welcomeName" class="text-purple-400 truncate block mt-2"></span>
             </h2>
-            <p id="welcomeDesc" class="text-xs text-white/60 leading-relaxed px-2">Prêt à vous assister. Découvrez une intelligence conçue pour vous accompagner au quotidien.</p>
-            <button id="startAppBtn" class="w-full bg-white text-black py-4 rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] hover:bg-purple-500 hover:text-white transition-all shadow-lg mt-4 flex justify-center items-center gap-3">
-                <span id="continueBtnText">Continuer</span> <i class="fas fa-arrow-right"></i>
+            <p id="welcomeDesc" class="text-sm text-white/60 leading-relaxed px-2">Prêt à vous assister. Découvrez une intelligence conçue pour vous accompagner au quotidien.</p>
+            <button id="startAppBtn" class="w-full bg-white text-black py-5 rounded-2xl font-black text-sm uppercase tracking-[0.2em] hover:bg-purple-500 hover:text-white active:scale-95 transition-all shadow-lg mt-6 flex justify-center items-center gap-3">
+                <span id="continueBtnText">Continuer</span> <i class="fas fa-arrow-right text-lg"></i>
             </button>
         </div>
     </div>
 
     <!-- LOGOUT CONFIRMATION MODAL -->
     <div id="logoutModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-8 bg-black/80 backdrop-blur-md">
-        <div class="glass p-8 rounded-3xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
-            <div class="mx-auto w-16 h-16 rounded-full bg-red-500/20 flex items-center justify-center mb-4 border border-red-500/50">
-                <i class="fas fa-sign-out-alt text-2xl text-red-400"></i>
+        <div class="glass p-8 rounded-3xl max-w-md w-full text-center space-y-8 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
+            <div class="mx-auto w-20 h-20 rounded-full bg-red-500/20 flex items-center justify-center mb-4 border border-red-500/50">
+                <i class="fas fa-sign-out-alt text-3xl text-red-400"></i>
             </div>
-            <h2 id="logoutModalTitle" class="text-xl font-black text-white uppercase tracking-widest">Déconnexion</h2>
-            <p id="logoutModalDesc" class="text-xs text-white/60 leading-relaxed px-2">Voulez-vous vraiment quitter votre session actuelle ?</p>
-            <div class="flex gap-3 pt-4">
-                <button id="cancelLogoutBtn" class="flex-1 bg-white/10 text-white py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-white/20 transition-all">Annuler</button>
-                <button id="confirmLogoutBtn" class="flex-1 bg-red-500/80 text-white py-3 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-red-500 transition-all shadow-lg shadow-red-500/30">Quitter</button>
+            <h2 id="logoutModalTitle" class="text-2xl font-black text-white uppercase tracking-widest">Déconnexion</h2>
+            <p id="logoutModalDesc" class="text-sm text-white/60 leading-relaxed px-2">Voulez-vous vraiment quitter votre session actuelle ?</p>
+            <div class="flex gap-4 pt-6">
+                <button id="cancelLogoutBtn" class="flex-1 bg-white/10 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all">Annuler</button>
+                <button id="confirmLogoutBtn" class="flex-1 bg-red-500/80 text-white py-4 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-red-500 active:scale-95 transition-all shadow-lg shadow-red-500/30">Quitter</button>
             </div>
         </div>
     </div>
 
     <!-- INSTALL PWA MODAL -->
     <div id="installModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-8 bg-black/80 backdrop-blur-md">
-        <div class="glass p-8 rounded-3xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
-            <div class="mx-auto w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center mb-4 border border-purple-500/50">
-                <i class="fas fa-mobile-alt text-2xl text-purple-400"></i>
+        <div class="glass p-8 rounded-3xl max-w-md w-full text-center space-y-8 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
+            <div class="mx-auto w-20 h-20 rounded-full bg-purple-500/20 flex items-center justify-center mb-4 border border-purple-500/50">
+                <i class="fas fa-mobile-alt text-3xl text-purple-400"></i>
             </div>
-            <h2 id="installModalTitle" class="text-xl font-black text-white uppercase tracking-widest">Installer l'App</h2>
-            <p id="installModalDesc" class="text-xs text-white/60 leading-relaxed px-2">Ajoutez l'application sur votre écran d'accueil :</p>
-            <div class="space-y-4 text-left bg-black/40 p-4 rounded-2xl border border-white/5">
-                <p id="installiOS" class="text-[10px] text-white/80 leading-relaxed font-bold">🍎 iOS (Safari) : Appuyez sur Partager <i class="fas fa-share-square mx-1"></i> puis 'Sur l'écran d'accueil'.</p>
+            <h2 id="installModalTitle" class="text-2xl font-black text-white uppercase tracking-widest">Installer l'App</h2>
+            <p id="installModalDesc" class="text-sm text-white/60 leading-relaxed px-2">Ajoutez l'application sur votre écran d'accueil :</p>
+            <div class="space-y-5 text-left bg-black/40 p-6 rounded-2xl border border-white/5">
+                <p id="installiOS" class="text-xs text-white/80 leading-relaxed font-bold">🍎 iOS (Safari) : Appuyez sur Partager <i class="fas fa-share-square mx-1 text-lg"></i> puis 'Sur l'écran d'accueil'.</p>
                 <div class="w-full h-px bg-white/10"></div>
-                <p id="installAndroid" class="text-[10px] text-white/80 leading-relaxed font-bold">🤖 Android (Chrome) : Appuyez sur Menu <i class="fas fa-ellipsis-v mx-1"></i> puis 'Ajouter à l'écran d'accueil'.</p>
+                <p id="installAndroid" class="text-xs text-white/80 leading-relaxed font-bold">🤖 Android (Chrome) : Appuyez sur Menu <i class="fas fa-ellipsis-v mx-1 text-lg"></i> puis 'Ajouter à l'écran d'accueil'.</p>
             </div>
-            <button id="closeInstallModalBtn" class="w-full bg-white/10 text-white py-4 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-white/20 transition-all mt-4">Fermer</button>
+            <button id="closeInstallModalBtn" class="w-full bg-white/10 text-white py-5 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all mt-6">Fermer</button>
         </div>
     </div>
 
     <!-- CGU MODAL -->
     <div id="cguModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-4 md:p-8 bg-black/80 backdrop-blur-md">
-        <div class="glass p-6 md:p-8 rounded-3xl max-w-lg w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10 max-h-[90vh] flex flex-col">
-            <div class="mx-auto w-14 h-14 shrink-0 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/50">
-                <i class="fas fa-scale-balanced text-xl text-blue-400"></i>
+        <div class="glass p-8 md:p-10 rounded-[2rem] max-w-xl w-full text-center space-y-8 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10 max-h-[90vh] flex flex-col">
+            <div class="mx-auto w-20 h-20 shrink-0 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/50">
+                <i class="fas fa-scale-balanced text-3xl text-blue-400"></i>
             </div>
-            <h2 id="cguModalTitle" class="text-lg font-black text-white uppercase tracking-widest shrink-0">Conditions d'Utilisation (CGU)</h2>
-            <div class="space-y-4 text-left bg-black/40 p-5 rounded-2xl border border-white/5 overflow-y-auto no-scrollbar flex-1">
-                <p id="cguText1" class="text-[11px] text-white/90 leading-relaxed font-bold text-justify">
-                    <span class="text-blue-400">1. ÉTHIQUE ET BIENVEILLANCE :</span> Notre application a été créée dans le but exclusif d'aider, de protéger, d'informer et de faire grandir ses utilisateurs. L'IA est programmée pour refuser toute requête malveillante, dangereuse ou illégale.
+            <h2 id="cguModalTitle" class="text-2xl font-black text-white uppercase tracking-widest shrink-0">Conditions d'Utilisation (CGU)</h2>
+            <div class="space-y-6 text-left bg-black/40 p-6 rounded-2xl border border-white/5 overflow-y-auto no-scrollbar flex-1">
+                <p id="cguText1" class="text-sm text-white/90 leading-relaxed font-bold text-justify">
+                    <span class="text-blue-400 block mb-1">1. ÉTHIQUE ET BIENVEILLANCE :</span> Notre application a été créée dans le but exclusif d'aider, de protéger, d'informer et de faire grandir ses utilisateurs. L'IA est programmée pour refuser toute requête malveillante, dangereuse ou illégale.
                 </p>
                 <div class="w-full h-px bg-white/10"></div>
-                <p id="cguText2" class="text-[11px] text-white/90 leading-relaxed font-bold text-justify">
-                    <span class="text-blue-400">2. RESPONSABILITÉ DE L'UTILISATEUR :</span> En utilisant Level IA, vous prenez l'entière responsabilité de vos actes et de la façon dont vous interprétez ou utilisez les réponses générées. Vous êtes maître de vos décisions.
+                <p id="cguText2" class="text-sm text-white/90 leading-relaxed font-bold text-justify">
+                    <span class="text-blue-400 block mb-1">2. RESPONSABILITÉ DE L'UTILISATEUR :</span> En utilisant Level IA, vous prenez l'entière responsabilité de vos actes et de la façon dont vous interprétez ou utilisez les réponses générées. Vous êtes maître de vos décisions.
                 </p>
                 <div class="w-full h-px bg-white/10"></div>
-                <p id="cguText3" class="text-[11px] text-white/90 leading-relaxed font-bold text-justify">
-                    <span class="text-blue-400">3. ABSENCE DE GARANTIE :</span> Bien que nos modèles soient très avancés, l'IA peut parfois commettre des erreurs. Ses conseils (notamment en mode Coach) ne remplacent en aucun cas l'avis d'un professionnel qualifié (médecin, psychologue, juriste).
+                <p id="cguText3" class="text-sm text-white/90 leading-relaxed font-bold text-justify">
+                    <span class="text-blue-400 block mb-1">3. ABSENCE DE GARANTIE :</span> Bien que nos modèles soient très avancés, l'IA peut parfois commettre des erreurs. Ses conseils (notamment en mode Coach) ne remplacent en aucun cas l'avis d'un professionnel qualifié (médecin, psychologue, juriste).
                 </p>
                 <div class="w-full h-px bg-white/10"></div>
-                <p id="cguText4" class="text-[11px] text-white/90 leading-relaxed font-bold text-justify">
-                    <span class="text-blue-400">4. PROTECTION LÉGALE :</span> Les développeurs, les concepteurs (LevelUp) et les sociétés affiliées déclinent toute responsabilité en cas de dommages directs ou indirects liés à l'utilisation de ce service. Aucune poursuite judiciaire ne pourra être engagée contre l'équipe de développement.
+                <p id="cguText4" class="text-sm text-white/90 leading-relaxed font-bold text-justify">
+                    <span class="text-blue-400 block mb-1">4. PROTECTION LÉGALE :</span> Les développeurs, les concepteurs (LevelUp) et les sociétés affiliées déclinent toute responsabilité en cas de dommages directs ou indirects liés à l'utilisation de ce service. Aucune poursuite judiciaire ne pourra être engagée contre l'équipe de développement.
                 </p>
                 <div class="w-full h-px bg-white/10"></div>
-                <p id="cguText5" class="text-[11px] text-white/90 leading-relaxed font-bold text-justify">
-                    <span class="text-blue-400">5. ÂGE REQUIS :</span> Vous devez avoir au minimum 16 ans pour utiliser les services de cette intelligence artificielle.
+                <p id="cguText5" class="text-sm text-white/90 leading-relaxed font-bold text-justify">
+                    <span class="text-blue-400 block mb-1">5. ÂGE REQUIS :</span> Vous devez avoir au minimum 16 ans pour utiliser les services de cette intelligence artificielle.
                 </p>
             </div>
-            <button id="closeCguModalBtn" class="w-full bg-white/10 text-white py-4 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-white/20 transition-all shrink-0">Accepter & Fermer</button>
+            <button id="closeCguModalBtn" class="w-full bg-white/10 text-white py-5 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all shrink-0 mt-4">Accepter & Fermer</button>
         </div>
     </div>
     
     <!-- INFO MODAL -->
     <div id="infoModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-4 md:p-8 bg-black/80 backdrop-blur-md">
-        <div class="glass p-6 md:p-8 rounded-3xl max-w-lg w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10 max-h-[90vh] flex flex-col">
-            <div class="mx-auto w-14 h-14 shrink-0 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/50">
-                <i class="fas fa-info-circle text-xl text-emerald-400"></i>
+        <div class="glass p-8 md:p-10 rounded-[2rem] max-w-xl w-full text-center space-y-8 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10 max-h-[90vh] flex flex-col">
+            <div class="mx-auto w-20 h-20 shrink-0 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/50">
+                <i class="fas fa-info-circle text-3xl text-emerald-400"></i>
             </div>
-            <h2 id="infoModalTitle" class="text-lg font-black text-white uppercase tracking-widest shrink-0">À propos de l'Application</h2>
-            <div class="space-y-4 text-left bg-black/40 p-5 rounded-2xl border border-white/5 overflow-y-auto no-scrollbar flex-1">
-                <p id="infoText1" class="text-[11px] text-white/90 leading-relaxed font-bold text-justify">
-                    <span class="text-emerald-400">🧠 MOTEUR IA (GEMINI) :</span> L'intelligence de l'application est propulsée par le puissant moteur <strong>Gemini 2.5 Flash</strong> (développé par Google). Ce moteur garantit une capacité d'analyse fulgurante, un raisonnement logique poussé et une connexion au Web en temps réel.
+            <h2 id="infoModalTitle" class="text-2xl font-black text-white uppercase tracking-widest shrink-0">À propos de l'Application</h2>
+            <div class="space-y-6 text-left bg-black/40 p-6 rounded-2xl border border-white/5 overflow-y-auto no-scrollbar flex-1">
+                <p id="infoText1" class="text-sm text-white/90 leading-relaxed font-bold text-justify">
+                    <span class="text-emerald-400 block mb-1">🧠 MOTEUR IA (GEMINI) :</span> L'intelligence de l'application est propulsée par le puissant moteur <strong>Gemini 2.5 Flash</strong> (développé par Google). Ce moteur garantit une capacité d'analyse fulgurante, un raisonnement logique poussé et une connexion au Web en temps réel.
                 </p>
                 <div class="w-full h-px bg-white/10"></div>
-                <p id="infoText2" class="text-[11px] text-white/90 leading-relaxed font-bold text-justify">
-                    <span class="text-emerald-400">🔒 ARCHITECTURE & SÉCURITÉ :</span> Toutes vos données (historique, ADN utilisateur, clés d'accès) sont hébergées sur l'infrastructure ultra-sécurisée de <strong>Google Cloud (Firebase Firestore)</strong>. La sécurité et la confidentialité sont au cœur de notre développement.
+                <p id="infoText2" class="text-sm text-white/90 leading-relaxed font-bold text-justify">
+                    <span class="text-emerald-400 block mb-1">🔒 ARCHITECTURE & SÉCURITÉ :</span> Toutes vos données (historique, ADN utilisateur, clés d'accès) sont hébergées sur l'infrastructure ultra-sécurisée de <strong>Google Cloud (Firebase Firestore)</strong>. La sécurité et la confidentialité sont au cœur de notre développement.
                 </p>
                 <div class="w-full h-px bg-white/10"></div>
-                <p id="infoText3" class="text-[11px] text-white/90 leading-relaxed font-bold text-justify">
-                    <span class="text-emerald-400">⚡ ÉCOSYSTÈME DUAL-PERSONA :</span> Cette application intègre deux environnements distincts :<br><br>
-                    - <strong>Level IA :</strong> L'assistant pro (Normal, Travail, Expert) pour la productivité et la gestion de projets.<br>
+                <p id="infoText3" class="text-sm text-white/90 leading-relaxed font-bold text-justify">
+                    <span class="text-emerald-400 block mb-2">⚡ ÉCOSYSTÈME DUAL-PERSONA :</span> Cette application intègre deux environnements distincts :<br><br>
+                    - <strong>Level IA :</strong> L'assistant pro (Normal, Travail, Expert) pour la productivité et la gestion de projets.<br><br>
                     - <strong>Thiab's Mode :</strong> L'environnement secret de développement personnel (Motivation, Coach, Procrastination).
                 </p>
                 <div class="w-full h-px bg-white/10"></div>
-                <p class="text-[11px] text-white/90 leading-relaxed font-bold text-center opacity-50 mt-4">
+                <p class="text-xs text-white/90 leading-relaxed font-bold text-center opacity-50 mt-6">
                     Développé par LevelUp • Version 2.0 Premium
                 </p>
             </div>
-            <button id="closeInfoModalBtn" class="w-full bg-white/10 text-white py-4 rounded-xl font-bold text-[10px] uppercase tracking-widest hover:bg-white/20 transition-all shrink-0">Fermer</button>
+            <button id="closeInfoModalBtn" class="w-full bg-white/10 text-white py-5 rounded-xl font-bold text-sm uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all shrink-0 mt-4">Fermer</button>
         </div>
     </div>
 
     <!-- FEEDBACK MODAL -->
     <div id="feedbackModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-8 bg-black/80 backdrop-blur-md">
-        <div class="glass p-8 rounded-3xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
-            <div class="flex justify-between items-center mb-2">
-                <h2 id="feedbackModalTitle" class="text-lg font-black text-white uppercase tracking-widest">Donner un avis</h2>
-                <button id="closeFeedbackBtn" class="text-white/40 hover:text-white"><i class="fas fa-times"></i></button>
+        <div class="glass p-8 rounded-[2rem] max-w-md w-full text-center space-y-8 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="feedbackModalTitle" class="text-xl font-black text-white uppercase tracking-widest">Donner un avis</h2>
+                <button id="closeFeedbackBtn" class="text-white/40 hover:text-white"><i class="fas fa-times text-xl"></i></button>
             </div>
             
-            <div class="star-rating flex justify-center gap-3 text-2xl text-white/20 my-6">
+            <div class="star-rating flex justify-center gap-4 text-4xl text-white/20 my-8">
                 <i class="fas fa-star" data-rating="1"></i>
                 <i class="fas fa-star" data-rating="2"></i>
                 <i class="fas fa-star" data-rating="3"></i>
@@ -376,119 +375,119 @@
                 <i class="fas fa-star" data-rating="5"></i>
             </div>
             
-            <textarea id="feedbackText" placeholder="Que pensez-vous de l'application ? Comment l'améliorer ?" class="w-full h-28 bg-black/40 border border-white/10 rounded-xl p-4 text-[11px] text-white outline-none focus:border-yellow-500 transition-all resize-none"></textarea>
+            <textarea id="feedbackText" placeholder="Que pensez-vous de l'application ? Comment l'améliorer ?" class="w-full h-32 bg-black/40 border border-white/10 rounded-2xl p-5 text-sm text-white outline-none focus:border-yellow-500 transition-all resize-none"></textarea>
             
-            <button id="submitFeedbackBtn" class="w-full bg-yellow-500 text-black py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-yellow-400 transition-all">Envoyer l'avis</button>
+            <button id="submitFeedbackBtn" class="w-full bg-yellow-500 text-black py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-yellow-400 active:scale-95 transition-all mt-4">Envoyer l'avis</button>
         </div>
     </div>
 
     <!-- REPORT MODAL -->
     <div id="reportModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-8 bg-black/80 backdrop-blur-md">
-        <div class="glass p-8 rounded-3xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
-            <div class="flex justify-between items-center mb-2">
-                <h2 id="reportModalTitle" class="text-lg font-black text-white uppercase tracking-widest">Signaler un problème</h2>
-                <button id="closeReportBtn" class="text-white/40 hover:text-white"><i class="fas fa-times"></i></button>
+        <div class="glass p-8 rounded-[2rem] max-w-md w-full text-center space-y-8 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="reportModalTitle" class="text-xl font-black text-white uppercase tracking-widest">Signaler un problème</h2>
+                <button id="closeReportBtn" class="text-white/40 hover:text-white"><i class="fas fa-times text-xl"></i></button>
             </div>
             
-            <div class="space-y-4">
-                <select id="reportCategory" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-[11px] text-white outline-none focus:border-red-500 transition-all">
+            <div class="space-y-6">
+                <select id="reportCategory" class="w-full bg-black/40 border border-white/10 rounded-2xl p-4 text-sm text-white outline-none focus:border-red-500 transition-all cursor-pointer">
                     <option value="ia_bug" class="bg-black">Problème avec l'IA (Réponses bizarres)</option>
                     <option value="ui_bug" class="bg-black">Bug visuel / Interface</option>
                     <option value="connexion" class="bg-black">Problème de connexion / Mémoire</option>
                     <option value="other" class="bg-black">Autre chose</option>
                 </select>
                 
-                <textarea id="reportText" placeholder="Décrivez le problème en détail pour nous aider à le corriger..." class="w-full h-28 bg-black/40 border border-white/10 rounded-xl p-4 text-[11px] text-white outline-none focus:border-red-500 transition-all resize-none"></textarea>
+                <textarea id="reportText" placeholder="Décrivez le problème en détail pour nous aider à le corriger..." class="w-full h-32 bg-black/40 border border-white/10 rounded-2xl p-5 text-sm text-white outline-none focus:border-red-500 transition-all resize-none"></textarea>
             </div>
             
-            <button id="submitReportBtn" class="w-full bg-red-500 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-red-400 transition-all shadow-[0_0_15px_rgba(239,68,68,0.4)]">Envoyer le rapport</button>
+            <button id="submitReportBtn" class="w-full bg-red-500 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-red-400 active:scale-95 transition-all shadow-[0_0_15px_rgba(239,68,68,0.4)] mt-4">Envoyer le rapport</button>
         </div>
     </div>
 
     <!-- NOTIF MODAL -->
     <div id="notifModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-8 bg-black/80 backdrop-blur-md">
-        <div class="glass p-8 rounded-3xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
-            <div class="flex justify-between items-center mb-2">
-                <h2 id="notifModalTitle" class="text-lg font-black text-white uppercase tracking-widest">Notifications</h2>
-                <button id="closeNotifBtn" class="text-white/40 hover:text-white"><i class="fas fa-times"></i></button>
+        <div class="glass p-8 rounded-[2rem] max-w-md w-full text-center space-y-8 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
+            <div class="flex justify-between items-center mb-4">
+                <h2 id="notifModalTitle" class="text-xl font-black text-white uppercase tracking-widest">Notifications</h2>
+                <button id="closeNotifBtn" class="text-white/40 hover:text-white"><i class="fas fa-times text-xl"></i></button>
             </div>
             
-            <div class="space-y-6 text-left">
-                <div class="flex items-center justify-between bg-white/5 border border-white/10 p-4 rounded-xl">
-                    <label id="lblNotifEnable" class="text-[10px] font-bold text-white uppercase tracking-widest">Activer les alertes</label>
+            <div class="space-y-8 text-left">
+                <div class="flex items-center justify-between bg-white/5 border border-white/10 p-5 rounded-2xl">
+                    <label id="lblNotifEnable" class="text-xs font-bold text-white uppercase tracking-widest">Activer les alertes</label>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="notifToggle" class="sr-only peer">
-                        <div class="w-9 h-5 bg-black/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/50 after:border-white/10 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500 peer-checked:after:bg-white shadow-inner"></div>
+                        <div class="w-11 h-6 bg-black/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/50 after:border-white/10 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-500 peer-checked:after:bg-white shadow-inner"></div>
                     </label>
                 </div>
                 
-                <div class="space-y-2">
-                    <label id="lblNotifTime" class="text-[10px] font-bold text-white/60 uppercase tracking-widest">Heure de l'exercice (Thiab's)</label>
-                    <input type="time" id="exerciseTimeInput" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white outline-none focus:border-blue-500 transition-all font-bold text-lg text-center cursor-pointer">
+                <div class="space-y-4">
+                    <label id="lblNotifTime" class="text-xs font-bold text-white/60 uppercase tracking-widest">Heure de l'exercice (Thiab's)</label>
+                    <input type="time" id="exerciseTimeInput" class="w-full bg-black/40 border border-white/10 rounded-2xl p-5 text-white outline-none focus:border-blue-500 transition-all font-bold text-xl text-center cursor-pointer">
                 </div>
             </div>
             
-            <div class="flex gap-3">
-                <button id="testNotifBtn" class="hidden w-1/3 bg-white/10 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-white/20 transition-all border border-white/10">Tester</button>
-                <button id="saveNotifBtn" class="flex-1 bg-blue-500 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-400 transition-all shadow-[0_0_15px_rgba(59,130,246,0.4)]">Enregistrer</button>
+            <div class="flex gap-4 pt-4">
+                <button id="testNotifBtn" class="hidden w-1/3 bg-white/10 text-white py-5 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all border border-white/10">Tester</button>
+                <button id="saveNotifBtn" class="flex-1 bg-blue-500 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-blue-400 active:scale-95 transition-all shadow-[0_0_15px_rgba(59,130,246,0.4)]">Enregistrer</button>
             </div>
         </div>
     </div>
 
     <!-- PIN MODAL (DEV) -->
     <div id="pinModal" class="hidden fixed inset-0 z-[7000] flex items-center justify-center p-8 bg-black/90 backdrop-blur-md">
-        <div class="glass p-8 rounded-3xl max-w-xs w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-[0_0_50px_rgba(168,85,247,0.15)] border-purple-500/30">
-            <div class="flex justify-between items-center mb-2">
-                <h2 class="text-sm font-black text-white uppercase tracking-widest"><i class="fas fa-lock text-purple-400 mr-2"></i> Accès Dev</h2>
-                <button id="closePinBtn" class="text-white/40 hover:text-white"><i class="fas fa-times"></i></button>
+        <div class="glass p-8 rounded-[2rem] max-w-sm w-full text-center space-y-8 animate-in fade-in zoom-in duration-300 shadow-[0_0_50px_rgba(168,85,247,0.15)] border-purple-500/30">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-base font-black text-white uppercase tracking-widest"><i class="fas fa-lock text-purple-400 mr-3"></i> Accès Dev</h2>
+                <button id="closePinBtn" class="text-white/40 hover:text-white"><i class="fas fa-times text-xl"></i></button>
             </div>
-            <p id="pinModalDesc" class="text-[10px] text-white/60 font-bold leading-relaxed">⚠️ Accès restreint. Seul le développeur a l'autorisation d'accéder à cette interface. Entrez le code PIN.</p>
-            <input type="password" id="pinInput" placeholder="••••" maxlength="4" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-center text-2xl tracking-[0.5em] font-mono text-white outline-none focus:border-purple-500 transition-all">
-            <button id="submitPinBtn" class="w-full bg-purple-600 text-white py-4 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-purple-500 transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)]">Valider</button>
+            <p id="pinModalDesc" class="text-xs text-white/60 font-bold leading-relaxed">⚠️ Accès restreint. Seul le développeur a l'autorisation d'accéder à cette interface. Entrez le code PIN.</p>
+            <input type="password" id="pinInput" placeholder="••••" maxlength="4" class="w-full bg-black/40 border border-white/10 rounded-2xl p-5 text-center text-3xl tracking-[0.5em] font-mono text-white outline-none focus:border-purple-500 transition-all">
+            <button id="submitPinBtn" class="w-full bg-purple-600 text-white py-5 rounded-2xl font-black text-sm uppercase tracking-widest hover:bg-purple-500 active:scale-95 transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)] mt-4">Valider</button>
         </div>
     </div>
 
     <!-- NOUVEAU CONSOLE DEV MODAL (DASHBOARD PRO) -->
     <div id="consoleModal" class="hidden fixed inset-0 z-[8000] flex items-center justify-center p-2 md:p-6 bg-black/90 backdrop-blur-xl">
-        <div class="bg-[#080808] border border-white/10 rounded-3xl w-full max-w-5xl h-[95vh] md:h-[90vh] flex flex-col shadow-2xl overflow-hidden relative ring-1 ring-white/5">
+        <div class="bg-[#080808] border border-white/10 rounded-[2rem] w-full max-w-5xl h-[95vh] md:h-[90vh] flex flex-col shadow-2xl overflow-hidden relative ring-1 ring-white/5">
             
             <!-- HEADER CONSOLE -->
-            <div class="px-5 py-4 border-b border-white/10 flex flex-wrap items-center justify-between bg-white/5 shrink-0 gap-4">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center border border-purple-500/30 shadow-inner">
-                        <i class="fas fa-server text-purple-400 text-lg"></i>
+            <div class="px-6 py-5 border-b border-white/10 flex flex-wrap items-center justify-between bg-white/5 shrink-0 gap-4">
+                <div class="flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center border border-purple-500/30 shadow-inner">
+                        <i class="fas fa-server text-purple-400 text-xl"></i>
                     </div>
                     <div>
-                        <h2 class="text-sm font-black text-white uppercase tracking-widest leading-tight">Centre de Contrôle</h2>
-                        <p class="text-[9px] text-purple-400 font-mono tracking-widest opacity-80">LEVEL IA // DIAGNOSTICS</p>
+                        <h2 class="text-base font-black text-white uppercase tracking-widest leading-tight">Centre de Contrôle</h2>
+                        <p class="text-xs text-purple-400 font-mono tracking-widest opacity-80 mt-1">LEVEL IA // DIAGNOSTICS</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button id="copyTokenBtn" class="px-3 py-2 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30 text-[10px] uppercase font-bold hover:bg-blue-500/40 transition-all flex items-center gap-2"><i class="fas fa-key"></i> <span class="hidden sm:inline">Token FCM</span></button>
-                    <button id="clearConsoleBtn" class="px-3 py-2 rounded-lg bg-white/10 text-white/60 border border-white/10 text-[10px] uppercase font-bold hover:text-white hover:bg-white/20 transition-all flex items-center gap-2"><i class="fas fa-broom"></i> <span class="hidden sm:inline">Vider</span></button>
-                    <button id="closeConsoleBtn" class="w-10 h-10 rounded-lg bg-red-500/20 text-red-400 flex items-center justify-center hover:bg-red-500/40 border border-red-500/30 transition-all"><i class="fas fa-times"></i></button>
+                <div class="flex items-center gap-3">
+                    <button id="copyTokenBtn" class="px-4 py-2.5 rounded-xl bg-blue-500/20 text-blue-400 border border-blue-500/30 text-xs uppercase font-bold hover:bg-blue-500/40 active:scale-95 transition-all flex items-center gap-2"><i class="fas fa-key"></i> <span class="hidden sm:inline">Token FCM</span></button>
+                    <button id="clearConsoleBtn" class="px-4 py-2.5 rounded-xl bg-white/10 text-white/60 border border-white/10 text-xs uppercase font-bold hover:text-white hover:bg-white/20 active:scale-95 transition-all flex items-center gap-2"><i class="fas fa-broom"></i> <span class="hidden sm:inline">Vider</span></button>
+                    <button id="closeConsoleBtn" class="w-10 h-10 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center hover:bg-red-500/40 active:scale-95 border border-red-500/30 transition-all"><i class="fas fa-times text-lg"></i></button>
                 </div>
             </div>
 
             <!-- FILTRES & STATUS -->
-            <div class="px-5 py-3 border-b border-white/5 bg-black flex flex-wrap items-center justify-between gap-4 shrink-0 overflow-x-auto no-scrollbar">
-                <div class="flex gap-2" id="consoleFilters">
-                    <button class="console-filter active px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest bg-white text-black transition-all" data-filter="all">Tout</button>
-                    <button class="console-filter px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all" data-filter="error">Erreurs</button>
-                    <button class="console-filter px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/20 transition-all" data-filter="warn">Alertes</button>
-                    <button class="console-filter px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition-all" data-filter="log">Infos</button>
+            <div class="px-6 py-4 border-b border-white/5 bg-black flex flex-wrap items-center justify-between gap-4 shrink-0 overflow-x-auto no-scrollbar">
+                <div class="flex gap-3" id="consoleFilters">
+                    <button class="console-filter active px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-white text-black transition-all" data-filter="all">Tout</button>
+                    <button class="console-filter px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all" data-filter="error">Erreurs</button>
+                    <button class="console-filter px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/20 transition-all" data-filter="warn">Alertes</button>
+                    <button class="console-filter px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition-all" data-filter="log">Infos</button>
                 </div>
                 
-                <div class="flex items-center gap-5 text-[9px] font-bold uppercase tracking-widest bg-white/5 px-4 py-2 rounded-lg border border-white/10">
-                    <div class="flex items-center gap-2"><span id="ind-net" class="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></span> Réseau</div>
-                    <div class="flex items-center gap-2"><span id="ind-pwa" class="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-[0_0_8px_#eab308]"></span> PWA</div>
-                    <div class="flex items-center gap-2"><span id="ind-db" class="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-[0_0_8px_#eab308]"></span> Firebase</div>
+                <div class="flex items-center gap-6 text-xs font-bold uppercase tracking-widest bg-white/5 px-5 py-3 rounded-xl border border-white/10">
+                    <div class="flex items-center gap-2"><span id="ind-net" class="w-3 h-3 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></span> Réseau</div>
+                    <div class="flex items-center gap-2"><span id="ind-pwa" class="w-3 h-3 rounded-full bg-yellow-500 shadow-[0_0_8px_#eab308]"></span> PWA</div>
+                    <div class="flex items-center gap-2"><span id="ind-db" class="w-3 h-3 rounded-full bg-yellow-500 shadow-[0_0_8px_#eab308]"></span> Firebase</div>
                 </div>
             </div>
 
             <!-- OUTPUT AREA -->
-            <div id="consoleOutput" class="flex-1 overflow-y-auto p-4 space-y-3 bg-[#030303] custom-scrollbar pb-20">
-                <div class="text-white/30 text-center py-4 border-b border-white/5 text-[10px] uppercase tracking-widest font-black">--- Système de Logs Démarré ---</div>
+            <div id="consoleOutput" class="flex-1 overflow-y-auto p-6 space-y-4 bg-[#030303] custom-scrollbar pb-20">
+                <div class="text-white/30 text-center py-5 border-b border-white/5 text-xs uppercase tracking-widest font-black">--- Système de Logs Démarré ---</div>
             </div>
         </div>
     </div>
@@ -498,60 +497,60 @@
         <div id="appOverlay" class="fixed inset-0 z-[2999] hidden transition-opacity"></div>
 
         <!-- RESTAURATION DU MENU LATÉRAL -->
-        <div id="sidebar" class="fixed inset-y-0 right-0 w-[85%] md:w-80 glass z-[3000] border-l border-white/10 px-6 flex flex-col transition-transform translate-x-full no-scrollbar overflow-y-auto safe-sidebar">
-            <div class="flex items-center justify-between mb-8">
-                <span id="menuTitle" class="text-[10px] font-black uppercase tracking-widest opacity-40">Menu</span>
-                <button id="closeSidebar" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5"><i class="fas fa-times text-xs"></i></button>
+        <div id="sidebar" class="fixed inset-y-0 right-0 w-[85%] md:w-96 glass z-[3000] border-l border-white/10 px-8 flex flex-col transition-transform translate-x-full no-scrollbar overflow-y-auto safe-sidebar">
+            <div class="flex items-center justify-between mb-10">
+                <span id="menuTitle" class="text-xs font-black uppercase tracking-widest opacity-40">Menu</span>
+                <button id="closeSidebar" class="w-10 h-10 flex items-center justify-center rounded-xl hover:bg-white/5 active:scale-95 transition-all"><i class="fas fa-times text-lg"></i></button>
             </div>
 
-            <div id="userCard" class="p-4 rounded-2xl bg-white/5 border border-white/5 mb-8 flex items-center gap-4">
-                <div id="userAvatar" class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center overflow-hidden border border-white/10 shadow-inner shrink-0">
-                    <i class="fas fa-user text-xs"></i>
+            <div id="userCard" class="p-5 rounded-3xl bg-white/5 border border-white/5 mb-10 flex items-center gap-5">
+                <div id="userAvatar" class="w-14 h-14 rounded-full bg-purple-500/20 flex items-center justify-center overflow-hidden border border-white/10 shadow-inner shrink-0">
+                    <i class="fas fa-user text-lg"></i>
                 </div>
                 <div class="flex-1 min-w-0">
-                    <p id="userName" class="text-[10px] font-black uppercase truncate">Utilisateur</p>
-                    <p id="userMail" class="text-[9px] text-white/40 truncate">---</p>
-                    <p id="userStatus" class="text-[8px] text-green-400 uppercase tracking-widest mt-0.5"><i class="fas fa-shield-alt"></i> Vérifié via clé</p>
+                    <p id="userName" class="text-sm font-black uppercase truncate">Utilisateur</p>
+                    <p id="userMail" class="text-xs text-white/40 truncate mt-1">---</p>
+                    <p id="userStatus" class="text-[10px] text-green-400 uppercase tracking-widest mt-1.5 font-bold"><i class="fas fa-shield-alt"></i> Vérifié via clé</p>
                 </div>
             </div>
 
-            <div class="space-y-6">
+            <div class="space-y-8">
                 
                 <!-- TOGGLE THIAB'S MODE (DUAL PERSONA) -->
-                <div class="space-y-2 mb-4">
-                    <div class="flex items-center justify-between bg-purple-500/10 border border-purple-500/30 p-3 rounded-xl">
+                <div class="space-y-3 mb-6">
+                    <div class="flex items-center justify-between bg-purple-500/10 border border-purple-500/30 p-4 rounded-2xl">
                         <div>
-                            <label id="thiabsModeTitle" class="text-[10px] font-black uppercase tracking-widest text-purple-400">Mode Thiab's 🌟</label>
-                            <p id="thiabsModeDesc" class="text-[7px] text-white/50 uppercase tracking-widest mt-0.5">Activer le développement personnel</p>
+                            <label id="thiabsModeTitle" class="text-sm font-black uppercase tracking-widest text-purple-400">Mode Thiab's 🌟</label>
+                            <p id="thiabsModeDesc" class="text-[10px] text-white/50 uppercase tracking-widest mt-1 font-bold">Activer le développement personnel</p>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="thiabsModeToggle" class="sr-only peer">
-                            <div class="w-9 h-5 bg-black/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/50 after:border-white/10 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-500 peer-checked:after:bg-white shadow-inner"></div>
+                            <div class="w-11 h-6 bg-black/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/50 after:border-white/10 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500 peer-checked:after:bg-white shadow-inner"></div>
                         </label>
                     </div>
                 </div>
 
                 <!-- Langue -->
-                <div class="space-y-2">
-                    <label id="langTitle" class="text-[9px] font-black uppercase tracking-widest opacity-40">Langue</label>
-                    <select id="langSelect" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-[10px] text-white outline-none focus:border-purple-500 transition-all uppercase tracking-widest font-bold appearance-none cursor-pointer">
+                <div class="space-y-3">
+                    <label id="langTitle" class="text-[10px] font-black uppercase tracking-widest opacity-40">Langue</label>
+                    <select id="langSelect" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-white outline-none focus:border-purple-500 transition-all uppercase tracking-widest font-bold appearance-none cursor-pointer">
                         <option value="fr" class="bg-black text-white">Français</option>
                         <option value="en" class="bg-black text-white">English</option>
                     </select>
                 </div>
 
                 <!-- Modèles IA -->
-                <div class="space-y-2">
-                    <label id="modelTitle" class="text-[9px] font-black uppercase tracking-widest opacity-40">Modèle IA</label>
-                    <select id="modelSelect" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-[10px] text-white outline-none focus:border-purple-500 transition-all uppercase tracking-widest font-bold appearance-none cursor-pointer">
+                <div class="space-y-3">
+                    <label id="modelTitle" class="text-[10px] font-black uppercase tracking-widest opacity-40">Modèle IA</label>
+                    <select id="modelSelect" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-white outline-none focus:border-purple-500 transition-all uppercase tracking-widest font-bold appearance-none cursor-pointer">
                         <!-- Options dynamically injected via JS -->
                     </select>
                 </div>
 
                 <!-- Longueur des réponses -->
-                <div class="space-y-2">
-                    <label id="lengthTitle" class="text-[9px] font-black uppercase tracking-widest opacity-40">Taille des réponses</label>
-                    <select id="lengthSelect" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-[10px] text-white outline-none focus:border-purple-500 transition-all uppercase tracking-widest font-bold appearance-none cursor-pointer">
+                <div class="space-y-3">
+                    <label id="lengthTitle" class="text-[10px] font-black uppercase tracking-widest opacity-40">Taille des réponses</label>
+                    <select id="lengthSelect" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-white outline-none focus:border-purple-500 transition-all uppercase tracking-widest font-bold appearance-none cursor-pointer">
                         <option value="medium" class="bg-black text-white">Moyenne (Chill & Pro)</option>
                         <option value="long" class="bg-black text-white">Longue (Détaillée)</option>
                         <option value="short" class="bg-black text-white">Courte (Directe)</option>
@@ -559,147 +558,147 @@
                 </div>
 
                 <!-- TOGGLE MODE HARDCORE -->
-                <div class="space-y-2 pt-2 transition-all duration-300 hidden" id="hardcoreContainer">
-                    <div class="flex items-center justify-between bg-red-500/10 border border-red-500/20 p-3 rounded-xl">
+                <div class="space-y-3 pt-3 transition-all duration-300 hidden" id="hardcoreContainer">
+                    <div class="flex items-center justify-between bg-red-500/10 border border-red-500/20 p-4 rounded-2xl">
                         <div>
-                            <label id="hardcoreTitle" class="text-[10px] font-black uppercase tracking-widest text-red-400">Mode Hardcore 🤬</label>
-                            <p id="hardcoreDesc" class="text-[7px] text-white/50 uppercase tracking-widest mt-0.5">Désactiver la politesse</p>
+                            <label id="hardcoreTitle" class="text-sm font-black uppercase tracking-widest text-red-400">Mode Hardcore 🤬</label>
+                            <p id="hardcoreDesc" class="text-[10px] text-white/50 uppercase tracking-widest mt-1 font-bold">Désactiver la politesse</p>
                         </div>
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="hardcoreToggle" class="sr-only peer">
-                            <div class="w-9 h-5 bg-black/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/50 after:border-white/10 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-500 peer-checked:after:bg-white shadow-inner"></div>
+                            <div class="w-11 h-6 bg-black/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/50 after:border-white/10 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-500 peer-checked:after:bg-white shadow-inner"></div>
                         </label>
                     </div>
                 </div>
 
-                <div class="space-y-2">
-                    <div class="flex justify-between items-center text-[9px] font-black uppercase tracking-widest opacity-40">
+                <div class="space-y-3">
+                    <div class="flex justify-between items-center text-[10px] font-black uppercase tracking-widest opacity-40">
                         <span id="cloudSpace">Espace Cloud</span>
                         <span id="storageLabel">0%</span>
                     </div>
                     <div class="storage-bar"><div id="storageBar" class="storage-progress" style="width: 0%"></div></div>
                 </div>
 
-                <div class="space-y-3">
+                <div class="space-y-4">
                     <div class="flex justify-between items-center">
-                        <h4 id="historyTitle" class="text-[9px] font-black uppercase tracking-widest opacity-40">Historique des sessions</h4>
+                        <h4 id="historyTitle" class="text-[10px] font-black uppercase tracking-widest opacity-40">Historique des sessions</h4>
                     </div>
-                    <button id="newChatBtn" class="w-full flex items-center justify-center gap-2 py-3 bg-purple-500/10 border border-purple-500/30 rounded-xl text-purple-400 font-black text-[10px] uppercase tracking-widest hover:bg-purple-600 hover:text-white hover:border-purple-500 transition-all shadow-sm">
+                    <button id="newChatBtn" class="w-full flex items-center justify-center gap-3 py-4 bg-purple-500/10 border border-purple-500/30 rounded-2xl text-purple-400 font-black text-xs uppercase tracking-widest hover:bg-purple-600 hover:text-white hover:border-purple-500 active:scale-95 transition-all shadow-sm">
                         <i class="fas fa-plus"></i> <span id="newChatText">Nouvelle session</span>
                     </button>
-                    <div id="historyList" class="space-y-2 max-h-60 overflow-y-auto pr-2 mt-2 no-scrollbar">
+                    <div id="historyList" class="space-y-3 max-h-72 overflow-y-auto pr-2 mt-4 no-scrollbar">
                         <!-- History items injected here -->
                     </div>
                 </div>
 
-                <div class="space-y-4 pt-4 border-t border-white/5">
-                    <div class="space-y-2">
-                        <label id="dnaTitle" class="text-[9px] font-black uppercase tracking-widest opacity-40">DNA de <strong id="dnaAppBrand">Level IA</strong></label>
-                        <textarea id="customDNA" placeholder="..." class="w-full h-24 bg-white/5 border border-white/10 rounded-xl p-3 text-[10px] text-white outline-none focus:border-purple-500 transition-all resize-none"></textarea>
-                        <button id="saveDNA" class="w-full py-2.5 bg-purple-600 rounded-xl text-[9px] font-black uppercase tracking-widest hover:bg-purple-500 transition-all">Mettre à jour</button>
+                <div class="space-y-5 pt-6 border-t border-white/5">
+                    <div class="space-y-3">
+                        <label id="dnaTitle" class="text-[10px] font-black uppercase tracking-widest opacity-40">DNA de <strong id="dnaAppBrand">Level IA</strong></label>
+                        <textarea id="customDNA" placeholder="..." class="w-full h-32 bg-white/5 border border-white/10 rounded-2xl p-4 text-sm text-white outline-none focus:border-purple-500 transition-all resize-none"></textarea>
+                        <button id="saveDNA" class="w-full py-4 bg-purple-600 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-purple-500 active:scale-95 transition-all">Mettre à jour</button>
                     </div>
 
-                    <div class="pt-4 space-y-3">
-                        <div class="grid grid-cols-2 gap-2">
-                            <button id="openFeedbackBtn" class="w-full flex flex-col items-center justify-center p-3 rounded-xl bg-yellow-500/10 border border-yellow-500/20 hover:bg-yellow-500/20 transition-all group">
-                                <i class="fas fa-star text-sm text-yellow-500 mb-1"></i>
-                                <span id="feedbackMenuText" class="text-[8px] font-black uppercase tracking-widest text-yellow-400">Avis</span>
+                    <div class="pt-6 space-y-4">
+                        <div class="grid grid-cols-2 gap-3">
+                            <button id="openFeedbackBtn" class="w-full flex flex-col items-center justify-center p-4 rounded-2xl bg-yellow-500/10 border border-yellow-500/20 hover:bg-yellow-500/20 active:scale-95 transition-all group">
+                                <i class="fas fa-star text-lg text-yellow-500 mb-2"></i>
+                                <span id="feedbackMenuText" class="text-[10px] font-black uppercase tracking-widest text-yellow-400">Avis</span>
                             </button>
-                            <button id="openReportBtn" class="w-full flex flex-col items-center justify-center p-3 rounded-xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 transition-all group">
-                                <i class="fas fa-bug text-sm text-red-500 mb-1"></i>
-                                <span id="reportMenuText" class="text-[8px] font-black uppercase tracking-widest text-red-400">Signaler</span>
+                            <button id="openReportBtn" class="w-full flex flex-col items-center justify-center p-4 rounded-2xl bg-red-500/10 border border-red-500/20 hover:bg-red-500/20 active:scale-95 transition-all group">
+                                <i class="fas fa-bug text-lg text-red-500 mb-2"></i>
+                                <span id="reportMenuText" class="text-[10px] font-black uppercase tracking-widest text-red-400">Signaler</span>
                             </button>
                         </div>
                         
-                        <button id="openNotifBtn" class="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-blue-500/40 transition-all group">
-                            <span id="notifMenuText" class="text-[9px] font-black uppercase tracking-widest">Rappels & Notifs</span>
-                            <i class="fas fa-bell text-xs opacity-20 group-hover:opacity-100 text-blue-400"></i>
+                        <button id="openNotifBtn" class="w-full flex items-center justify-between p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-blue-500/40 active:scale-95 transition-all group">
+                            <span id="notifMenuText" class="text-xs font-black uppercase tracking-widest">Rappels & Notifs</span>
+                            <i class="fas fa-bell text-sm opacity-30 group-hover:opacity-100 text-blue-400"></i>
                         </button>
-                        <button id="installMenuBtn" class="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/40 transition-all group">
-                            <span id="installAppMenuText" class="text-[9px] font-black uppercase tracking-widest">Installer l'App</span>
-                            <i class="fas fa-mobile-alt text-xs opacity-20 group-hover:opacity-100"></i>
+                        <button id="installMenuBtn" class="w-full flex items-center justify-between p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-purple-500/40 active:scale-95 transition-all group">
+                            <span id="installAppMenuText" class="text-xs font-black uppercase tracking-widest">Installer l'App</span>
+                            <i class="fas fa-mobile-alt text-sm opacity-30 group-hover:opacity-100"></i>
                         </button>
-                        <button id="infoMenuBtn" class="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-emerald-500/40 transition-all group">
-                            <span id="infoMenuText" class="text-[9px] font-black uppercase tracking-widest">Informations App</span>
-                            <i class="fas fa-info-circle text-xs opacity-20 group-hover:opacity-100 text-emerald-400"></i>
+                        <button id="infoMenuBtn" class="w-full flex items-center justify-between p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-emerald-500/40 active:scale-95 transition-all group">
+                            <span id="infoMenuText" class="text-xs font-black uppercase tracking-widest">Informations App</span>
+                            <i class="fas fa-info-circle text-sm opacity-30 group-hover:opacity-100 text-emerald-400"></i>
                         </button>
-                        <button id="cguMenuBtn" class="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/40 transition-all group">
-                            <span id="cguMenuText" class="text-[9px] font-black uppercase tracking-widest">Règles & Sécurité</span>
-                            <i class="fas fa-scale-balanced text-xs opacity-20 group-hover:opacity-100"></i>
+                        <button id="cguMenuBtn" class="w-full flex items-center justify-between p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-purple-500/40 active:scale-95 transition-all group">
+                            <span id="cguMenuText" class="text-xs font-black uppercase tracking-widest">Règles & Sécurité</span>
+                            <i class="fas fa-scale-balanced text-sm opacity-30 group-hover:opacity-100"></i>
                         </button>
-                        <a id="supportMail" href="#" class="w-full flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:border-purple-500/40 transition-all group">
-                            <span id="supportTitle" class="text-[9px] font-black uppercase tracking-widest">Support & Compte</span>
-                            <i class="fas fa-envelope text-xs opacity-20 group-hover:opacity-100"></i>
+                        <a id="supportMail" href="#" class="w-full flex items-center justify-between p-5 rounded-2xl bg-white/5 border border-white/5 hover:border-purple-500/40 active:scale-95 transition-all group">
+                            <span id="supportTitle" class="text-xs font-black uppercase tracking-widest">Support & Compte</span>
+                            <i class="fas fa-envelope text-sm opacity-30 group-hover:opacity-100"></i>
                         </a>
-                        <button id="logoutBtn" class="w-full py-4 text-[9px] text-red-400 font-black uppercase tracking-[0.2em] opacity-60 hover:opacity-100 transition-opacity">Déconnexion</button>
+                        <button id="logoutBtn" class="w-full py-5 text-xs text-red-400 font-black uppercase tracking-[0.2em] opacity-70 hover:opacity-100 active:scale-95 transition-all">Déconnexion</button>
                         
                         <!-- BOUTON CONSOLE -->
-                        <button id="openConsoleBtn" class="w-full py-3 mt-4 border-t border-white/5 text-[8px] text-gray-500 font-black uppercase tracking-[0.2em] hover:text-green-400 transition-all text-left flex items-center gap-2"><i class="fas fa-terminal"></i> <span id="consoleMenuText">Console Dev</span></button>
+                        <button id="openConsoleBtn" class="w-full py-4 mt-6 border-t border-white/5 text-[10px] text-gray-500 font-black uppercase tracking-[0.2em] hover:text-green-400 active:scale-95 transition-all text-left flex items-center justify-center gap-3"><i class="fas fa-terminal"></i> <span id="consoleMenuText">Console Dev</span></button>
                     </div>
                 </div>
             </div>
         </div>
 
         <!-- RESTAURATION DU HEADER -->
-        <header class="px-6 pb-4 flex items-center justify-between border-b border-white/5 bg-black/40 backdrop-blur-2xl shrink-0 z-40 safe-pt">
-            <div class="flex items-center gap-4">
-                <i class="fas fa-star text-xl star-logo"></i>
+        <header class="px-6 pb-5 flex items-center justify-between border-b border-white/5 bg-black/40 backdrop-blur-2xl shrink-0 z-40 safe-pt">
+            <div class="flex items-center gap-5">
+                <i class="fas fa-star text-2xl star-logo"></i>
                 <div>
-                    <h2 class="text-sm font-black uppercase tracking-widest"><strong id="headerAppBrand">Level IA</strong></h2>
-                    <p id="headerModelName" class="text-[9px] font-bold text-purple-400 uppercase tracking-tighter">Modèle: Normal</p>
+                    <h2 class="text-lg font-black uppercase tracking-widest"><strong id="headerAppBrand">Level IA</strong></h2>
+                    <p id="headerModelName" class="text-xs font-bold text-purple-400 uppercase tracking-tighter mt-0.5">Modèle: Normal</p>
                 </div>
             </div>
-            <button id="openSidebar" class="w-10 h-10 rounded-xl flex flex-col items-center justify-center gap-1.5 hover:bg-white/5 transition-all">
-                <span class="w-4 h-0.5 bg-white rounded-full"></span>
-                <span class="w-4 h-0.5 bg-white rounded-full opacity-60"></span>
+            <button id="openSidebar" class="w-12 h-12 rounded-xl flex flex-col items-center justify-center gap-1.5 hover:bg-white/5 active:scale-90 transition-all">
+                <span class="w-5 h-0.5 bg-white rounded-full"></span>
+                <span class="w-5 h-0.5 bg-white rounded-full opacity-60"></span>
             </button>
         </header>
 
         <main class="flex-1 overflow-y-auto px-6 py-10 no-scrollbar space-y-10 relative" id="chatArea">
-            <div class="max-w-2xl mx-auto space-y-8" id="conversationContainer"></div>
+            <div class="max-w-3xl mx-auto space-y-8" id="conversationContainer"></div>
             
-            <div id="aiTyping" class="max-w-2xl mx-auto hidden pl-2 pb-4">
-                <div class="flex items-center gap-3">
-                    <i class="fas fa-star text-[12px] star-logo opacity-80"></i>
-                    <div class="typing-dots flex gap-1"><span></span><span></span><span></span></div>
+            <div id="aiTyping" class="max-w-3xl mx-auto hidden pl-2 pb-6">
+                <div class="flex items-center gap-4">
+                    <i class="fas fa-star text-sm star-logo opacity-80"></i>
+                    <div class="typing-dots flex gap-1.5"><span></span><span></span><span></span></div>
                 </div>
             </div>
         </main>
 
         <!-- FOOTER OPTIMISÉ POUR ÊTRE AU PLUS PRÈS DU DOIGT AVEC TEXTE D'AVERTISSEMENT -->
-        <footer class="px-3 pt-2 pb-1 border-t border-white/5 bg-[#020202]/90 backdrop-blur-3xl shrink-0 z-50 relative safe-pb">
-            <div class="max-w-2xl mx-auto relative">
+        <footer class="px-4 pt-3 pb-2 border-t border-white/5 bg-[#020202]/90 backdrop-blur-3xl shrink-0 z-50 relative safe-pb">
+            <div class="max-w-3xl mx-auto relative">
                 
                 <!-- PREVIEW ATTACHMENT -->
-                <div id="attachmentPreview" class="hidden absolute bottom-full mb-3 left-0 bg-white/10 backdrop-blur-md border border-white/20 p-2 rounded-xl flex items-center gap-3 shadow-2xl">
-                    <div id="attachIcon" class="w-10 h-10 bg-black/50 rounded-lg flex items-center justify-center overflow-hidden"></div>
-                    <div class="text-[10px] truncate max-w-[150px]">
-                        <p id="attachName" class="font-bold text-white truncate"></p>
-                        <p id="attachSize" class="text-white/50"></p>
+                <div id="attachmentPreview" class="hidden absolute bottom-full mb-4 left-0 bg-white/10 backdrop-blur-md border border-white/20 p-3 rounded-2xl flex items-center gap-4 shadow-2xl">
+                    <div id="attachIcon" class="w-12 h-12 bg-black/50 rounded-xl flex items-center justify-center overflow-hidden"></div>
+                    <div class="text-xs truncate max-w-[200px]">
+                        <p id="attachName" class="font-bold text-white truncate text-sm"></p>
+                        <p id="attachSize" class="text-white/50 mt-1"></p>
                     </div>
-                    <button id="removeAttachBtn" class="text-red-400 hover:text-red-300 px-2"><i class="fas fa-times"></i></button>
+                    <button id="removeAttachBtn" class="text-red-400 hover:text-red-300 p-2"><i class="fas fa-times text-lg"></i></button>
                 </div>
 
-                <div class="glass rounded-3xl p-1.5 flex items-end gap-2 focus-within:border-purple-500/40 transition-all shadow-2xl relative">
+                <div class="glass rounded-[2rem] p-2 flex items-end gap-3 focus-within:border-purple-500/40 transition-all shadow-2xl relative">
                     
                     <!-- BOUTON PLUS (+) EPURE -->
                     <div class="relative">
-                        <button id="attachBtn" class="w-10 h-10 text-white/50 flex items-center justify-center hover:text-white transition-all ml-1 shrink-0 bg-transparent border-none outline-none focus:outline-none">
-                            <i class="fas fa-plus"></i>
+                        <button id="attachBtn" class="w-12 h-12 text-white/50 flex items-center justify-center hover:text-white transition-all ml-1 shrink-0 bg-transparent border-none outline-none focus:outline-none active:scale-90">
+                            <i class="fas fa-plus text-xl"></i>
                         </button>
                         
                         <!-- MENU D'IMPORT -->
-                        <div id="attachMenu" class="hidden-menu absolute bottom-full left-0 mb-2 w-48 bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl flex flex-col gap-1 z-50">
-                            <button id="importImgBtn" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all text-left group">
-                                <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all"><i class="fas fa-image"></i></div>
+                        <div id="attachMenu" class="hidden-menu absolute bottom-full left-0 mb-3 w-56 bg-black/90 backdrop-blur-xl border border-white/10 rounded-[1.5rem] p-3 shadow-2xl flex flex-col gap-2 z-50">
+                            <button id="importImgBtn" class="flex items-center gap-4 w-full p-4 rounded-xl hover:bg-white/10 active:scale-95 transition-all text-left group">
+                                <div class="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all"><i class="fas fa-image text-lg"></i></div>
                                 <div>
-                                    <p class="text-[10px] font-bold text-white uppercase tracking-widest" id="lblImportImg">Image</p>
+                                    <p class="text-xs font-bold text-white uppercase tracking-widest" id="lblImportImg">Image</p>
                                 </div>
                             </button>
-                            <button id="importDocBtn" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 transition-all text-left group">
-                                <div class="w-8 h-8 rounded-lg bg-red-500/20 flex items-center justify-center text-red-400 group-hover:bg-red-500 group-hover:text-white transition-all"><i class="fas fa-file-pdf"></i></div>
+                            <button id="importDocBtn" class="flex items-center gap-4 w-full p-4 rounded-xl hover:bg-white/10 active:scale-95 transition-all text-left group">
+                                <div class="w-10 h-10 rounded-xl bg-red-500/20 flex items-center justify-center text-red-400 group-hover:bg-red-500 group-hover:text-white transition-all"><i class="fas fa-file-pdf text-lg"></i></div>
                                 <div>
-                                    <p class="text-[10px] font-bold text-white uppercase tracking-widest" id="lblImportDoc">Document (PDF)</p>
+                                    <p class="text-xs font-bold text-white uppercase tracking-widest" id="lblImportDoc">Document (PDF)</p>
                                 </div>
                             </button>
                         </div>
@@ -710,12 +709,12 @@
                     <input type="file" id="docInput" accept="application/pdf" class="hidden">
 
                     <div class="flex-1 px-2"><textarea id="userInput" placeholder="Dis-moi tout bro..." rows="1" autocomplete="off"></textarea></div>
-                    <button id="sendBtn" class="w-12 h-12 rounded-2xl bg-white text-black flex items-center justify-center hover:bg-purple-500 hover:text-white transition-all shadow-lg shrink-0"><i class="fas fa-chevron-up text-xs"></i></button>
+                    <button id="sendBtn" class="w-14 h-14 rounded-full bg-white text-black flex items-center justify-center hover:bg-purple-500 hover:text-white active:scale-90 active:bg-purple-600 transition-all duration-150 shadow-lg shrink-0 touch-manipulation select-none"><i class="fas fa-chevron-up text-xl pointer-events-none"></i></button>
                 </div>
                 
                 <!-- NOUVEAU TEXTE D'AVERTISSEMENT (CACHÉ QUAND LE CLAVIER S'OUVRE) -->
-                <div class="text-center mt-2 mb-1 hide-on-keyboard">
-                    <p class="text-[9px] font-bold text-white/30 tracking-widest">Level peut faire des erreurs. Vérifiez les informations.</p>
+                <div class="text-center mt-3 mb-2 hide-on-keyboard">
+                    <p class="text-xs font-bold text-white/30 tracking-widest">Level peut faire des erreurs. Vérifiez les informations.</p>
                 </div>
             </div>
         </footer>
@@ -745,24 +744,24 @@
             if (output) {
                 const el = document.createElement('div');
                 const timeStr = new Date().toLocaleTimeString();
-                el.className = `log-entry log-${type} p-3 rounded-xl border font-mono text-[10px] break-words flex items-start gap-3 animate-in fade-in slide-in-from-bottom-2`;
+                el.className = `log-entry log-${type} p-4 rounded-2xl border font-mono text-xs break-words flex items-start gap-4 animate-in fade-in slide-in-from-bottom-2`;
                 
                 let icon = '', bgClass = '', textClass = '', badge = '';
                 if (type === 'error') {
-                    icon = '<i class="fas fa-times-circle text-red-500 text-sm mt-0.5"></i>';
+                    icon = '<i class="fas fa-times-circle text-red-500 text-lg mt-0.5"></i>';
                     bgClass = 'bg-red-500/10 border-red-500/30';
                     textClass = 'text-red-200';
-                    badge = '<span class="bg-red-500 text-white px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider shadow-[0_0_8px_rgba(239,68,68,0.5)]">ERROR</span>';
+                    badge = '<span class="bg-red-500 text-white px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider shadow-[0_0_8px_rgba(239,68,68,0.5)]">ERROR</span>';
                 } else if (type === 'warn') {
-                    icon = '<i class="fas fa-exclamation-triangle text-yellow-500 text-sm mt-0.5"></i>';
+                    icon = '<i class="fas fa-exclamation-triangle text-yellow-500 text-lg mt-0.5"></i>';
                     bgClass = 'bg-yellow-500/10 border-yellow-500/30';
                     textClass = 'text-yellow-200';
-                    badge = '<span class="bg-yellow-500 text-black px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider">WARN</span>';
+                    badge = '<span class="bg-yellow-500 text-black px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider">WARN</span>';
                 } else {
-                    icon = '<i class="fas fa-info-circle text-blue-500 text-sm mt-0.5"></i>';
+                    icon = '<i class="fas fa-info-circle text-blue-500 text-lg mt-0.5"></i>';
                     bgClass = 'bg-blue-500/5 border-blue-500/20';
                     textClass = 'text-blue-100';
-                    badge = '<span class="bg-blue-500/40 text-blue-200 px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider">INFO</span>';
+                    badge = '<span class="bg-blue-500/40 text-blue-200 px-2 py-1 rounded text-[10px] font-black uppercase tracking-wider">INFO</span>';
                 }
 
                 el.className += ` ${bgClass}`;
@@ -771,9 +770,9 @@
                 el.innerHTML = `
                     <div class="shrink-0 flex items-center justify-center">${icon}</div>
                     <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-2 mb-1.5">
+                        <div class="flex items-center gap-3 mb-2">
                             ${badge}
-                            <span class="text-white/40 text-[9px] font-bold">[${timeStr}]</span>
+                            <span class="text-white/40 text-[10px] font-bold">[${timeStr}]</span>
                         </div>
                         <div class="${textClass} leading-relaxed whitespace-pre-wrap">${msg}</div>
                     </div>
@@ -947,21 +946,21 @@
                 .then((reg) => {
                     reg.update(); // ⚡ FORCE LA MISE A JOUR DU CACHE
                     console.log('✅ [PWA] Service Worker actif', reg.scope);
-                    document.getElementById('ind-pwa').className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"; // Vert
+                    document.getElementById('ind-pwa').className = "w-3 h-3 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"; // Vert
                 })
                 .catch((err) => {
                     console.error('❌ [PWA] Erreur SW', err);
-                    document.getElementById('ind-pwa').className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; // Rouge
+                    document.getElementById('ind-pwa').className = "w-3 h-3 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; // Rouge
                 });
             } else if ('serviceWorker' in navigator) {
                 console.log('⚠️ [PWA] SW ignoré sur ce protocole (' + window.location.protocol + ')');
-                document.getElementById('ind-pwa').className = "w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-[0_0_8px_#eab308]"; // Jaune
+                document.getElementById('ind-pwa').className = "w-3 h-3 rounded-full bg-yellow-500 shadow-[0_0_8px_#eab308]"; // Jaune
             }
 
             // Gestion Status Réseau (Indicateurs Dev)
-            window.addEventListener('online', () => document.getElementById('ind-net').className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]");
-            window.addEventListener('offline', () => document.getElementById('ind-net').className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]");
-            if(!navigator.onLine) document.getElementById('ind-net').className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]";
+            window.addEventListener('online', () => document.getElementById('ind-net').className = "w-3 h-3 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]");
+            window.addEventListener('offline', () => document.getElementById('ind-net').className = "w-3 h-3 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]");
+            if(!navigator.onLine) document.getElementById('ind-net').className = "w-3 h-3 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]";
 
             // PWA Installation & Device Detection
             const ua = navigator.userAgent || navigator.vendor || window.opera;
@@ -995,9 +994,9 @@
                 const t = document.getElementById('sysToast');
                 t.innerText = msg;
                 if(isError) {
-                    t.className = `fixed top-5 left-1/2 -translate-x-1/2 backdrop-blur-md border px-6 py-3 rounded-full font-bold text-[10px] uppercase tracking-widest z-[9999] shadow-2xl transition-all bg-red-500/20 border-red-500/50 text-red-200`;
+                    t.className = `fixed top-6 left-1/2 -translate-x-1/2 backdrop-blur-md border px-6 py-4 rounded-full font-bold text-sm uppercase tracking-widest z-[9999] shadow-2xl transition-all bg-red-500/20 border-red-500/50 text-red-200`;
                 } else {
-                    t.className = `fixed top-5 left-1/2 -translate-x-1/2 backdrop-blur-md border px-6 py-3 rounded-full font-bold text-[10px] uppercase tracking-widest z-[9999] shadow-2xl transition-all bg-emerald-500/20 border-emerald-500/50 text-emerald-200`;
+                    t.className = `fixed top-6 left-1/2 -translate-x-1/2 backdrop-blur-md border px-6 py-4 rounded-full font-bold text-sm uppercase tracking-widest z-[9999] shadow-2xl transition-all bg-emerald-500/20 border-emerald-500/50 text-emerald-200`;
                 }
                 t.classList.remove('hidden');
                 setTimeout(() => t.classList.add('hidden'), 5000);
@@ -1021,21 +1020,21 @@
                     authTitle: "Entrez votre Clé d'Accès", verifyBtn: "Vérifier la clé", getKeyText: "Obtenir ma clé", menuTitle: "Menu",
                     thiabsModeTitle: "Mode Thiab's 🌟", thiabsModeDesc: "Activer le développement personnel",
                     langTitle: "Langue", modelTitle: "Modèle IA", lengthTitle: "Taille des réponses", cloudSpace: "Espace Cloud", historyTitle: "Historique des sessions", newChatText: "Nouvelle session",
-                    dnaTitle: "DNA de <strong id='dnaAppBrand'>{app}</strong>", saveDNA: "Mettre à jour", supportTitle: "Support & Compte", logoutBtn: "Déconnexion", placeholder: "Dis-moi tout bro...", dnaPlaceholder: "Ex: Parle-moi comme à un ami...",
+                    dnaTitle: "DNA de <strong id='dnaAppBrand'>{app}</strong>", saveDNA: "Mettre à jour", supportTitle: "Support & Compte", logoutBtn: "Déconnexion", placeholder: "Message...", dnaPlaceholder: "Ex: Parle-moi comme à un ami...",
                     invalidFormat: "Format invalide. Exemple: LVL-XXXXX-XXXXX", keyNotFound: "Clé introuvable ou incorrecte.", welcomeGreeting: "Bienvenue", welcomeDesc: "Prêt à vous assister. Découvrez une intelligence conçu pour vous accompagner au quotidien.", continueBtn: "Continuer", footerBranding: "Propulsé par <strong>LevelUp</strong>",
                     logoutModalTitle: "Déconnexion", logoutModalDesc: "Voulez-vous vraiment quitter votre session actuelle ?", cancelBtn: "Annuler", confirmLogout: "Quitter", verifiedStatus: "Vérifié via clé",
                     installAppMenuText: "Installer l'App", installModalTitle: "Installer l'App", installModalDesc: "Ajoutez l'application sur votre écran d'accueil :",
-                    installiOS: "🍎 iOS (Safari) : Appuyez sur Partager <i class='fas fa-share-square mx-1'></i> puis 'Sur l'écran d'accueil'.", installAndroid: "🤖 Android (Chrome) : Appuyez sur Menu <i class='fas fa-ellipsis-v mx-1'></i> puis 'Ajouter à l'écran d'accueil'.",
+                    installiOS: "🍎 iOS (Safari) : Appuyez sur Partager <i class='fas fa-share-square mx-1 text-lg'></i> puis 'Sur l'écran d'accueil'.", installAndroid: "🤖 Android (Chrome) : Appuyez sur Menu <i class='fas fa-ellipsis-v mx-1 text-lg'></i> puis 'Ajouter à l'écran d'accueil'.",
                     cguMenuText: "Règles & Sécurité", cguModalTitle: "Conditions d'Utilisation (CGU)",
-                    cguText1: "🔞 <strong>Âge requis :</strong> Vous devez avoir 16 ans ou plus pour utiliser cette application.",
-                    cguText2: "⚖️ <strong>Responsabilité :</strong> En utilisant Level IA, vous prenez l'entière responsabilité de vos actes et de la façon dont vous interprétez ou utilisez les réponses générées. Vous êtes maître de vos décisions.",
-                    cguText3: "⚖️ <strong>Absence de garantie :</strong> Bien que nos modèles soient très avancés, l'IA peut parfois commettre des erreurs. Ses conseils ne remplacent en aucun cas l'avis d'un professionnel qualifié.",
-                    cguText4: "⚖️ <strong>Protection Légale :</strong> Les développeurs déclinent toute responsabilité en cas de dommages directs ou indirects liés à l'utilisation de ce service.",
-                    cguText5: "🔞 <strong>Accès restreint :</strong> L'utilisation de ces services implique l'acceptation inconditionnelle de ces termes.",
+                    cguText1: "🔞 <strong class='text-white'>Âge requis :</strong> Vous devez avoir 16 ans ou plus pour utiliser cette application.",
+                    cguText2: "⚖️ <strong class='text-white'>Responsabilité :</strong> En utilisant Level IA, vous prenez l'entière responsabilité de vos actes et de la façon dont vous interprétez ou utilisez les réponses générées. Vous êtes maître de vos décisions.",
+                    cguText3: "⚖️ <strong class='text-white'>Absence de garantie :</strong> Bien que nos modèles soient très avancés, l'IA peut parfois commettre des erreurs. Ses conseils ne remplacent en aucun cas l'avis d'un professionnel qualifié.",
+                    cguText4: "⚖️ <strong class='text-white'>Protection Légale :</strong> Les développeurs déclinent toute responsabilité en cas de dommages directs ou indirects liés à l'utilisation de ce service.",
+                    cguText5: "🔞 <strong class='text-white'>Accès restreint :</strong> L'utilisation de ces services implique l'acceptation inconditionnelle de ces termes.",
                     infoMenuText: "Informations App", infoModalTitle: "À propos de l'Application", closeBtn: "Accepter & Fermer", closeInfoBtn: "Fermer",
-                    infoText1: "🧠 <strong>Moteur IA (GEMINI) :</strong> L'intelligence de l'application est propulsée par le puissant moteur <strong>Gemini 2.5 Flash</strong> (développé par Google). Ce moteur garantit une capacité d'analyse fulgurante, un raisonnement logique poussé et une connexion au Web en temps réel.",
-                    infoText2: "🔒 <strong>Architecture & Sécurité :</strong> Toutes vos données (historique, ADN utilisateur, clés d'accès) sont hébergées sur l'infrastructure ultra-sécurisée de <strong>Google Cloud (Firebase Firestore)</strong>. La sécurité et la confidentialité sont au cœur de notre développement.",
-                    infoText3: "⚡ <strong>Écosystème Dual-Persona :</strong> Cette application intègre deux environnements distincts :<br><br>- <strong>Level IA :</strong> L'assistant pro (Normal, Travail, Expert) pour la productivité et la gestion de projets.<br>- <strong>Thiab's Mode :</strong> L'environnement secret de développement personnel (Motivation, Coach, Procrastination).",
+                    infoText1: "🧠 <strong class='text-white'>Moteur IA (GEMINI) :</strong> L'intelligence de l'application est propulsée par le puissant moteur <strong>Gemini 2.5 Flash</strong> (développé par Google). Ce moteur garantit une capacité d'analyse fulgurante, un raisonnement logique poussé et une connexion au Web en temps réel.",
+                    infoText2: "🔒 <strong class='text-white'>Architecture & Sécurité :</strong> Toutes vos données (historique, ADN utilisateur, clés d'accès) sont hébergées sur l'infrastructure ultra-sécurisée de <strong>Google Cloud (Firebase Firestore)</strong>. La sécurité et la confidentialité sont au cœur de notre développement.",
+                    infoText3: "⚡ <strong class='text-white'>Écosystème Dual-Persona :</strong> Cette application intègre deux environnements distincts :<br><br>- <strong>Level IA :</strong> L'assistant pro (Normal, Travail, Expert) pour la productivité et la gestion de projets.<br>- <strong>Thiab's Mode :</strong> L'environnement secret de développement personnel (Motivation, Coach, Procrastination).",
                     hardcoreTitle: "Mode Hardcore 🤬", hardcoreDesc: "Désactiver la politesse", feedbackMenuText: "Avis", reportMenuText: "Signaler",
                     lblImportImg: "Image", lblImportDoc: "Document (PDF)",
                     notifMenuText: "Rappels & Notifs", notifModalTitle: "Notifications", notifEnable: "Activer les alertes", notifTime: "Heure de l'exercice (Thiab's)", notifSave: "Enregistrer",
@@ -1050,21 +1049,21 @@
                     authTitle: "Enter your Access Key", verifyBtn: "Verify Key", getKeyText: "Get my Key", menuTitle: "Menu",
                     thiabsModeTitle: "Thiab's Mode 🌟", thiabsModeDesc: "Activate personal development",
                     langTitle: "Language", modelTitle: "AI Model", lengthTitle: "Response Length", cloudSpace: "Cloud Space", historyTitle: "Session History", newChatText: "New session",
-                    dnaTitle: "<strong id='dnaAppBrand'>{app}</strong> DNA", saveDNA: "Update", supportTitle: "Support & Account", logoutBtn: "Log out", placeholder: "Tell me everything bro...", dnaPlaceholder: "Ex: Speak to me like a friend...",
+                    dnaTitle: "<strong id='dnaAppBrand'>{app}</strong> DNA", saveDNA: "Update", supportTitle: "Support & Account", logoutBtn: "Log out", placeholder: "Message...", dnaPlaceholder: "Ex: Speak to me like a friend...",
                     invalidFormat: "Invalid format. Example: LVL-XXXXX-XXXXX", keyNotFound: "Key not found or incorrect.", welcomeGreeting: "Welcome", welcomeDesc: "Ready to assist you. Discover an intelligence designed to support you daily.", continueBtn: "Continue", footerBranding: "Powered by <strong>LevelUp</strong>",
                     logoutModalTitle: "Log out", logoutModalDesc: "Are you sure you want to leave your current session?", cancelBtn: "Cancel", confirmLogout: "Leave", verifiedStatus: "Key verified",
                     installAppMenuText: "Install App", installModalTitle: "Install App", installModalDesc: "Add the app to your home screen:",
-                    installiOS: "🍎 iOS (Safari): Tap Share <i class='fas fa-share-square mx-1'></i> then 'Add to Home Screen'.", installAndroid: "🤖 Android (Chrome): Tap Menu <i class='fas fa-ellipsis-v mx-1'></i> then 'Add to Home Screen'.",
+                    installiOS: "🍎 iOS (Safari): Tap Share <i class='fas fa-share-square mx-1 text-lg'></i> then 'Add to Home Screen'.", installAndroid: "🤖 Android (Chrome): Tap Menu <i class='fas fa-ellipsis-v mx-1 text-lg'></i> then 'Add to Home Screen'.",
                     cguMenuText: "Rules & Security", cguModalTitle: "Terms of Use (CGU)",
-                    cguText1: "🔞 <strong>Age requirement:</strong> You must be 16 years or older to use this application.",
-                    cguText2: "⚖️ <strong>Liability:</strong> By using Level IA, you take full responsibility for your actions and how you interpret or use the generated responses. You are the master of your decisions.",
-                    cguText3: "⚖️ <strong>No warranty:</strong> Although our models are highly advanced, AI can sometimes make errors. Its advice does not replace the opinion of a qualified professional.",
-                    cguText4: "⚖️ <strong>Legal Protection:</strong> Developers decline any responsibility for direct or indirect damage related to the use of this service.",
-                    cguText5: "🔞 <strong>Restricted access:</strong> Using these services implies unconditional acceptance of these terms.",
+                    cguText1: "🔞 <strong class='text-white'>Age requirement:</strong> You must be 16 years or older to use this application.",
+                    cguText2: "⚖️ <strong class='text-white'>Liability:</strong> By using Level IA, you take full responsibility for your actions and how you interpret or use the generated responses. You are the master of your decisions.",
+                    cguText3: "⚖️ <strong class='text-white'>No warranty:</strong> Although our models are highly advanced, AI can sometimes make errors. Its advice does not replace the opinion of a qualified professional.",
+                    cguText4: "⚖️ <strong class='text-white'>Legal Protection:</strong> Developers decline any responsibility for direct or indirect damage related to the use of this service.",
+                    cguText5: "🔞 <strong class='text-white'>Restricted access:</strong> Using these services implies unconditional acceptance of these terms.",
                     infoMenuText: "App Information", infoModalTitle: "About the Application", closeBtn: "Accept & Close", closeInfoBtn: "Close",
-                    infoText1: "🧠 <strong>AI Engine (GEMINI):</strong> The application's intelligence is powered by the powerful <strong>Gemini 2.5 Flash</strong> engine (developed by Google). This engine guarantees lightning-fast analysis capability, pushed logical reasoning, and real-time Web connection.",
-                    infoText2: "🔒 <strong>Architecture & Security:</strong> All your data (history, user DNA, access keys) is hosted on the ultra-secure <strong>Google Cloud (Firebase Firestore)</strong> infrastructure. Security and privacy are at the heart of our development.",
-                    infoText3: "⚡ <strong>Dual-Persona Ecosystem:</strong> This application integrates two distinct environments:<br><br>- <strong>Level IA:</strong> The pro assistant (Normal, Work, Expert) for productivity and project management.<br>- <strong>Thiab's Mode:</strong> The secret personal development environment (Motivation, Coach, Procrastination).",
+                    infoText1: "🧠 <strong class='text-white'>AI Engine (GEMINI):</strong> The application's intelligence is powered by the powerful <strong>Gemini 2.5 Flash</strong> engine (developed by Google). This engine guarantees lightning-fast analysis capability, pushed logical reasoning, and real-time Web connection.",
+                    infoText2: "🔒 <strong class='text-white'>Architecture & Security:</strong> All your data (history, user DNA, access keys) is hosted on the ultra-secure <strong>Google Cloud (Firebase Firestore)</strong> infrastructure. Security and privacy are at the heart of our development.",
+                    infoText3: "⚡ <strong class='text-white'>Dual-Persona Ecosystem:</strong> This application integrates two distinct environments:<br><br>- <strong>Level IA:</strong> The pro assistant (Normal, Work, Expert) for productivity and project management.<br>- <strong>Thiab's Mode:</strong> The secret personal development environment (Motivation, Coach, Procrastination).",
                     hardcoreTitle: "Hardcore Mode 🤬", hardcoreDesc: "Disable politeness", feedbackMenuText: "Feedback", reportMenuText: "Report",
                     lblImportImg: "Image", lblImportDoc: "Document (PDF)",
                     notifMenuText: "Reminders & Notifs", notifModalTitle: "Notifications", notifEnable: "Enable alerts", notifTime: "Exercise Time (Thiab's)", notifSave: "Save",
@@ -1431,7 +1430,7 @@
                     if (foundUserData) {
                         console.log("✅ [DEBUG] Clé valide trouvée pour l'utilisateur:", foundUserData.uid);
                         userId = foundUserData.uid;
-                        document.getElementById('ind-db').className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"; // DB Connectée (Vert)
+                        document.getElementById('ind-db').className = "w-3 h-3 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"; // DB Connectée (Vert)
                         authPage.classList.add('hidden');
                         langPage.classList.add('hidden'); 
                         promoInstallModal.classList.add('hidden');
@@ -1504,7 +1503,7 @@
                         setupHistoryListener();
                     } else {
                         console.warn("❌ [DEBUG] Clé introuvable dans la base de données.");
-                        document.getElementById('ind-db').className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; // DB Rouge
+                        document.getElementById('ind-db').className = "w-3 h-3 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; // DB Rouge
                         if (!isAutoLogin) {
                             document.getElementById('keyErrorMain').innerText = currentLang === 'fr' ? "Code d'accès incorrect ou expiré." : "Access code incorrect or expired.";
                             errorDetailsSpan.innerText = "[DEBUG] Clé non trouvée en base de données.";
@@ -1517,7 +1516,7 @@
                     }
                 } catch (e) {
                     console.error("🚨 [ERREUR CRITIQUE DE CONNEXION FIREBASE] :", e);
-                    document.getElementById('ind-db').className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; // DB Rouge
+                    document.getElementById('ind-db').className = "w-3 h-3 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; // DB Rouge
                     if (!isAutoLogin) {
                         document.getElementById('keyErrorMain').innerText = "Erreur de connexion (Base de données).";
                         errorDetailsSpan.innerText = `Détails: ${e.message || e.code}`;
@@ -1634,23 +1633,23 @@
                         const modelTitle = aiModels[cat] && aiModels[cat][m] ? aiModels[cat][m][currentLang] : m;
                         
                         const badgeHTML = isThiabs 
-                            ? `<span class="px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 text-[8px] font-black tracking-widest border border-purple-500/30">THIAB'S</span>` 
-                            : `<span class="px-2 py-0.5 rounded bg-white/10 text-white/50 text-[8px] font-black tracking-widest border border-white/10">LEVEL IA</span>`;
+                            ? `<span class="px-3 py-1 rounded-md bg-purple-500/20 text-purple-300 text-[10px] font-black tracking-widest border border-purple-500/30">THIAB'S</span>` 
+                            : `<span class="px-3 py-1 rounded-md bg-white/10 text-white/50 text-[10px] font-black tracking-widest border border-white/10">LEVEL IA</span>`;
 
                         const item = document.createElement('div');
                         const isActive = currentSessionId === d.id ? 'active' : '';
-                        item.className = `chat-item p-3 rounded-xl flex items-center justify-between group cursor-pointer animate-in fade-in ${isActive}`;
+                        item.className = `chat-item p-4 rounded-2xl flex items-center justify-between group cursor-pointer animate-in fade-in ${isActive}`;
                         
                         item.innerHTML = `
-                            <div class="flex-1 min-w-0 pr-2">
-                                <p class="text-[11px] font-bold text-white truncate">${data.title}</p>
-                                <div class="flex items-center gap-2 mt-1.5">
+                            <div class="flex-1 min-w-0 pr-3">
+                                <p class="text-sm font-bold text-white truncate">${data.title}</p>
+                                <div class="flex items-center gap-3 mt-2">
                                     ${badgeHTML}
-                                    <span class="text-[8px] text-white/40 uppercase truncate font-bold">${modelTitle} • ${new Date(data.updatedAt).toLocaleDateString()}</span>
+                                    <span class="text-xs text-white/40 uppercase truncate font-bold">${modelTitle} • ${new Date(data.updatedAt).toLocaleDateString()}</span>
                                 </div>
                             </div>
                             <button class="delete-msg opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:text-red-300 transition-all">
-                                <i class="fas fa-trash-alt text-[10px]"></i>
+                                <i class="fas fa-trash-alt text-lg"></i>
                             </button>
                         `;
                         item.onclick = (e) => {
@@ -1755,7 +1754,7 @@
             document.getElementById('infoMenuBtn').onclick = () => { closeSidebar(); infoModal.classList.remove('hidden'); };
             document.getElementById('closeInfoModalBtn').onclick = () => infoModal.classList.add('hidden');
             
-            // Gestion Modal Notifs - REVISÉ POUR PLUS DE CLARTÉ SUR LES ERREURS
+            // Gestion Modal Notifs
             document.getElementById('openNotifBtn').onclick = () => { 
                 closeSidebar(); 
                 notifModal.classList.remove('hidden'); 
@@ -1854,15 +1853,15 @@
                     // Reset styling
                     document.querySelectorAll('.console-filter').forEach(b => {
                         b.classList.remove('active', 'bg-white', 'text-black');
-                        if (b.dataset.filter === 'error') b.className = "console-filter px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all";
-                        if (b.dataset.filter === 'warn') b.className = "console-filter px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/20 transition-all";
-                        if (b.dataset.filter === 'log') b.className = "console-filter px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition-all";
-                        if (b.dataset.filter === 'all') b.className = "console-filter px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest text-white/50 border border-white/20 hover:bg-white/10 transition-all";
+                        if (b.dataset.filter === 'error') b.className = "console-filter px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all";
+                        if (b.dataset.filter === 'warn') b.className = "console-filter px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/20 transition-all";
+                        if (b.dataset.filter === 'log') b.className = "console-filter px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition-all";
+                        if (b.dataset.filter === 'all') b.className = "console-filter px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest text-white/50 border border-white/20 hover:bg-white/10 transition-all";
                     });
 
                     // Active styling
                     const target = e.target;
-                    target.className = "console-filter active px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all";
+                    target.className = "console-filter active px-5 py-2 rounded-xl text-xs font-black uppercase tracking-widest bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all";
                     
                     currentConsoleFilter = target.dataset.filter;
                     
@@ -1905,7 +1904,7 @@
 
             document.getElementById('closeConsoleBtn').onclick = () => consoleModal.classList.add('hidden');
             document.getElementById('clearConsoleBtn').onclick = () => { 
-                document.getElementById('consoleOutput').innerHTML = '<div class="text-white/30 text-center py-4 border-b border-white/5 text-[10px] uppercase tracking-widest font-black">--- Système de Logs Démarré ---</div>'; 
+                document.getElementById('consoleOutput').innerHTML = '<div class="text-white/30 text-center py-5 border-b border-white/5 text-xs uppercase tracking-widest font-black">--- Système de Logs Démarré ---</div>'; 
                 window._logHistory = []; 
                 // Réinitialise le mur de promotion pour tester
                 localStorage.removeItem('thiabs_skipped_install');
@@ -1934,7 +1933,7 @@
             if (window._logHistory.length > 0 && cOutput.children.length <= 1) {
                 window._logHistory.forEach(log => {
                     const el = document.createElement('div');
-                    el.className = 'py-1 border-b border-white/5 leading-relaxed';
+                    el.className = 'py-1 border-b border-white/5 leading-relaxed text-sm';
                     if (log.type === 'error') el.innerHTML = `<span class="text-red-500 font-bold">ERR:</span> <span class="text-red-300 ml-1">${log.msg}</span>`;
                     else if (log.type === 'warn') el.innerHTML = `<span class="text-yellow-500 font-bold">WRN:</span> <span class="text-yellow-200 ml-1">${log.msg}</span>`;
                     else el.innerHTML = `<span class="text-blue-400 font-bold">LOG:</span> <span class="text-green-300 ml-1">${log.msg}</span>`;
@@ -1977,7 +1976,7 @@
             };
 
             document.getElementById('saveDNA').onclick = async () => {
-                const btn = document.getElementById('saveDNA'); btn.innerHTML = '<i class="fas fa-check"></i>';
+                const btn = document.getElementById('saveDNA'); btn.innerHTML = '<i class="fas fa-check text-lg"></i>';
                 const category = isThiabsMode ? 'thiabs' : 'level';
                 const dnaKey = `${category}_${currentModel}`;
                 dnaPrompts[dnaKey] = document.getElementById('customDNA').value;
@@ -2051,7 +2050,7 @@
                     if(currentAttachment.isImage) {
                         attachIcon.innerHTML = `<img src="${base64Full}" class="w-full h-full object-cover">`;
                     } else {
-                        attachIcon.innerHTML = `<i class="fas fa-file-pdf text-red-400 text-lg"></i>`;
+                        attachIcon.innerHTML = `<i class="fas fa-file-pdf text-red-400 text-2xl"></i>`;
                     }
                     
                     attachPreview.classList.remove('hidden');
@@ -2089,9 +2088,9 @@
 
             function displayUserMessage(text, attachmentHtml = "") {
                 const div = document.createElement('div'); div.className = "flex justify-end w-full";
-                div.innerHTML = `<div class="bg-white/5 border border-white/10 px-6 py-3 rounded-2xl text-sm message-bubble text-white shadow-lg flex flex-col gap-2">
+                div.innerHTML = `<div class="bg-white/5 border border-white/10 px-6 py-4 rounded-3xl text-base message-bubble text-white shadow-lg flex flex-col gap-3">
                     ${attachmentHtml}
-                    ${text ? `<span>${text}</span>` : ''}
+                    ${text ? `<span class="leading-relaxed">${text}</span>` : ''}
                 </div>`;
                 conversationContainer.appendChild(div); chatArea.scrollTop = chatArea.scrollHeight;
             }
@@ -2101,7 +2100,7 @@
                 wrap.className = "flex flex-col gap-2 w-full group";
                 
                 const content = document.createElement('div'); 
-                content.className = "prose prose-invert prose-sm text-slate-200 max-w-full message-bubble leading-[1.8] tracking-[0.015em] prose-p:my-4 prose-headings:my-5 prose-ul:my-2 prose-li:my-1.5";
+                content.className = "prose prose-invert prose-base text-slate-200 max-w-full message-bubble leading-relaxed tracking-normal prose-p:my-4 prose-headings:my-5 prose-ul:my-2 prose-li:my-1.5";
                 
                 const sourcesContainer = document.createElement('div');
                 if (sourcesHtml) {
@@ -2111,11 +2110,11 @@
                 }
 
                 const actions = document.createElement('div');
-                actions.className = "flex items-center justify-start opacity-0 group-hover:opacity-100 transition-opacity mt-1";
+                actions.className = "flex items-center justify-start opacity-0 group-hover:opacity-100 transition-opacity mt-2";
                 
                 const copyBtn = document.createElement('button');
-                copyBtn.className = "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-white/30 hover:bg-white/5 hover:text-white transition-all text-[10px] font-bold uppercase tracking-widest";
-                copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copier';
+                copyBtn.className = "flex items-center gap-2 px-3 py-2 rounded-xl text-white/40 hover:bg-white/5 hover:text-white active:scale-95 transition-all text-xs font-bold uppercase tracking-widest";
+                copyBtn.innerHTML = '<i class="fas fa-copy text-sm"></i> Copier';
                 copyBtn.onclick = () => {
                     const textArea = document.createElement("textarea");
                     textArea.value = text;
@@ -2125,8 +2124,8 @@
                     textArea.select();
                     try {
                         document.execCommand('copy');
-                        copyBtn.innerHTML = '<i class="fas fa-check text-green-400"></i> <span class="text-green-400">Copié</span>';
-                        setTimeout(() => copyBtn.innerHTML = '<i class="fas fa-copy"></i> Copier', 2000);
+                        copyBtn.innerHTML = '<i class="fas fa-check text-green-400 text-sm"></i> <span class="text-green-400">Copié</span>';
+                        setTimeout(() => copyBtn.innerHTML = '<i class="fas fa-copy text-sm"></i> Copier', 2000);
                     } catch (e) { console.error('Copy error', e); }
                     document.body.removeChild(textArea);
                 };
@@ -2181,7 +2180,7 @@
                     return;
                 }
 
-                userInput.value = ''; userInput.style.height = '44px';
+                userInput.value = ''; userInput.style.height = '52px';
                 currentAttachment = null;
                 attachPreview.classList.add('hidden');
                 
@@ -2196,7 +2195,7 @@
                 let dbAttachMarker = "";
                 if(attachment) {
                     const iconClass = attachment.isImage ? "fa-image text-blue-400" : "fa-file-pdf text-red-400";
-                    userAttachHtml = `<div class="flex items-center gap-2 bg-black/40 p-2 rounded-lg w-fit mb-1 border border-white/5"><i class="fas ${iconClass}"></i> <span class="text-[10px] font-bold">${attachment.name}</span></div>`;
+                    userAttachHtml = `<div class="flex items-center gap-3 bg-black/40 p-3 rounded-xl w-fit mb-1 border border-white/5"><i class="fas ${iconClass} text-lg"></i> <span class="text-xs font-bold">${attachment.name}</span></div>`;
                     dbAttachMarker = attachment.isImage ? `[🖼️ Image jointe : ${attachment.name}]` : `[📄 Document joint : ${attachment.name}]`;
                 }
 
@@ -2391,13 +2390,13 @@ This is the very first time this user is interacting with you. You MUST suspend 
                             });
                             
                             if (uniqueSources.length > 0) {
-                                sourcesHtml += `<div class="mt-4 pt-4 border-t border-white/10 w-full max-w-full">`;
-                                sourcesHtml += `<div class="flex items-center gap-2 mb-3">`;
-                                sourcesHtml += `<svg viewBox="0 0 24 24" class="w-4 h-4"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>`;
-                                sourcesHtml += `<span class="text-[10px] font-bold uppercase tracking-widest text-white/60">${currentLang === 'fr' ? 'Recherche Google' : 'Google Search'}</span>`;
+                                sourcesHtml += `<div class="mt-5 pt-4 border-t border-white/10 w-full max-w-full">`;
+                                sourcesHtml += `<div class="flex items-center gap-3 mb-3">`;
+                                sourcesHtml += `<svg viewBox="0 0 24 24" class="w-5 h-5"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>`;
+                                sourcesHtml += `<span class="text-xs font-bold uppercase tracking-widest text-white/60">${currentLang === 'fr' ? 'Recherche Google' : 'Google Search'}</span>`;
                                 sourcesHtml += `</div><div class="flex flex-col gap-2 overflow-hidden">`;
                                 uniqueSources.forEach((s) => {
-                                    sourcesHtml += `<a href="${s.uri}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 text-[11px] text-blue-400 hover:text-blue-300 hover:bg-white/5 p-2 rounded-lg truncate w-fit max-w-full transition-all"><i class="fas fa-link text-[9px] opacity-50 shrink-0"></i><span class="truncate">${s.title}</span></a>`;
+                                    sourcesHtml += `<a href="${s.uri}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-3 text-sm text-blue-400 hover:text-blue-300 hover:bg-white/5 p-3 rounded-xl truncate w-fit max-w-full transition-all"><i class="fas fa-link text-xs opacity-50 shrink-0"></i><span class="truncate">${s.title}</span></a>`;
                                 });
                                 sourcesHtml += `</div></div>`;
                             }
@@ -2482,8 +2481,20 @@ This is the very first time this user is interacting with you. You MUST suspend 
             }
 
             userInput.oninput = function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; };
-            userInput.onkeydown = (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } };
-            document.getElementById('sendBtn').onclick = send;
+            userInput.onkeydown = (e) => { 
+                if (e.key === 'Enter' && !e.shiftKey) { 
+                    e.preventDefault(); 
+                    if (navigator.vibrate) navigator.vibrate(40); // Sensation tactile sur Entrée
+                    send(); 
+                } 
+            };
+            
+            const sendBtn = document.getElementById('sendBtn');
+            sendBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                if (navigator.vibrate) navigator.vibrate(40); // Sensation tactile (Micro-vibration)
+                send();
+            });
         }
     </script>
 </body>
