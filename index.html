@@ -791,8 +791,18 @@
 
         // FIX MAGIQUE POUR LE CLAVIER MOBILE (STYLE CHATGPT)
         if (window.visualViewport) {
+            let initialHeight = window.innerHeight; // Garde la taille de l'écran en mémoire
+            
             const resizeHandler = () => {
                 document.body.style.height = window.visualViewport.height + 'px';
+                
+                // Détecteur intelligent : si l'écran se réduit fortement, c'est que le clavier est là !
+                if (window.visualViewport.height < initialHeight - 100) {
+                    document.body.classList.add('keyboard-open'); // Retire le vide du bas
+                } else {
+                    document.body.classList.remove('keyboard-open'); // Remet le vide du bas
+                }
+
                 window.scrollTo(0, 0); // Empêche Safari de scroller la page entière
                 const chatArea = document.getElementById('chatArea');
                 if(chatArea) {
