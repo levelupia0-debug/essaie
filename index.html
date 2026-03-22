@@ -93,6 +93,11 @@
         /* 🚨 LA MAGIE APPLE EST ICI : Règle les marges en haut (batterie) et en bas 🚨 */
         .safe-pt { padding-top: max(1.25rem, env(safe-area-inset-top, 0px)) !important; }
         .safe-pb { padding-bottom: max(0.25rem, env(safe-area-inset-bottom, 0px)) !important; }
+        
+        /* 🚨 FIX CLAVIER : Plaque le champ de texte contre le clavier et cache le texte inutile 🚨 */
+        body.keyboard-open .safe-pb { padding-bottom: 8px !important; }
+        body.keyboard-open .hide-on-keyboard { display: none !important; }
+
         .safe-sidebar { 
             padding-top: calc(1.5rem + env(safe-area-inset-top, 0px)) !important; 
             padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)) !important; 
@@ -708,8 +713,8 @@
                     <button id="sendBtn" class="w-12 h-12 rounded-2xl bg-white text-black flex items-center justify-center hover:bg-purple-500 hover:text-white transition-all shadow-lg shrink-0"><i class="fas fa-chevron-up text-xs"></i></button>
                 </div>
                 
-                <!-- NOUVEAU TEXTE D'AVERTISSEMENT -->
-                <div class="text-center mt-2 mb-1">
+                <!-- NOUVEAU TEXTE D'AVERTISSEMENT (CACHÉ QUAND LE CLAVIER S'OUVRE) -->
+                <div class="text-center mt-2 mb-1 hide-on-keyboard">
                     <p class="text-[9px] font-bold text-white/30 tracking-widest">Level peut faire des erreurs. Vérifiez les informations.</p>
                 </div>
             </div>
@@ -789,28 +794,28 @@
         window.addEventListener('error', function(event) { console.error("Global Error:", event.message, "at", event.filename, ":", event.lineno); });
         window.addEventListener('unhandledrejection', function(event) { console.error("Unhandled Promise:", event.reason); });
 
-        // FIX MAGIQUE POUR LE CLAVIER MOBILE (STYLE CHATGPT)
+        // FIX MAGIQUE POUR LE CLAVIER MOBILE (STYLE CHATGPT & WHATSAPP)
         if (window.visualViewport) {
-            let initialHeight = window.innerHeight; // Garde la taille de l'écran en mémoire
-            
             const resizeHandler = () => {
-                document.body.style.height = window.visualViewport.height + 'px';
+                let vh = window.visualViewport.height;
+                document.body.style.height = vh + 'px';
                 
-                // Détecteur intelligent : si l'écran se réduit fortement, c'est que le clavier est là !
-                if (window.visualViewport.height < initialHeight - 100) {
-                    document.body.classList.add('keyboard-open'); // Retire le vide du bas
+                // Détection intelligente : si l'écran rétrécit (clavier ouvert), on active le mode "collé"
+                if (vh < window.screen.height - 150) {
+                    document.body.classList.add('keyboard-open');
                 } else {
-                    document.body.classList.remove('keyboard-open'); // Remet le vide du bas
+                    document.body.classList.remove('keyboard-open');
                 }
 
-                window.scrollTo(0, 0); // Empêche Safari de scroller la page entière
+                window.scrollTo(0, 0); // Empêche Safari de scroller la page globale
                 const chatArea = document.getElementById('chatArea');
                 if(chatArea) {
-                    setTimeout(() => chatArea.scrollTop = chatArea.scrollHeight, 50);
+                    chatArea.scrollTop = chatArea.scrollHeight;
                 }
             };
             window.visualViewport.addEventListener('resize', resizeHandler);
-            resizeHandler(); // Exécuter une fois au démarrage
+            window.visualViewport.addEventListener('scroll', resizeHandler); // Bloque le scroll fantôme d'iOS
+            resizeHandler(); 
         }
         
         // Empêcher manuellement le scroll global quand on tape
