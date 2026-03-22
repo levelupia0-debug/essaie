@@ -67,27 +67,44 @@
         
         :root { --primary: #a855f7; --dark: #020202; }
         
-        html { 
-            background-color: var(--dark); 
-            overscroll-behavior: none;
-        }
-        body { 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
+        /* 🚨 CACHE TOUTES LES BARRES DE DÉFILEMENT POUR UN LOOK 100% NATIF 🚨 */
+        *::-webkit-scrollbar { display: none !important; }
+        * { -ms-overflow-style: none; scrollbar-width: none; }
+
+        html, body { 
             background-color: var(--dark); 
             color: #ffffff; 
             margin: 0; 
-            display: flex; 
-            flex-direction: column; 
-            overflow: hidden; 
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden !important; /* AUCUN SCROLL GLOBAL AUTORISÉ */
             overscroll-behavior: none; 
             
-            /* 🚨 VEROUILLAGE ABSOLU DE L'APPLICATION 🚨 */
-            /* Empêche l'application entière de monter vers le haut ("Léo" 😂) */
+            /* 🚨 VERROUILLAGE ABSOLU DE L'APPLICATION (Évite de monter vers "Léo" 😂) 🚨 */
             position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            display: flex; 
+            flex-direction: column; 
+        }
+
+        /* Conteneur principal qui s'adapte au millimètre près au clavier */
+        #mainApp {
+            position: absolute !important;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
         }
 
         /* 🚨 LA MAGIE APPLE EST ICI : Règle les marges en haut (batterie) et en bas 🚨 */
@@ -798,7 +815,19 @@
         if (window.visualViewport) {
             const resizeHandler = () => {
                 let vh = window.visualViewport.height;
-                document.body.style.height = vh + 'px';
+                let offsetTop = window.visualViewport.offsetTop;
+                
+                // Redimensionner et repositionner UNIQUEMENT l'application, pas le navigateur !
+                const mainApp = document.getElementById('mainApp');
+                if (mainApp) {
+                    mainApp.style.height = vh + 'px';
+                    mainApp.style.top = offsetTop + 'px';
+                }
+                const splashScreen = document.getElementById('splashScreen');
+                if (splashScreen && splashScreen.style.display !== 'none') {
+                    splashScreen.style.height = vh + 'px';
+                    splashScreen.style.top = offsetTop + 'px';
+                }
                 
                 // Détection intelligente : si l'écran rétrécit (clavier ouvert), on active le mode "collé"
                 if (vh < window.screen.height - 150) {
@@ -807,7 +836,11 @@
                     document.body.classList.remove('keyboard-open');
                 }
 
-                window.scrollTo(0, 0); // Empêche Safari de scroller la page globale
+                // Force le navigateur à ne pas scroller globalement
+                window.scrollTo(0, 0);
+                document.body.scrollTop = 0;
+                
+                // Fait scroller uniquement la conversation
                 const chatArea = document.getElementById('chatArea');
                 if(chatArea) {
                     chatArea.scrollTop = chatArea.scrollHeight;
