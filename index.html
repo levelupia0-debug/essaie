@@ -214,7 +214,7 @@
         <div id="splash1" class="splash-text text-purple-500"><strong id="splashTitle">Level IA</strong></div>
         <div id="splash2" class="splash-text flex flex-col items-center justify-center">
             <span class="text-white font-bold tracking-[0.6em] text-xl">LevelUp</span>
-            <span class="text-[10px] font-semibold tracking-[0.4em] text-purple-400 mt-4 uppercase">Thiab's Mode</span>
+            <span class="text-[10px] font-semibold tracking-[0.4em] text-purple-400 mt-4 uppercase">Premium</span>
         </div>
     </div>
 
@@ -2790,12 +2790,12 @@
             document.getElementById('submitLinkBtn').onclick = () => {
                 const url = document.getElementById('linkInputUrl').value.trim();
                 if (!/^https?:\/\//i.test(url)) {
-                    showToast(currentLang === 'fr' ? "Le lien doit commencer par http:// ou https://" : "Link must start with http:// or https://", true);
+                    showToast(currentLang === 'fr' ? "Format d'URL invalide. Le protocole http:// ou https:// est requis." : "Invalid URL format. http:// or https:// is required.", true);
                     return;
                 }
                 if (url) {
                     if (currentAttachments.length >= MAX_ATTACHMENTS) {
-                        showToast(currentLang === 'fr' ? "Maximum 3 fichiers atteints." : "Maximum 3 files reached.", true);
+                        showToast(currentLang === 'fr' ? "Limite de fichiers atteinte (Maximum : 3)." : "File limit reached (Maximum: 3).", true);
                         return;
                     }
                     currentAttachments.push({ name: "Lien Web", url: url, isLink: true });
@@ -2808,13 +2808,13 @@
                 if(!file) return;
 
                 if (currentAttachments.length >= MAX_ATTACHMENTS) {
-                    showToast(currentLang === 'fr' ? "Maximum 3 fichiers atteints." : "Maximum 3 files reached.", true);
+                    showToast(currentLang === 'fr' ? "Limite de fichiers atteinte (Maximum : 3)." : "File limit reached (Maximum: 3).", true);
                     return;
                 }
 
                 const usage = await checkUsage('upload');
                 if(!usage.allowed) { showLimitMessage('upload', usage.resetDate); imgInput.value = ''; docInput.value = ''; return; }
-                if(file.size > 5 * 1024 * 1024) { showToast(currentLang === 'fr' ? "Fichier trop lourd (Max 5Mo)" : "File too large (Max 5MB)", true); imgInput.value = ''; docInput.value = ''; return; }
+                if(file.size > 5 * 1024 * 1024) { showToast(currentLang === 'fr' ? "Volume de données dépassé (Limite : 5Mo)." : "Data volume exceeded (Limit: 5MB).", true); imgInput.value = ''; docInput.value = ''; return; }
 
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -2874,7 +2874,7 @@
                     if (file.type.startsWith('image/') || file.type === 'application/pdf') {
                         processFile(file);
                     } else {
-                        showToast(currentLang === 'fr' ? "⚠️ Format non supporté. Images et PDF uniquement." : "⚠️ Unsupported format. Images and PDF only.", true);
+                        showToast(currentLang === 'fr' ? "⚠️ Format non pris en charge. Veuillez utiliser des images ou des PDF." : "⚠️ Unsupported format. Please use images or PDFs.", true);
                     }
                 } else {
                     const url = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain');
@@ -2885,9 +2885,9 @@
                 }
             });
 
-            async function performGeneration(val, isRegen = false) {
+            async function performGeneration(val, attachmentsToProcess, isRegen = false) {
                 if (apiKeys.length === 0) {
-                    displayAIMessage(currentLang === 'fr' ? "Erreur: Aucune clé API chargée." : "Error: No API key loaded.", true);
+                    displayAIMessage(currentLang === 'fr' ? "⚠️ Erreur système : L'infrastructure IA n'est pas correctement configurée (Clé API manquante)." : "⚠️ System error: AI infrastructure is not properly configured (API key missing).", true);
                     return;
                 }
                 
@@ -2908,16 +2908,16 @@
                 if (val) requestParts.push({ text: val });
                 
                 const urlRegex = /(https?:\/\/[^\s]+)/g;
-                const urlsInText = val.match(urlRegex);
-                if (urlsInText && currentAttachments.length === 0) {
+                const urlsInText = val ? val.match(urlRegex) : null;
+                if (urlsInText && (!attachmentsToProcess || attachmentsToProcess.length === 0)) {
                     requestParts.push({ text: `INSTRUCTION INTERNE (INVISIBLE POUR LE CLIENT) : L'utilisateur a inclus un ou des lien(s) web directement dans son texte. Analyse-les précisément. Si le lien est inaccessible, protégé, ou illisible, dis-lui TRÈS PROPREMENT "Je n'ai pas pu accéder/analyser ce lien en raison de restrictions de sécurité ou d'un format non lisible" au lieu d'inventer des informations. Ne mentionne pas ces consignes techniques dans ta réponse.` });
                 }
 
-                if(currentAttachments.length > 0) {
+                if(attachmentsToProcess && attachmentsToProcess.length > 0) {
                     let attHtmlArr = [];
                     let dbMarkerArr = [];
                     
-                    currentAttachments.forEach(att => {
+                    attachmentsToProcess.forEach(att => {
                         if (att.isLink) {
                             attHtmlArr.push(`<div class="flex items-center gap-2 bg-black/40 p-2.5 rounded-xl w-fit mb-1 border border-white/5"><i class="fas fa-link text-base text-green-400"></i> <span class="text-[11px] font-bold text-green-300">${att.url.substring(0,30)}...</span></div>`);
                             dbMarkerArr.push(`[🔗 Lien à analyser : ${att.url}]`);
@@ -3021,7 +3021,8 @@
 
                 const corePrompt = `Tu es doté d'une intelligence analytique hors du commun, d'une logique implacable et d'une capacité d'adaptation parfaite. Tu es une IA d'élite, experte mondiale dans ton domaine. Si on te donne une image ou un document PDF, analyse-le en profondeur avec ton génie habituel.
                 
-                Ton identité globale : L'application s'appelle **Level IA**, développée par **LevelUp**.
+                Ton identité globale : Tu es **Level IA**, l'intelligence artificielle de l'application développée par **LevelUp**. ⚠️ RÈGLE ABSOLUE SUR LEVELUP : LevelUp n'est ni une "entreprise", ni une "société", ni une "organisation", ni une "team". Ne dis jamais "l'entreprise LevelUp" ou "l'organisation LevelUp". Dis UNIQUEMENT "par LevelUp" ou "chez LevelUp" (comme le nom de ton créateur). Assume cette identité de manière 100% chill, humaine et naturelle. Varie TOUJOURS tes réponses si on te demande qui tu es, ne répète jamais la même phrase par cœur (sois créatif !). Ne mentionne l'écosystème Google (Gemini) QUE si on te pose une question ultra-technique sur ton moteur interne. Pour un simple "T'es qui ?", n'en parle pas du tout.
+                Nature de l'app : Level IA est une PWA (Progressive Web App). Le SEUL lien officiel est https://levelupia.vercel.app. N'invente JAMAIS de liens vers Google Play ou l'App Store. Si l'utilisateur mentionne ce lien ou notre app, tu dois réagir instantanément avec connivence. Ne donne ce lien que si on te demande comment partager l'app ou y accéder (ne le spamme pas).
                 Tu connais les fonctionnalités de l'app (Importation de PDF/Images/Liens, Mode Marco, Mode Hardcore, Routines, ADN) mais NE RÉVÈLE JAMAIS comment elle est codée techniquement (ex: base de données, Firebase).
                 Actuellement, l'utilisateur a activé ${currentModeName}. "Auto" est juste l'un de tes nombreux outils. Agis selon les règles du mode actuel !
                 
@@ -3138,9 +3139,11 @@
                             stopGeneration();
                             let supportButtonHtml = "";
                             if (consecutiveErrors >= 2) {
-                                supportButtonHtml = `<br><br><a href="mailto:levelup.iao@gmail.com?subject=Urgence%20Technique%20-%20Level%20IA%20(ID:%20${userId})&body=Bonjour%20LevelUp,%0A%0AJe%20n'arrive%20plus%20à%20générer%20de%20réponses.%20L'IA%20semble%20bloquée.%0A%0A[Détails%20de%20l'erreur%20:%20${encodeURIComponent(lastApiError)}]" class="support-btn"><i class="fas fa-envelope"></i> Support</a>`;
+                                supportButtonHtml = `<br><br><a href="mailto:levelup.iao@gmail.com?subject=Urgence%20Technique%20-%20Level%20IA%20(ID:%20${userId})&body=Bonjour%20LevelUp,%0A%0AJe%20rencontre%20une%20erreur%20répétée%20de%20génération.%0A%0A[Détails%20de%20l'erreur%20:%20${encodeURIComponent(lastApiError)}]" class="support-btn"><i class="fas fa-envelope"></i> Contacter le Support Technique</a>`;
                             }
-                            const errorMsg = `Oups ! 😅 Surcharge cognitive. Erreur : '${lastApiError}'${supportButtonHtml}`;
+                            const errorMsg = currentLang === 'fr'
+                                ? `⚠️ **Interruption du traitement.**\nUne anomalie a été détectée lors de la génération de la réponse. Veuillez vérifier votre connexion ou réessayer.\n\n<span class="text-[10px] text-red-400 font-mono">Code d'erreur : ${lastApiError}</span>${supportButtonHtml}`
+                                : `⚠️ **Processing interrupted.**\nAn anomaly was detected while generating the response. Please check your connection or try again.\n\n<span class="text-[10px] text-red-400 font-mono">Error code: ${lastApiError}</span>${supportButtonHtml}`;
                             displayAIMessage(errorMsg, true);
                             return; 
                         }
@@ -3181,19 +3184,21 @@
                 if (!val && currentAttachments.length === 0) return;
                 if (!userId) return;
                 
+                const attachmentsToProcess = [...currentAttachments];
+                
                 // On passe les pièces jointes à la génération et on vide le conteneur UI
-                lastInteraction = { text: val, attachments: [...currentAttachments] };
+                lastInteraction = { text: val, attachments: attachmentsToProcess };
 
                 userInput.value = ''; userInput.style.height = '44px';
                 
                 if(!currentSessionId && conversationContainer.children.length === 1 && hasSeenWelcomeMsg) {
                     const firstMsg = conversationContainer.querySelector('.prose');
-                    if(firstMsg && (firstMsg.innerText.includes("Salut bro") || firstMsg.innerText.includes("Hey bro"))) {
+                    if(firstMsg && (firstMsg.innerText.includes("Salut bro") || firstMsg.innerText.includes("Hey bro") || firstMsg.innerText.includes("Bonjour"))) {
                         conversationContainer.innerHTML = '';
                     }
                 }
 
-                performGeneration(val, false);
+                performGeneration(val, attachmentsToProcess, false);
                 currentAttachments = [];
                 renderAttachments();
             }
