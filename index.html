@@ -457,6 +457,7 @@
             
             <div class="space-y-4">
                 <select id="reportCategory" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-[13px] text-white outline-none focus:border-red-500 transition-all cursor-pointer">
+                    <option value="" disabled selected class="bg-black">-- Sélectionnez un problème --</option>
                     <option value="ia_bug" class="bg-black">Problème avec l'IA (Réponses bizarres)</option>
                     <option value="ui_bug" class="bg-black">Bug visuel / Interface</option>
                     <option value="connexion" class="bg-black">Problème de connexion / Mémoire</option>
@@ -628,7 +629,7 @@
                     <div id="adminBugsList" class="space-y-3 hidden"></div>
                 </div>
 
-                <!-- TAB 3: BROADCAST NOTIFICATIONS (SIMPLIFIÉ TEXTE SEUL SELON DEMANDE) -->
+                <!-- TAB 3: BROADCAST NOTIFICATIONS -->
                 <div id="adminTabBroadcast" class="admin-tab-content" style="display: none;">
                     <div class="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-6 max-w-2xl mx-auto space-y-6">
                         <div class="text-center">
@@ -920,7 +921,9 @@
         let isGenerating = false;
         let typingInterval = null;
         let lastInteraction = null;
-        let lastBroadcastSeen = Date.now(); 
+        
+        // Correction: Initialiser avec le timestamp stocké dans le localStorage
+        let lastBroadcastSeen = parseInt(localStorage.getItem('thiabs_last_broadcast')) || (Date.now() - 7 * 24 * 60 * 60 * 1000); 
         
         DOMPurify.addHook('afterSanitizeAttributes', function (node) {
             if ('target' in node) {
@@ -1180,7 +1183,22 @@
                     
                     if (latestBroadcast) {
                         lastBroadcastSeen = latestBroadcast.timestamp;
-                        showSysToast(`📢 ${latestBroadcast.message}`);
+                        localStorage.setItem('thiabs_last_broadcast', lastBroadcastSeen); // SAUVEGARDE EN MEMOIRE
+                        
+                        // Afficher la notif riche IN-APP
+                        const modal = document.getElementById('inAppBroadcastModal');
+                        const textEl = document.getElementById('broadcastText');
+                        
+                        textEl.innerText = latestBroadcast.message;
+                        modal.classList.remove('hidden');
+                        
+                        document.getElementById('closeBroadcastBtn').onclick = () => modal.classList.add('hidden');
+                        
+                        if (Notification.permission === 'granted' && navigator.serviceWorker) {
+                            navigator.serviceWorker.ready.then(reg => {
+                                reg.showNotification("📢 Message de LevelUp", { body: latestBroadcast.message, icon: './icon.svg', vibrate: [200, 100, 200] });
+                            }).catch(() => {});
+                        }
                     }
                 }, (err) => console.error("Broadcast listener err", err));
             }
@@ -1212,7 +1230,7 @@
                         const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
                         if (aiText) {
                             document.getElementById('aiTyping').classList.add('hidden');
-                            displayAIMessage(aiText, true);
+                            displayAIMessage(aiText, false); // FALSE pour que l'affichage soit direct
                             currentSessionMessages.push({ role: "model", parts: [{ text: aiText }] });
                         }
                     }
@@ -1356,7 +1374,7 @@
                     infoMenuText: "Informations App", infoModalTitle: "À propos de l'Application", closeBtn: "Accepter & Fermer", closeInfoBtn: "Fermer",
                     infoText1: "🧠 <strong class='text-white'>Moteur IA (GEMINI) :</strong> Propulsé par le puissant moteur <strong>Gemini 2.5 Flash</strong> (développé par Google).",
                     infoText2: "🔒 <strong class='text-white'>Architecture & Sécurité :</strong> Hébergé sur l'infrastructure ultra-sécurisée de <strong>Google Cloud</strong>.",
-                    infoText3: "⚡ <strong class='text-white'>Écosystème Dual-Persona :</strong> Deux environnements distincts : Level IA (Productivité) et Thiab's Mode (Dev Perso).",
+                    infoText3: "⚡ <strong class='text-white'>Écosystème Dual-Persona :</strong> Deux environnements distincts : Level IA (Productivity) et Thiab's Mode (Dev Perso).",
                     hardcoreTitle: "Mode Hardcore 🤬", hardcoreDesc: "Désactiver la politesse", feedbackMenuText: "Avis", reportMenuText: "Signaler",
                     lblImportImg: "Image", lblImportDoc: "Document (PDF)", lblImportLink: "Lien Web",
                     notifMenuText: "Rappels & Notifs", notifModalTitle: "Notifications", notifEnable: "Activer les alertes", notifTime: "Heure de l'exercice", notifSave: "Enregistrer",
@@ -1988,7 +2006,7 @@
                     ? `Salut bro ! Je suis prêt en mode **${modeName}**. Que puis-je faire pour toi aujourd'hui ?` 
                     : `Hey bro! I'm ready in **${modeName}** mode. What can I do for you today?`;
                     
-                displayAIMessage(welcomeMsg, true);
+                displayAIMessage(welcomeMsg, false); // FALSE GARANTIT L'AFFICHAGE INSTANTANE SANS BUG
                 document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
             }
 
@@ -2206,13 +2224,19 @@
                     const bugsList = document.getElementById('adminBugsList');
                     bugsList.innerHTML = '';
                     if (bugsSnap.empty) bugsList.innerHTML = '<p class="text-white/40 text-xs text-center">Aucun signalement récent.</p>';
+                    
+                    // On fait correspondre la valeur (ex: 'ia_bug') avec un nom propre
+                    const catMap = { ia_bug: "Problème IA", ui_bug: "Bug Visuel", connexion: "Connexion", other: "Autre" };
+                    
                     bugsSnap.forEach(d => {
                         const b = d.data();
+                        const catName = catMap[b.category] || b.category;
+                        
                         bugsList.innerHTML += `
                             <div class="bg-red-500/10 p-4 rounded-xl border border-red-500/20">
                                 <div class="flex justify-between items-start mb-2">
                                     <div>
-                                        <p class="text-[12px] font-bold text-red-200">${sanitizeHTML(b.userName || 'Inconnu')} <span class="bg-red-500 text-white text-[9px] px-1 rounded ml-1">${sanitizeHTML(b.category)}</span></p>
+                                        <p class="text-[12px] font-bold text-red-200">${sanitizeHTML(b.userName || 'Inconnu')} <span class="bg-red-500 text-white text-[9px] px-1 rounded ml-1">${sanitizeHTML(catName)}</span></p>
                                         <p class="text-[10px] text-red-300/50 font-mono">${sanitizeHTML(b.userEmail || '')}</p>
                                     </div>
                                 </div>
@@ -2272,8 +2296,6 @@
             // Broadcast Send Logic
             document.getElementById('sendBroadcastBtn').onclick = async () => {
                 const msg = document.getElementById('broadcastMsgInput').value.trim();
-                const img = document.getElementById('broadcastImgInput').value.trim();
-                const lnk = document.getElementById('broadcastLinkInput').value.trim();
                 
                 if (!msg) return;
                 
@@ -2283,21 +2305,17 @@
                 try {
                     await addDoc(collection(db, "artifacts", appId, "public", "data", "broadcasts"), {
                         message: msg,
-                        imageUrl: img,
-                        linkUrl: lnk,
                         timestamp: Date.now(),
                         senderName: currentUserName
                     });
                     document.getElementById('broadcastMsgInput').value = '';
-                    document.getElementById('broadcastImgInput').value = '';
-                    document.getElementById('broadcastLinkInput').value = '';
                     
                     showSysToast("Notification Globale envoyée ! 📢");
                     btn.innerHTML = '<i class="fas fa-check text-green-300"></i> Envoyé avec succès';
-                    setTimeout(() => btn.innerHTML = '<i class="fas fa-paper-plane"></i> Envoyer à tout le monde', 3000);
+                    setTimeout(() => btn.innerHTML = '<i class="fas fa-paper-plane"></i> Diffuser la notification', 3000);
                 } catch(e) {
                     showSysToast("Erreur d'envoi broadcast.", true);
-                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Envoyer à tout le monde';
+                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Diffuser la notification';
                 }
             };
 
@@ -2423,7 +2441,16 @@
             document.getElementById('submitReportBtn').onclick = async () => {
                 const category = document.getElementById('reportCategory').value;
                 const text = document.getElementById('reportText').value.trim();
-                if (text === '') return;
+                
+                if (!category || category === '') {
+                    showSysToast(currentLang === 'fr' ? "Veuillez sélectionner un problème." : "Please select a problem.", true);
+                    return;
+                }
+                if (text === '') {
+                    showSysToast(currentLang === 'fr' ? "Veuillez décrire le problème." : "Please describe the problem.", true);
+                    return;
+                }
+
                 const btn = document.getElementById('submitReportBtn');
                 btn.innerText = "Envoi...";
                 
@@ -2436,7 +2463,7 @@
                         userEmail: currentUserMail,
                         userId: userId
                     });
-                    document.getElementById('reportModal').classList.add('hidden'); document.getElementById('reportText').value = ''; showSysToast("Rapport envoyé. 🛠️");
+                    document.getElementById('reportModal').classList.add('hidden'); document.getElementById('reportText').value = ''; document.getElementById('reportCategory').value = ''; showSysToast("Rapport envoyé. 🛠️");
                 } catch(e) { showSysToast("Erreur d'envoi", true); console.error(e); }
                 btn.innerText = "Envoyer";
             };
@@ -2585,7 +2612,7 @@
                 } else {
                     msg = currentLang === 'fr' ? `🚫 Limite de 200 messages/jour.\n\nRevenez ${dateStr}.` : `🚫 Limit of 200 messages/day.\n\nCome back ${dateStr}.`;
                 }
-                displayAIMessage(msg, true);
+                displayAIMessage(msg, false); // FALSE GARANTIT L'AFFICHAGE SANS BUG
             }
 
             function displayUserMessage(text, attachmentHtml = "") {
