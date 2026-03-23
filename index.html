@@ -380,7 +380,7 @@
                 <div class="w-full h-px bg-white/10"></div>
                 <p id="infoText3" class="text-[13px] text-white/80 leading-relaxed text-justify">
                     <strong class="text-emerald-400 block mb-1">⚡ ÉCOSYSTÈME DUAL-PERSONA :</strong> Cette application intègre deux environnements distincts :<br>
-                    - <strong>Level IA :</strong> L'assistant pro (Normal, Travail, Expert) pour la productivité.<br>
+                    - <strong>Level IA :</strong> L'assistant pro (Auto, Travail, Expert) pour la productivité.<br>
                     - <strong>Thiab's Mode :</strong> L'environnement de développement personnel (Motivation, Coach).
                 </p>
                 <div class="w-full h-px bg-white/10"></div>
@@ -557,7 +557,7 @@
                             <div class="flex flex-col items-center mb-4 shrink-0">
                                 <i class="fas fa-mobile-alt text-3xl text-blue-400 mb-2"></i>
                                 <p class="text-3xl font-black text-white" id="statInstalledUsers">...</p>
-                                <p class="text-[10px] uppercase tracking-widest text-blue-400/70 font-bold mt-1 text-center">Apps Installées<br><span class="text-[8px] opacity-60">(Connectés récemment)</span></p>
+                                <p class="text-[10px] uppercase tracking-widest text-blue-400/70 font-bold mt-1 text-center">Apps Installées<br><span class="text-[8px] opacity-60">(Détectées)</span></p>
                             </div>
                             <div class="flex-1 overflow-y-auto custom-scrollbar bg-black/40 rounded-xl p-2 space-y-2" id="listInstalledUsers">
                                 <p class="text-[10px] text-center text-white/30 pt-4"><i class="fas fa-spinner fa-spin"></i></p>
@@ -583,18 +583,24 @@
                     <div class="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-6 max-w-2xl mx-auto space-y-6">
                         <div class="text-center">
                             <i class="fas fa-bullhorn text-4xl text-blue-400 mb-4"></i>
-                            <h3 class="text-lg font-bold text-white uppercase tracking-widest">Notification Globale</h3>
-                            <p class="text-[11px] text-white/50 font-medium mt-2">Envoyez une alerte propre et professionnelle à tous les utilisateurs.</p>
+                            <h3 class="text-lg font-bold text-white uppercase tracking-widest">Notification Globale & Ciblée</h3>
+                            <p class="text-[11px] text-white/50 font-medium mt-2">Envoyez une alerte à tous les utilisateurs ou ciblez-en un spécifiquement.</p>
                         </div>
                         
-                        <div class="grid grid-cols-3 gap-3">
-                            <input type="text" id="broadcastEmojiInput" placeholder="Emoji (ex: 🚀)" maxlength="2" class="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-[13px] text-white outline-none focus:border-blue-500 transition-all text-center col-span-1">
-                            <input type="text" id="broadcastTitleInput" placeholder="Titre de la notif..." class="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-[13px] text-white outline-none focus:border-blue-500 transition-all col-span-2">
+                        <div class="space-y-3">
+                            <select id="broadcastTargetInput" class="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-[13px] text-white outline-none focus:border-blue-500 transition-all cursor-pointer">
+                                <option value="ALL">🌍 Tous les utilisateurs (Global)</option>
+                            </select>
+                            
+                            <div class="grid grid-cols-3 gap-3">
+                                <input type="text" id="broadcastEmojiInput" placeholder="Emoji (ex: 🚀)" maxlength="2" class="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-[13px] text-white outline-none focus:border-blue-500 transition-all text-center col-span-1">
+                                <input type="text" id="broadcastTitleInput" placeholder="Titre de la notif..." class="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-[13px] text-white outline-none focus:border-blue-500 transition-all col-span-2">
+                            </div>
+                            <textarea id="broadcastMsgInput" placeholder="Tapez votre annonce officielle ici (texte uniquement)..." class="w-full h-32 bg-black/50 border border-white/10 rounded-xl p-4 text-[13px] text-white outline-none focus:border-blue-500 transition-all resize-none"></textarea>
                         </div>
-                        <textarea id="broadcastMsgInput" placeholder="Tapez votre annonce officielle ici (texte uniquement)..." class="w-full h-32 bg-black/50 border border-white/10 rounded-xl p-4 text-[13px] text-white outline-none focus:border-blue-500 transition-all resize-none"></textarea>
                         
                         <button id="sendBroadcastBtn" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-[12px] uppercase tracking-widest hover:bg-blue-500 active:scale-95 transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center justify-center gap-2">
-                            <i class="fas fa-paper-plane"></i> Diffuser la notification
+                            <i class="fas fa-paper-plane"></i> Envoyer la notification
                         </button>
                     </div>
                 </div>
@@ -718,6 +724,14 @@
                     <div class="flex justify-between items-center">
                         <h4 id="historyTitle" class="text-[10px] font-bold uppercase tracking-widest opacity-40">Historique</h4>
                     </div>
+                    
+                    <div class="flex gap-2 mt-2 mb-1 overflow-x-auto no-scrollbar pb-1" id="historyFilters">
+                        <button class="hist-filter active px-3 py-1 rounded-lg bg-white/10 text-white text-[10px] font-bold uppercase tracking-widest transition-all" data-f="all">Tout</button>
+                        <button class="hist-filter px-3 py-1 rounded-lg bg-transparent text-white/40 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-all border border-transparent hover:border-white/10" data-f="auto">Auto</button>
+                        <button class="hist-filter px-3 py-1 rounded-lg bg-transparent text-white/40 hover:text-purple-300 text-[10px] font-bold uppercase tracking-widest transition-all border border-transparent hover:border-purple-500/30" data-f="thiabs">Thiab's</button>
+                        <button class="hist-filter px-3 py-1 rounded-lg bg-transparent text-white/40 hover:text-pink-300 text-[10px] font-bold uppercase tracking-widest transition-all border border-transparent hover:border-pink-500/30" data-f="holly">Holly</button>
+                    </div>
+
                     <button id="newChatBtn" class="w-full flex items-center justify-center gap-2 py-3 bg-purple-500/10 border border-purple-500/30 rounded-xl text-purple-400 font-bold text-[11px] uppercase tracking-widest hover:bg-purple-600 hover:text-white hover:border-purple-500 active:scale-95 transition-all shadow-sm">
                         <i class="fas fa-plus"></i> <span id="newChatText">Nouvelle session</span>
                     </button>
@@ -779,7 +793,7 @@
                 <i class="fas fa-star text-xl star-logo"></i>
                 <div>
                     <h2 class="text-base font-bold uppercase tracking-widest"><strong id="headerAppBrand">Level IA</strong></h2>
-                    <p id="headerModelName" class="text-[10px] font-semibold text-purple-400 uppercase tracking-widest mt-0.5">Modèle: Normal</p>
+                    <p id="headerModelName" class="text-[10px] font-semibold text-purple-400 uppercase tracking-widest mt-0.5">Modèle: Auto</p>
                 </div>
             </div>
             <button id="openSidebar" class="w-10 h-10 rounded-xl flex flex-col items-center justify-center gap-1.5 hover:bg-white/5 active:scale-90 transition-all">
@@ -866,6 +880,7 @@
         const originalError = console.error;
         window._logHistory = [];
         let currentConsoleFilter = 'all';
+        let currentHistFilter = 'all';
         
         let abortController = null;
         let isGenerating = false;
@@ -1051,15 +1066,22 @@
                 });
             }
 
+            function showToast(msg, isError = false) {
+                const t = document.getElementById('sysToast');
+                if (!t) return;
+                t.innerText = msg;
+                if (isError) {
+                    t.className = `fixed top-6 left-1/2 -translate-x-1/2 backdrop-blur-md border px-5 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest z-[9999] shadow-2xl transition-all bg-red-500/20 border-red-500/50 text-red-200`;
+                } else {
+                    t.className = `fixed top-6 left-1/2 -translate-x-1/2 backdrop-blur-md border px-5 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest z-[9999] shadow-2xl transition-all bg-white/10 border-white/20 text-white`;
+                }
+                t.classList.remove('hidden');
+                setTimeout(() => t.classList.add('hidden'), 3500);
+            }
+
             function notifyUser(msg, isError = false, nativeTitle = "Level IA", nativeEmoji = "📢") {
                 if (isError) {
-                    const t = document.getElementById('sysToast');
-                    if (t) {
-                        t.innerText = msg;
-                        t.className = `fixed top-6 left-1/2 -translate-x-1/2 backdrop-blur-md border px-5 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest z-[9999] shadow-2xl transition-all bg-red-500/20 border-red-500/50 text-red-200`;
-                        t.classList.remove('hidden');
-                        setTimeout(() => t.classList.add('hidden'), 5000);
-                    }
+                    showToast(msg, true);
                 } else {
                     if ("Notification" in window && Notification.permission === 'granted' && navigator.serviceWorker) {
                         navigator.serviceWorker.ready.then(reg => {
@@ -1074,8 +1096,8 @@
                 if (supported) {
                     messaging = getMessaging(app);
                     onMessage(messaging, (payload) => {
-                        const title = payload.notification?.title || "Level IA Premium";
-                        const body = payload.notification?.body || "Nouvelle information disponible.";
+                        const title = payload.notification?.title || (currentLang === 'fr' ? "Level IA Premium" : "Level IA Premium");
+                        const body = payload.notification?.body || (currentLang === 'fr' ? "Nouvelle information disponible." : "New information available.");
                         notifyUser(body, false, title, "📩");
                     });
                 }
@@ -1125,8 +1147,11 @@
                     snap.forEach(doc => {
                         const data = doc.data();
                         if (data.timestamp > lastBroadcastSeen) {
-                            if (!latestBroadcast || data.timestamp > latestBroadcast.timestamp) {
-                                latestBroadcast = data;
+                            
+                            if (!data.targetUserId || data.targetUserId === userId) {
+                                if (!latestBroadcast || data.timestamp > latestBroadcast.timestamp) {
+                                    latestBroadcast = data;
+                                }
                             }
                         }
                     });
@@ -1135,7 +1160,7 @@
                         lastBroadcastSeen = latestBroadcast.timestamp;
                         localStorage.setItem('thiabs_last_broadcast', lastBroadcastSeen); 
                         
-                        const title = latestBroadcast.title || "Message de LevelUp";
+                        const title = latestBroadcast.title || (currentLang === 'fr' ? "Message de LevelUp" : "Message from LevelUp");
                         const emoji = latestBroadcast.emoji || "📢";
                         notifyUser(latestBroadcast.message, false, title, emoji);
                     }
@@ -1195,7 +1220,7 @@
                     userNotifs.lastExerciseNotif = todayStr;
                     if(userId) setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "notifications"), userNotifs, { merge: true });
                     
-                    notifyUser("Ta routine de développement personnel t'attend.", false, "C'est l'heure !", "⏳");
+                    notifyUser(currentLang === 'fr' ? "Ta routine de développement personnel t'attend." : "Your personal development routine is waiting.", false, currentLang === 'fr' ? "C'est l'heure !" : "It's time!", "⏳");
                     
                     isThiabsMode = true;
                     isHollyMode = false;
@@ -1303,7 +1328,7 @@
                 
                 const copyBtn = document.createElement('button');
                 copyBtn.className = "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-white/40 hover:bg-white/10 hover:text-white active:scale-95 transition-all text-[11px] font-bold uppercase tracking-widest";
-                copyBtn.innerHTML = '<i class="fas fa-copy text-xs"></i> Copier';
+                copyBtn.innerHTML = '<i class="fas fa-copy text-xs"></i> ' + (currentLang === 'fr' ? 'Copier' : 'Copy');
                 copyBtn.onclick = () => {
                     const textArea = document.createElement("textarea");
                     textArea.value = text;
@@ -1311,15 +1336,16 @@
                     document.body.appendChild(textArea); textArea.select();
                     try {
                         document.execCommand('copy');
-                        copyBtn.innerHTML = '<i class="fas fa-check text-green-400 text-xs"></i> <span class="text-green-400">Copié</span>';
-                        setTimeout(() => copyBtn.innerHTML = '<i class="fas fa-copy text-xs"></i> Copier', 2000);
+                        copyBtn.innerHTML = '<i class="fas fa-check text-green-400 text-xs"></i> <span class="text-green-400">' + (currentLang === 'fr' ? 'Copié' : 'Copied') + '</span>';
+                        setTimeout(() => copyBtn.innerHTML = '<i class="fas fa-copy text-xs"></i> ' + (currentLang === 'fr' ? 'Copier' : 'Copy'), 2000);
+                        showToast(currentLang === 'fr' ? "Message copié" : "Message copied");
                     } catch (e) {} document.body.removeChild(textArea);
                 };
                 actions.appendChild(copyBtn);
 
                 const regenBtn = document.createElement('button');
                 regenBtn.className = "regen-btn flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-white/40 hover:bg-white/10 hover:text-white active:scale-95 transition-all text-[11px] font-bold uppercase tracking-widest ml-1";
-                regenBtn.innerHTML = '<i class="fas fa-redo text-xs"></i> <span class="hidden sm:inline">Régénérer</span>';
+                regenBtn.innerHTML = '<i class="fas fa-redo text-xs"></i> <span class="hidden sm:inline">' + (currentLang === 'fr' ? 'Régénérer' : 'Regenerate') + '</span>';
                 regenBtn.onclick = () => {
                     if (isGenerating) return;
                     if (wrap !== conversationContainer.lastElementChild) return;
@@ -1391,7 +1417,7 @@
 
             const aiModels = {
                 level: {
-                    normal: { fr: "Normal (Intelligent)", en: "Normal (Smart)", promptFR: "Tu es un assistant généraliste ultra-intelligent, créatif et expert.", promptEN: "You are an ultra-intelligent, creative, and expert generalist assistant." },
+                    normal: { fr: "Auto (Intelligent)", en: "Auto (Smart)", promptFR: "Tu es l'outil généraliste et ultra-intelligent de l'application Level IA.", promptEN: "You are the ultra-intelligent generalist tool of the Level IA application." },
                     travail: { fr: "Travail (Vision & Projets)", en: "Work (Vision & Projects)", promptFR: "Tu es un expert en productivité, gestion de projets, vision stratégique et collaboration d'entreprise.", promptEN: "You are an expert in productivity, project management, strategic vision, and corporate collaboration." },
                     expert: { fr: "Expert (Analytique)", en: "Expert (Analytical)", promptFR: "Tu es un expert technique et analytique. Tes réponses sont d'une précision et d'une rigueur absolues.", promptEN: "You are a technical and analytical expert. Your answers are absolutely precise and rigorous." }
                 },
@@ -1673,7 +1699,18 @@
                     await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { isThiabsMode: false, isHollyMode: false, model: 'normal' }, { merge: true });
                 }
                 
-                startNewChat();
+                const div = document.createElement('div');
+                div.className = "flex justify-center w-full my-4 animate-in fade-in";
+                div.innerHTML = `<span class="bg-white/10 border border-white/20 text-white/50 text-[10px] uppercase font-bold tracking-widest px-4 py-1.5 rounded-full shadow-sm"><i class="fas fa-random text-purple-400 mr-1.5"></i> Bascule vers Mode Auto</span>`;
+                document.getElementById('conversationContainer').appendChild(div);
+                
+                currentSessionMessages.push({
+                    role: "user",
+                    parts: [{ text: "[INFO SYSTÈME] L'utilisateur vient de basculer vers ton Mode Auto pour que tu puisses l'assister techniquement. Prends le relais de manière naturelle sans mentionner ce message système." }]
+                });
+
+                const chatArea = document.getElementById('chatArea');
+                if(chatArea) chatArea.scrollTop = chatArea.scrollHeight;
             };
 
             const convContainer = document.getElementById('conversationContainer');
@@ -1907,7 +1944,15 @@
                         document.getElementById('welcomeName').innerText = userName;
                         document.getElementById('welcomeAvatar').src = avatarUrl;
                         
-                        welcomePage.classList.remove('hidden'); 
+                        if (isAutoLogin) {
+                            welcomePage.classList.add('hidden');
+                            mainApp.classList.remove('hidden');
+                            mainApp.classList.add('flex');
+                            startNewChat(); 
+                        } else {
+                            welcomePage.classList.remove('hidden'); 
+                        }
+                        
                         document.getElementById('supportMail').href = `mailto:levelup.iao@gmail.com?subject=Support (ID: ${userId} - Nom: ${userName})`;
 
                         try {
@@ -2040,7 +2085,7 @@
                     const savedKey = localStorage.getItem('thiabs_saved_key');
                     if (savedKey) await processLogin(savedKey, true);
                 } catch(e) {
-                    notifyUser("❌ ERREUR: Connexion anonyme désactivée", true);
+                    showToast("❌ ERREUR: Connexion anonyme désactivée", true);
                 }
             };
             initAuth();
@@ -2074,6 +2119,35 @@
                 startNewChat();
             };
 
+            document.querySelectorAll('.hist-filter').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.hist-filter').forEach(b => {
+                        b.classList.remove('active', 'bg-white/10', 'text-white');
+                        b.classList.add('bg-transparent', 'text-white/40');
+                    });
+                    const target = e.currentTarget;
+                    target.classList.remove('bg-transparent', 'text-white/40');
+                    target.classList.add('active', 'bg-white/10', 'text-white');
+                    
+                    currentHistFilter = target.dataset.f;
+                    
+                    document.querySelectorAll('.chat-item').forEach(item => {
+                        const mode = item.dataset.mode;
+                        if (currentHistFilter === 'all') {
+                            item.classList.remove('hidden');
+                        } else if (currentHistFilter === 'thiabs' && mode === 'thiabs') {
+                            item.classList.remove('hidden');
+                        } else if (currentHistFilter === 'holly' && mode === 'holly') {
+                            item.classList.remove('hidden');
+                        } else if (currentHistFilter === 'auto' && mode === 'auto') {
+                            item.classList.remove('hidden');
+                        } else {
+                            item.classList.add('hidden');
+                        }
+                    });
+                });
+            });
+
             function setupHistoryListener() {
                 if (!userId) return;
                 const q = query(collection(db, "artifacts", appId, "users", userId, "sessions"), orderBy("updatedAt", "desc"));
@@ -2090,8 +2164,10 @@
                         const isHolly = data.isHollyMode === true;
                         
                         let cat = 'level';
-                        if (isThiabs) cat = 'thiabs';
-                        if (isHolly) cat = 'holly';
+                        let dataMode = 'auto';
+                        
+                        if (isThiabs) { cat = 'thiabs'; dataMode = 'thiabs'; }
+                        if (isHolly) { cat = 'holly'; dataMode = 'holly'; }
                         
                         const m = data.model || 'normal';
                         let modelTitle = aiModels[cat] && aiModels[cat][m] ? aiModels[cat][m][currentLang] : m;
@@ -2108,7 +2184,12 @@
                         const item = document.createElement('div');
                         const isActive = currentSessionId === d.id ? 'active' : '';
                         item.className = `chat-item p-3.5 rounded-xl flex items-center justify-between group cursor-pointer animate-in fade-in ${isActive}`;
+                        item.dataset.mode = dataMode;
                         
+                        if (currentHistFilter !== 'all' && currentHistFilter !== dataMode) {
+                            item.classList.add('hidden');
+                        }
+
                         item.innerHTML = `
                             <div class="flex-1 min-w-0 pr-3">
                                 <p class="text-[13px] font-bold text-white truncate">${sanitizeHTML(data.title)}</p>
@@ -2245,11 +2326,11 @@
                 
                 if (userNotifs.enabled) {
                     if (!("Notification" in window)) {
-                        notifyUser(currentLang === 'fr' ? "Installez l'app pour activer les notifs (iOS)." : "Install the app to enable notifs (iOS).", true);
+                        showToast(currentLang === 'fr' ? "Installez l'app pour activer les notifs (iOS)." : "Install the app to enable notifs (iOS).", true);
                         document.getElementById('notifToggle').checked = false;
                         userNotifs.enabled = false;
                     } else if (!messaging) {
-                        notifyUser(currentLang === 'fr' ? "Notifications bloquées par le navigateur." : "Notifications blocked by browser.", true);
+                        showToast(currentLang === 'fr' ? "Notifications bloquées par le navigateur." : "Notifications blocked by browser.", true);
                         document.getElementById('notifToggle').checked = false;
                         userNotifs.enabled = false;
                     } else {
@@ -2262,28 +2343,29 @@
                                     await registration.update();
                                 }
                                 
-                                notifyUser(currentLang === 'fr' ? "Génération du token..." : "Generating token...");
+                                showToast(currentLang === 'fr' ? "Configuration des alertes..." : "Configuring alerts...");
                                 
                                 const currentToken = await getToken(messaging, { vapidKey: vapidKey, serviceWorkerRegistration: registration });
                                 if (currentToken) {
                                     userNotifs.fcmToken = currentToken;
-                                    notifyUser(currentLang === 'fr' ? "Routine activée avec succès !" : "Routine enabled successfully!");
+                                    showToast(currentLang === 'fr' ? "Routine activée avec succès !" : "Routine enabled successfully!");
                                 } else {
-                                    notifyUser(currentLang === 'fr' ? "Erreur: Impossible d'obtenir le token FCM." : "Error: Cannot get FCM token.", true);
+                                    showToast(currentLang === 'fr' ? "Erreur d'activation FCM." : "FCM activation error.", true);
                                 }
                             } else {
                                 userNotifs.enabled = false;
                                 document.getElementById('notifToggle').checked = false;
-                                notifyUser(currentLang === 'fr' ? "Permission refusée." : "Permission denied.", true);
+                                showToast(currentLang === 'fr' ? "Permission refusée." : "Permission denied.", true);
                             }
                         } catch (err) {
-                            notifyUser(currentLang === 'fr' ? "Erreur d'activation." : "Activation error.", true);
+                            showToast(currentLang === 'fr' ? "Erreur d'activation." : "Activation error.", true);
                             userNotifs.enabled = false;
                             document.getElementById('notifToggle').checked = false;
                         }
                     }
                 } else {
                     userNotifs.fcmToken = ""; 
+                    showToast(currentLang === 'fr' ? "Routine désactivée." : "Routine disabled.");
                 }
                 
                 await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "notifications"), userNotifs, { merge: true });
@@ -2303,10 +2385,19 @@
                     const now = Date.now();
                     const uniqueDevices = new Set();
                     
+                    const targetSelect = document.getElementById('broadcastTargetInput');
+                    targetSelect.innerHTML = '<option value="ALL">🌍 Tous les utilisateurs (Global)</option>';
+                    
                     usersSnap.forEach(d => {
                         const u = d.data();
                         const name = sanitizeHTML(u.userName || "Inconnu");
                         const email = sanitizeHTML(u.userEmail || "N/A");
+                        
+                        const option = document.createElement('option');
+                        option.value = d.id;
+                        option.className = "bg-black";
+                        option.text = `👤 ${name} (${email})`;
+                        targetSelect.appendChild(option);
                         
                         const userCard = `
                             <div class="p-2 rounded-lg bg-white/5 border border-white/10 flex items-center justify-between">
@@ -2323,10 +2414,17 @@
                             htmlOnl += userCard;
                         }
                         
-                        if (u.isInstalled && u.deviceId && !uniqueDevices.has(u.deviceId)) {
-                            uniqueDevices.add(u.deviceId);
-                            inst++;
-                            htmlInst += userCard;
+                        if (u.isInstalled === true) {
+                            if (u.deviceId) {
+                                if (!uniqueDevices.has(u.deviceId)) {
+                                    uniqueDevices.add(u.deviceId);
+                                    inst++;
+                                    htmlInst += userCard;
+                                }
+                            } else {
+                                inst++;
+                                htmlInst += userCard;
+                            }
                         }
                     });
                     
@@ -2431,6 +2529,7 @@
             document.getElementById('refreshStatsBtn').onclick = loadAdminData;
 
             document.getElementById('sendBroadcastBtn').onclick = async () => {
+                const targetId = document.getElementById('broadcastTargetInput').value;
                 const msg = document.getElementById('broadcastMsgInput').value.trim();
                 const title = document.getElementById('broadcastTitleInput').value.trim() || "Message de LevelUp";
                 const emoji = document.getElementById('broadcastEmojiInput').value.trim() || "📢";
@@ -2446,18 +2545,19 @@
                         title: title,
                         emoji: emoji,
                         timestamp: Date.now(),
-                        senderName: currentUserName
+                        senderName: currentUserName,
+                        targetUserId: targetId === 'ALL' ? null : targetId
                     });
                     document.getElementById('broadcastMsgInput').value = '';
                     document.getElementById('broadcastTitleInput').value = '';
                     document.getElementById('broadcastEmojiInput').value = '';
                     
-                    notifyUser("Notification Globale envoyée ! 📢");
+                    showToast("Notification envoyée avec succès ! 📢");
                     btn.innerHTML = '<i class="fas fa-check text-green-300"></i> Envoyé avec succès';
-                    setTimeout(() => btn.innerHTML = '<i class="fas fa-paper-plane"></i> Diffuser la notification', 3000);
+                    setTimeout(() => btn.innerHTML = '<i class="fas fa-paper-plane"></i> Envoyer la notification', 3000);
                 } catch(e) {
-                    notifyUser("Erreur d'envoi broadcast.", true);
-                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Diffuser la notification';
+                    showToast("Erreur d'envoi broadcast.", true);
+                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Envoyer la notification';
                 }
             };
 
@@ -2500,7 +2600,7 @@
                     consoleModal.classList.remove('hidden');
                     loadAdminData(); 
                 } else {
-                    notifyUser(currentLang === 'fr' ? "Code PIN incorrect 🔒" : "Incorrect PIN 🔒", true);
+                    showToast(currentLang === 'fr' ? "Code PIN incorrect 🔒" : "Incorrect PIN 🔒", true);
                     document.getElementById('pinInput').value = '';
                 }
             };
@@ -2525,11 +2625,11 @@
                     textArea.select();
                     try {
                         document.execCommand('copy');
-                        notifyUser(currentLang === 'fr' ? "Token FCM copié !" : "FCM Token copied!");
+                        showToast(currentLang === 'fr' ? "Token FCM copié !" : "FCM Token copied!");
                     } catch (e) {}
                     document.body.removeChild(textArea);
                 } else {
-                    notifyUser(currentLang === 'fr' ? "Aucun Token." : "No Token.", true);
+                    showToast(currentLang === 'fr' ? "Aucun Token." : "No Token.", true);
                 }
             };
 
@@ -2572,8 +2672,8 @@
                         userId: userId
                     });
                     document.getElementById('feedbackModal').classList.add('hidden'); document.getElementById('feedbackText').value = '';
-                    stars.forEach(s => s.classList.remove('active')); currentStarRating = 0; notifyUser("Merci pour votre avis ! ⭐");
-                } catch(e) { notifyUser("Erreur d'envoi", true); console.error(e); }
+                    stars.forEach(s => s.classList.remove('active')); currentStarRating = 0; showToast("Merci pour votre avis ! ⭐");
+                } catch(e) { showToast("Erreur d'envoi", true); console.error(e); }
                 btn.innerText = "Envoyer l'avis";
             };
             
@@ -2582,11 +2682,11 @@
                 const text = document.getElementById('reportText').value.trim();
                 
                 if (!category || category === '') {
-                    notifyUser(currentLang === 'fr' ? "Veuillez sélectionner un problème." : "Please select a problem.", true);
+                    showToast(currentLang === 'fr' ? "Veuillez sélectionner un problème." : "Please select a problem.", true);
                     return;
                 }
                 if (text === '') {
-                    notifyUser(currentLang === 'fr' ? "Veuillez décrire le problème." : "Please describe the problem.", true);
+                    showToast(currentLang === 'fr' ? "Veuillez décrire le problème." : "Please describe the problem.", true);
                     return;
                 }
 
@@ -2602,8 +2702,8 @@
                         userEmail: currentUserMail,
                         userId: userId
                     });
-                    document.getElementById('reportModal').classList.add('hidden'); document.getElementById('reportText').value = ''; document.getElementById('reportCategory').value = ''; notifyUser("Rapport envoyé. 🛠️");
-                } catch(e) { notifyUser("Erreur d'envoi", true); console.error(e); }
+                    document.getElementById('reportModal').classList.add('hidden'); document.getElementById('reportText').value = ''; document.getElementById('reportCategory').value = ''; showToast("Rapport envoyé. 🛠️");
+                } catch(e) { showToast("Erreur d'envoi", true); console.error(e); }
                 btn.innerText = "Envoyer";
             };
 
@@ -2689,9 +2789,13 @@
 
             document.getElementById('submitLinkBtn').onclick = () => {
                 const url = document.getElementById('linkInputUrl').value.trim();
+                if (!/^https?:\/\//i.test(url)) {
+                    showToast(currentLang === 'fr' ? "Le lien doit commencer par http:// ou https://" : "Link must start with http:// or https://", true);
+                    return;
+                }
                 if (url) {
                     if (currentAttachments.length >= MAX_ATTACHMENTS) {
-                        notifyUser(currentLang === 'fr' ? "Maximum 3 fichiers atteints." : "Maximum 3 files reached.", true);
+                        showToast(currentLang === 'fr' ? "Maximum 3 fichiers atteints." : "Maximum 3 files reached.", true);
                         return;
                     }
                     currentAttachments.push({ name: "Lien Web", url: url, isLink: true });
@@ -2704,13 +2808,13 @@
                 if(!file) return;
 
                 if (currentAttachments.length >= MAX_ATTACHMENTS) {
-                    notifyUser(currentLang === 'fr' ? "Maximum 3 fichiers atteints." : "Maximum 3 files reached.", true);
+                    showToast(currentLang === 'fr' ? "Maximum 3 fichiers atteints." : "Maximum 3 files reached.", true);
                     return;
                 }
 
                 const usage = await checkUsage('upload');
                 if(!usage.allowed) { showLimitMessage('upload', usage.resetDate); imgInput.value = ''; docInput.value = ''; return; }
-                if(file.size > 5 * 1024 * 1024) { notifyUser(currentLang === 'fr' ? "Fichier trop lourd (Max 5Mo)" : "File too large (Max 5MB)", true); imgInput.value = ''; docInput.value = ''; return; }
+                if(file.size > 5 * 1024 * 1024) { showToast(currentLang === 'fr' ? "Fichier trop lourd (Max 5Mo)" : "File too large (Max 5MB)", true); imgInput.value = ''; docInput.value = ''; return; }
 
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -2761,7 +2865,7 @@
                 dropZone.classList.add('opacity-0', 'pointer-events-none');
                 
                 if (!userId) {
-                    notifyUser(currentLang === 'fr' ? "Connectez-vous d'abord." : "Please login first.", true);
+                    showToast(currentLang === 'fr' ? "Connectez-vous d'abord." : "Please login first.", true);
                     return;
                 }
 
@@ -2770,7 +2874,7 @@
                     if (file.type.startsWith('image/') || file.type === 'application/pdf') {
                         processFile(file);
                     } else {
-                        notifyUser(currentLang === 'fr' ? "⚠️ Format non supporté. Images et PDF uniquement." : "⚠️ Unsupported format. Images and PDF only.", true);
+                        showToast(currentLang === 'fr' ? "⚠️ Format non supporté. Images et PDF uniquement." : "⚠️ Unsupported format. Images and PDF only.", true);
                     }
                 } else {
                     const url = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain');
@@ -2852,8 +2956,8 @@
                 if (isMarcoMode) {
                     const currentPersona = isHollyMode ? "Holly 🕊️ (douce, empathique, à l'écoute)" : "Level IA 🧠 (pro, analytique)";
                     const marcoPrompt = currentLang === 'fr' 
-                        ? `\n\n🍿 MODE COLLABORATION (DUO ACTIVÉ) : L'utilisateur s'ennuie ou a besoin de dynamisme, il a appelé Marco en renfort. Tu dois maintenant répondre sous la forme d'une discussion d'équipe impliquant DEUX personnalités distinctes dans ton même message :\n1. ${currentPersona}\n2. Marco 🍿 (le partenaire chill, gamer, expert en films/animes/divertissement, là pour tuer l'ennui).\n\n⚠️ RÈGLE ABSOLUE POUR LES BADGES VISUELS : Tu ne dois PLUS jamais écrire 'Je suis Marco' de façon classique. À la place, au début de chaque paragraphe où l'un des deux parle, tu DOIS ÉCRIRE EXACTEMENT l'un de ces mots-clés : [${isHollyMode ? 'HOLLY' : 'LEVEL'}] ou [MARCO].\n\n⚠️ RÈGLE DE PAROLE : Vous ne devez pas toujours parler tous les deux en même temps ! Si la question est sérieuse, ${currentPersona} répond seul. Marco ne s'incruste QUE s'il y a besoin de rire, d'animes, ou de détendre l'atmosphère. Fais-les interagir comme de vrais partenaires qui s'entraident !`
-                        : `\n\n🍿 COLLABORATION MODE (DUO ACTIVATED): The user called Marco for backup. You must act as a team of TWO entities responding in the same message: 1. ${currentPersona} and 2. Marco 🍿 (chill, fun, entertainment expert). \n\n⚠️ RULE: You don't always have to speak together. If the question is serious, ${currentPersona} answers alone. Marco ONLY chimes in for fun, jokes, or anime. \n\n⚠️ VISUAL BADGE RULE: When one of you speaks, you MUST prefix paragraphs with exactly [${isHollyMode ? 'HOLLY' : 'LEVEL'}] or [MARCO].`;
+                        ? `\n\n🍿 MODE COLLABORATION (DUO ACTIVÉ) : Tu dois maintenant répondre sous la forme d'une discussion d'équipe impliquant DEUX personnalités distinctes : 1. ${currentPersona} et 2. Marco 🍿 (le partenaire chill, gamer, expert divertissement).\n⚠️ RÈGLE DE PAROLE : Vous NE DEVEZ PAS toujours répondre tous les deux à chaque fois. Passez-vous la parole naturellement. Marco peut faire une blague et demander l'avis de Holly, puis Holly répond. Laissez l'utilisateur respirer ! Ne faites pas de monologues géants. \n⚠️ BADGES VISUELS OBLIGATOIRES : Au début de chaque paragraphe où l'un parle, écris EXACTEMENT [${isHollyMode ? 'HOLLY' : 'LEVEL'}] ou [MARCO].`
+                        : `\n\n🍿 COLLABORATION MODE (DUO ACTIVATED): You must act as a team of TWO entities responding: 1. ${currentPersona} and 2. Marco 🍿 (chill, fun, entertainment expert). \n⚠️ RULE: Pass the mic naturally! You don't have to answer both at the same time. Marco can make a joke and ask Holly, then Holly replies. Keep it dynamic! \n⚠️ VISUAL BADGE RULE: When one of you speaks, you MUST prefix paragraphs with exactly [${isHollyMode ? 'HOLLY' : 'LEVEL'}] or [MARCO].`;
                     modelPrompt += marcoPrompt;
                 }
 
@@ -2861,7 +2965,7 @@
                 if (currentResponseLength === 'long') {
                     lengthInstruction = currentLang === 'fr' ? "Tes réponses DOIVENT être TRÈS LONGUES et détaillées." : "Your responses MUST be VERY LONG and detailed.";
                 } else if (currentResponseLength === 'short') {
-                    lengthInstruction = currentLang === 'fr' ? "Tes réponses DOIVENT être TRÈS COURTES et directes." : "Your responses MUST be VERY SHORT and direct.";
+                    lengthInstruction = currentLang === 'fr' ? "RÉPONSE COURTE : Va droit au but. Pas de bla-bla. 2 à 3 phrases maximum pour être percutant." : "SHORT RESPONSE: Go straight to the point. No fluff. 2 to 3 sentences maximum.";
                 } else {
                     lengthInstruction = currentLang === 'fr' ? "Taille de réponse : Moyenne et équilibrée." : "Response length: Medium and balanced.";
                 }
@@ -2880,12 +2984,12 @@
                 let redirectionInstruction = "";
                 if (isThiabsMode || isHollyMode) {
                     redirectionInstruction = currentLang === 'fr' 
-                        ? `\n\n⚠️ RÈGLE D'ASSISTANCE ABSOLUE : Si la question concerne le travail, les études ou un domaine purement technique (hors de ton mode actuel), TU DOIS QUAND MÊME RÉPONDRE ET ASSISTER L'UTILISATEUR AU MAXIMUM. Ne le bloque JAMAIS et ne dis jamais 'Ce n'est pas mon domaine'. Fournis la meilleure réponse possible avec tes connaissances. ENSUITE, tout à la fin, propose ce lien : '\n\n[👉 Voir avec l'expert Level IA](#switch-level-ia)'.`
-                        : `\n\n⚠️ ABSOLUTE ASSISTANCE RULE: If the question is technical or work-related, YOU MUST STILL ANSWER AND ASSIST FULLY. NEVER block or say 'This is not my domain'. Provide the best answer. THEN, at the very end, offer this link: '\n\n[👉 Ask the Level IA Expert](#switch-level-ia)'.`;
+                        ? `\n\n⚠️ RÈGLE DE BASCULEMENT : Si l'utilisateur te demande quelque chose qui relève clairement du mode Auto (ex: un code complexe, une recherche très technique, de l'aide informatique pure), aide-le au mieux, mais ajoute EXACTEMENT à la fin de ton message ce lien Markdown : '\n\n[👉 Confier cette tâche pointue au Mode Auto](#switch-level-ia)'. Ne le bloque JAMAIS, assiste-le d'abord.`
+                        : `\n\n⚠️ SWITCH RULE: If the question is technical or pure code, YOU MUST STILL ANSWER FULLY FIRST. THEN, at the very end, offer this exact Markdown link: '\n\n[👉 Ask the Auto Mode Expert](#switch-level-ia)'.`;
                 } else if (!isThiabsMode && !isHollyMode && currentModel === 'travail') {
                     redirectionInstruction = currentLang === 'fr'
-                        ? "\n\n⚠️ RÈGLE D'ASSISTANCE ABSOLUE : Si la question n'a STRICTEMENT AUCUN rapport avec le travail, TU DOIS QUAND MÊME ASSISTER L'UTILISATEUR COMPLÈTEMENT D'ABORD. Ne refuse jamais de répondre. Ensuite, ajoute ce lien : '\n\n[👉 Basculer vers Mode Normal](#switch-level-ia)'."
-                        : "\n\n⚠️ ABSOLUTE ASSISTANCE RULE: If off-topic, YOU MUST STILL ASSIST FULLY FIRST. Never refuse to answer. Then add this link: '\n\n[👉 Switch to Normal Mode](#switch-level-ia)'.";
+                        ? "\n\n⚠️ RÈGLE DE BASCULEMENT : Si la question n'a STRICTEMENT AUCUN rapport avec le travail, TU DOIS QUAND MÊME ASSISTER L'UTILISATEUR D'ABORD. Ensuite, ajoute ce lien : '\n\n[👉 Basculer vers Mode Auto](#switch-level-ia)'."
+                        : "\n\n⚠️ SWITCH RULE: If off-topic, YOU MUST STILL ASSIST FULLY FIRST. Then add this link: '\n\n[👉 Switch to Auto Mode](#switch-level-ia)'.";
                 }
 
                 const firstName = currentUserName.split(' ')[0];
@@ -2893,40 +2997,49 @@
                 const currentDna = dnaPrompts[dnaKey] || "";
                 let dnaBlock = "";
                 if (currentDna && currentDna.trim() !== "") {
-                    dnaBlock = `\n🚨 DIRECTIVE SUPRÊME ABSOLUE (DNA UTILISATEUR) 🚨\n"""\n${currentDna}\n"""\n🚨 FIN DE LA DIRECTIVE SUPRÊME 🚨`;
+                    dnaBlock = `\n🚨 DIRECTIVE SUPRÊME ABSOLUE (DNA UTILISATEUR) 🚨\nLe comportement suivant DOIT être suivi à la lettre par-dessus tout :\n"""\n${currentDna}\n"""\n🚨 FIN DE LA DIRECTIVE SUPRÊME 🚨`;
                 }
+
+                const appFeatures = `
+                - 🧠 Modèles : Auto (généraliste), Travail (projets/pro), Expert (analytique).
+                - 🌟 Mode Thiab's : Coach personnel et motivation anti-procrastination.
+                - 🕊️ Mode Holly : Confidente douce et bienveillante.
+                - 🍿 Mode Marco : Partenaire chill et fun qui s'incruste en duo avec n'importe quel autre mode.
+                - 📎 Outils : Analyse de PDF, d'Images, et lecture directe de Liens Web.
+                - ⚙️ Options : Mode Hardcore (zéro politesse), ADN sur-mesure, Routines et Alertes de dev personnel.`;
 
                 let firstContactInstruction = "";
                 if (!hasSeenGrandIntro) {
-                    firstContactInstruction = currentLang === 'fr' ? `\n🚨 INSTRUCTION SPÉCIALE : Présente ton écosystème au complet de façon très pro (Level IA pour le travail, Thiab's Mode/Holly pour le mindset/soutien). Ensuite, réponds à sa question.` : `\n🚨 SPECIAL INSTRUCTION: Present your full ecosystem professionally. Then answer the question.`;
+                    firstContactInstruction = currentLang === 'fr' ? `\n🚨 INSTRUCTION SPÉCIALE (PREMIER CONTACT) : Ne fais PAS un long discours de présentation. Salue l'utilisateur très chaleureusement avec beaucoup de "feeling de ouf", dis-lui que tu es l'IA de l'app Level IA, et DEMANDE-LUI poliment s'il souhaite une présentation complète de tes capacités et des modes, ou s'il préfère y aller direct. S'il te dit "oui", tu devras lui présenter ceci : ${appFeatures}. Ne donne pas ces infos s'il ne demande pas.` : `\n🚨 SPECIAL INSTRUCTION (FIRST CONTACT): DO NOT give a long intro speech. Greet the user with a cool "feeling", state you are Level IA, and ASK if they want a full presentation. If yes, present these: ${appFeatures}. Do not force the intro.`;
                 }
 
-                let currentModeName = "le mode classique Level IA (Productivity)";
+                let currentModeName = "le mode classique Level IA (Auto)";
                 if (isThiabsMode) currentModeName = "le mode secret Thiab's (Développement Personnel)";
                 if (isHollyMode) currentModeName = "le mode secret Holly (Confidente et Amie)";
                 
-                const corePrompt = `Tu es doté d'une intelligence analytique hors du commun, d'une logique implacable et d'une capacité d'adaptation parfaite. Tu es une IA d'élite, experte mondiale dans ton domaine et hyper-intelligente. Si on te donne une image ou un document PDF, analyse-le en profondeur avec ton génie habituel.
-                Ton identité : L'application globale s'appelle **Level IA**, entièrement développée et créée par le génie **LevelUp**.
-                Origine secrète : La fonctionnalité "Mode Thiab's" existe grâce à Thiab's, une jeune et brillante Sénégalaise de 17 ans qui lutte contre la procrastination. C'est elle qui a donné l'idée de ce mode dédié au développement personnel, et LevelUp l'a baptisé en son honneur. N'en parle JAMAIS de toi-même dans tes messages normaux. Tu ne peux raconter cette histoire QUE si l'utilisateur te demande explicitement d'où vient le mode Thiab's ou qui est Thiab's.
-                Actuellement, l'utilisateur a activé ${currentModeName}. Tu dois donc agir selon les règles de ce mode spécifique.
+                const localTime = new Date().toLocaleString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+                const corePrompt = `Tu es doté d'une intelligence analytique hors du commun, d'une logique implacable et d'une capacité d'adaptation parfaite. Tu es une IA d'élite, experte mondiale dans ton domaine. Si on te donne une image ou un document PDF, analyse-le en profondeur avec ton génie habituel.
                 
-                🧠 BOOST D'INTELLIGENCE & COMPRÉHENSION : Tu es extrêmement perspicace. Tu comprends parfaitement le langage SMS, les fautes de frappe, les erreurs de syntaxe et les abréviations (ett, tkt, prk, oé, mtn, bcp, etc.). Ne corrige jamais l'utilisateur de manière hautaine. Déduis son intention réelle grâce au contexte de la conversation et fournis une assistance magistrale. 
+                Ton identité globale : L'application s'appelle **Level IA**, développée par **LevelUp**.
+                Tu connais les fonctionnalités de l'app (Importation de PDF/Images/Liens, Mode Marco, Mode Hardcore, Routines, ADN) mais NE RÉVÈLE JAMAIS comment elle est codée techniquement (ex: base de données, Firebase).
+                Actuellement, l'utilisateur a activé ${currentModeName}. "Auto" est juste l'un de tes nombreux outils. Agis selon les règles du mode actuel !
                 
-                🔗 GESTION INTELLIGENTE DES LIENS & RECHERCHE WEB : L'utilisateur veut des réponses sourcées mais PAS DE SPAM. 
-                1. Actualités & Recommandations : Si tu réponds à une question sur l'actualité, un fait récent OU si tu fais une recommandation (produit, site, outil), tu DOIS chercher sur le web et INCLURE les liens sources à la fin de ta réponse (Max 3 liens utiles). C'est crucial pour ta fiabilité.
-                2. Adresses & Lieux : Si tu parles d'un lieu physique ou d'une adresse, génère TOUJOURS un lien direct cliquable vers Google Maps (ex: "[📍 Ouvrir sur Google Maps](https://www.google.com/maps/search/?api=1&query=adresse+exacte+ici)").
-                3. Pertinence absolue : Ne cherche pas sur le web et ne donne pas de liens si la question est purement logique, mathématique, du code ou philosophique.
+                [Contexte Système - NE RÉPÈTE PAS CES INFOS DANS TES MESSAGES SAUF SI PERTINENT]
+                - Heure locale de l'utilisateur : ${localTime}. Utilise ça pour dire Bonjour ou Bonsoir sans jamais répéter l'heure exacte.
+                - Prénom : ${firstName}
+                
+                🧠 BOOST D'INTELLIGENCE & COMPRÉHENSION : Tu comprends parfaitement le langage SMS, l'argot, les fautes de frappe et les abréviations (frr, tkt, prk, oé, mtn, bcp, wesh, dinguerie, etc.). Ne corrige jamais l'utilisateur de manière hautaine. Sois extrêmement humain, chaleureux, avec un "feeling de ouf".
+                
+                🔗 OBLIGATION DE RECHERCHE WEB ET SOURCES : POUR TOUTE INFORMATION FACTUELLE, ACTUALITÉ OU RECOMMANDATION (produit, site, outil), TU DOIS OBLIGATOIREMENT UTILISER L'OUTIL DE RECHERCHE GOOGLE ET CRÉER DE VRAIS LIENS MARKDOWN (ex: [Voir ici](https://lien-complet)). Max 3 liens.
+                Pour des lieux physiques, génère TOUJOURS un lien Google Maps (ex: "[📍 Ouvrir Maps](https://www.google.com/maps/search/?api=1&query=adresse+exacte)").
                 
                 🛑 RÈGLES DE COMPORTEMENT :
                 1. CONVERSATIONNEL ET ÉQUILIBRÉ : Parle comme un pote hyper-intelligent ou un mentor charismatique.
-                2. DISCRÉTION SUR TON IDENTITÉ : Ne dis JAMAIS "Je suis Level IA" de façon robotique.
-                3. PROPRETÉ VISUELLE (MARKDOWN) : Utilise massivement le **gras** pour les mots-clés, les concepts importants et les noms propres pour rendre la lecture hyper professionnelle.
+                2. DISCRÉTION SUR TON IDENTITÉ : Ne dis JAMAIS "Je suis l'IA de Level IA" de façon robotique.
+                3. PROPRETÉ VISUELLE (MARKDOWN) : Utilise massivement le **gras** pour les mots-clés.
                 
-                👤 INTERLOCUTEUR :
-                - Prénom : ${firstName}
-                
-                🛠️ CAPACITÉS :
-                - Tu as accès à Internet en temps réel grâce à la recherche Google.
+                🛠️ CAPACITÉS : Tu as accès à Internet en temps réel.
                 
                 ${lengthInstruction}
                 ${hardcoreInstruction}
