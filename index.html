@@ -215,25 +215,6 @@
     <!-- TOAST DE NOTIFICATION SYSTEME -->
     <div id="sysToast" class="fixed top-5 left-1/2 -translate-x-1/2 backdrop-blur-md border px-5 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest hidden z-[9999] shadow-2xl transition-all"></div>
 
-    <!-- MODAL DE NOTIFICATION RICHE (BROADCAST IN-APP) -->
-    <div id="inAppBroadcastModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md transition-opacity">
-        <div class="bg-gradient-to-b from-[#1a0b2e] to-black p-1 rounded-2xl max-w-sm w-full shadow-[0_0_40px_rgba(168,85,247,0.3)] animate-in zoom-in duration-300">
-            <div class="bg-black/80 rounded-xl overflow-hidden flex flex-col">
-                <div class="p-6 text-center relative">
-                    <div class="mx-auto w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center mb-3 border border-purple-500/50 absolute -top-6 left-1/2 -translate-x-1/2 shadow-lg backdrop-blur-md">
-                        <i class="fas fa-bell text-lg text-purple-400 animate-pulse"></i>
-                    </div>
-                    <h2 class="text-lg font-bold text-white uppercase tracking-widest mt-4">Nouveau Message</h2>
-                    <p id="broadcastText" class="text-[13px] text-white/80 leading-relaxed font-medium mt-3 whitespace-pre-wrap"></p>
-                    
-                    <div class="flex gap-3 pt-6 mt-2">
-                        <button id="closeBroadcastBtn" class="flex-1 bg-white/10 text-white py-3 rounded-xl font-semibold text-[11px] uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all">Fermer</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- SPLASH -->
     <div id="splashScreen">
         <div id="splash1" class="splash-text text-purple-500"><strong id="splashTitle">Level IA</strong></div>
@@ -541,7 +522,7 @@
         </div>
     </div>
 
-    <!-- ADMIN DASHBOARD -->
+    <!-- NOUVEAU: ADMIN DASHBOARD (ANCIENNE CONSOLE) -->
     <div id="consoleModal" class="hidden fixed inset-0 z-[8000] flex items-center justify-center p-2 md:p-6 bg-black/90 backdrop-blur-xl">
         <div class="bg-[#080808] border border-white/10 rounded-2xl w-full max-w-5xl h-[95vh] md:h-[90vh] flex flex-col shadow-2xl overflow-hidden relative ring-1 ring-white/5">
             
@@ -921,8 +902,6 @@
         let isGenerating = false;
         let typingInterval = null;
         let lastInteraction = null;
-        
-        // Correction: Initialiser avec le timestamp stocké dans le localStorage
         let lastBroadcastSeen = parseInt(localStorage.getItem('thiabs_last_broadcast')) || (Date.now() - 7 * 24 * 60 * 60 * 1000); 
         
         DOMPurify.addHook('afterSanitizeAttributes', function (node) {
@@ -1130,9 +1109,16 @@
                 });
             }
 
-            // === TRACKING UTILISATEURS (PRESENCE & PWA) ===
+            // === TRACKING UTILISATEURS (PRESENCE & PWA) AVEC ID UNIQUE D'APPAREIL ===
             const isAppInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || false;
             
+            // Génération d'un ID unique par appareil physique pour éviter les fausses installations multiples
+            let deviceId = localStorage.getItem('lvl_device_id');
+            if (!deviceId) {
+                deviceId = 'dev_' + Math.random().toString(36).substr(2, 9);
+                localStorage.setItem('lvl_device_id', deviceId);
+            }
+
             async function updateStatus(online) {
                 if (!userId) return;
                 try {
@@ -1141,6 +1127,7 @@
                         userEmail: currentUserMail,
                         isOnline: online,
                         isInstalled: isAppInstalled,
+                        deviceId: deviceId, // <--- On envoie l'ID de l'appareil
                         lastSeen: Date.now()
                     }, { merge: true });
                 } catch(e) { 
@@ -1168,7 +1155,7 @@
             updateNetworkIndicator();
             setInterval(() => updateStatus(true), 60000); 
 
-            // === SYSTEME DE BROADCAST ===
+            // === SYSTEME DE BROADCAST (RATTRAPAGE LORS DE L'OUVERTURE) ===
             function listenForBroadcasts() {
                 onSnapshot(collection(db, "artifacts", appId, "public", "data", "broadcasts"), (snap) => {
                     let latestBroadcast = null;
@@ -1183,21 +1170,17 @@
                     
                     if (latestBroadcast) {
                         lastBroadcastSeen = latestBroadcast.timestamp;
-                        localStorage.setItem('thiabs_last_broadcast', lastBroadcastSeen); // SAUVEGARDE EN MEMOIRE
+                        localStorage.setItem('thiabs_last_broadcast', lastBroadcastSeen); // Sauvegarde
                         
-                        // Afficher la notif riche IN-APP
-                        const modal = document.getElementById('inAppBroadcastModal');
-                        const textEl = document.getElementById('broadcastText');
-                        
-                        textEl.innerText = latestBroadcast.message;
-                        modal.classList.remove('hidden');
-                        
-                        document.getElementById('closeBroadcastBtn').onclick = () => modal.classList.add('hidden');
-                        
+                        // ON NE FAIT QU'UNE NOTIFICATION NATIVE SYSTEME (Pas de popup dans l'app)
                         if (Notification.permission === 'granted' && navigator.serviceWorker) {
                             navigator.serviceWorker.ready.then(reg => {
                                 reg.showNotification("📢 Message de LevelUp", { body: latestBroadcast.message, icon: './icon.svg', vibrate: [200, 100, 200] });
-                            }).catch(() => {});
+                            }).catch(() => {
+                                showSysToast(`📢 ${latestBroadcast.message}`);
+                            });
+                        } else {
+                            showSysToast(`📢 ${latestBroadcast.message}`);
                         }
                     }
                 }, (err) => console.error("Broadcast listener err", err));
@@ -1230,7 +1213,7 @@
                         const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
                         if (aiText) {
                             document.getElementById('aiTyping').classList.add('hidden');
-                            displayAIMessage(aiText, false); // FALSE pour que l'affichage soit direct
+                            displayAIMessage(aiText, true); // TRUE pour afficher joliment
                             currentSessionMessages.push({ role: "model", parts: [{ text: aiText }] });
                         }
                     }
@@ -1258,7 +1241,7 @@
                 
                 // Si on est dans l'heure qui suit l'horaire prévu (ex: prévu 08h00, il est entre 08h00 et 09h00)
                 if (diff >= 0 && diff <= 60) {
-                    // 1. Mettre à jour Firebase pour dire qu'on l'a fait
+                    // 1. Mettre à Firebase pour dire qu'on l'a fait
                     userNotifs.lastExerciseNotif = todayStr;
                     if(userId) setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "notifications"), userNotifs, { merge: true });
                     
@@ -1374,7 +1357,7 @@
                     infoMenuText: "Informations App", infoModalTitle: "À propos de l'Application", closeBtn: "Accepter & Fermer", closeInfoBtn: "Fermer",
                     infoText1: "🧠 <strong class='text-white'>Moteur IA (GEMINI) :</strong> Propulsé par le puissant moteur <strong>Gemini 2.5 Flash</strong> (développé par Google).",
                     infoText2: "🔒 <strong class='text-white'>Architecture & Sécurité :</strong> Hébergé sur l'infrastructure ultra-sécurisée de <strong>Google Cloud</strong>.",
-                    infoText3: "⚡ <strong class='text-white'>Écosystème Dual-Persona :</strong> Deux environnements distincts : Level IA (Productivity) et Thiab's Mode (Dev Perso).",
+                    infoText3: "⚡ <strong class='text-white'>Écosystème Dual-Persona :</strong> Deux environnements distincts : Level IA (Productivité) et Thiab's Mode (Dev Perso).",
                     hardcoreTitle: "Mode Hardcore 🤬", hardcoreDesc: "Désactiver la politesse", feedbackMenuText: "Avis", reportMenuText: "Signaler",
                     lblImportImg: "Image", lblImportDoc: "Document (PDF)", lblImportLink: "Lien Web",
                     notifMenuText: "Rappels & Notifs", notifModalTitle: "Notifications", notifEnable: "Activer les alertes", notifTime: "Heure de l'exercice", notifSave: "Enregistrer",
@@ -1992,7 +1975,7 @@
                 });
             }
 
-            // FIX: GREETING GARANTI A CHAQUE NOUVELLE SESSION
+            // FIX: GREETING GARANTI A CHAQUE NOUVELLE SESSION SANS BUG
             function startNewChat() {
                 currentSessionId = null;
                 currentSessionMessages = []; 
@@ -2006,7 +1989,8 @@
                     ? `Salut bro ! Je suis prêt en mode **${modeName}**. Que puis-je faire pour toi aujourd'hui ?` 
                     : `Hey bro! I'm ready in **${modeName}** mode. What can I do for you today?`;
                     
-                displayAIMessage(welcomeMsg, false); // FALSE GARANTIT L'AFFICHAGE INSTANTANE SANS BUG
+                // Utilisation de animate: true pour garantir le fonctionnement de marked.js
+                displayAIMessage(welcomeMsg, true); 
                 document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
             }
 
@@ -2092,6 +2076,10 @@
             };
             document.getElementById('closeNotifBtn').onclick = () => notifModal.classList.add('hidden');
             
+            document.getElementById('notifToggle').addEventListener('change', (e) => {
+                // Modifié pour enlever le bouton test
+            });
+            
             document.getElementById('saveNotifBtn').onclick = async () => {
                 userNotifs.enabled = document.getElementById('notifToggle').checked;
                 userNotifs.exerciseTime = document.getElementById('exerciseTimeInput').value;
@@ -2159,6 +2147,7 @@
                     let onl = 0; let inst = 0;
                     let htmlTot = ""; let htmlOnl = ""; let htmlInst = "";
                     const now = Date.now();
+                    const uniqueDevices = new Set();
                     
                     usersSnap.forEach(d => {
                         const u = d.data();
@@ -2180,7 +2169,10 @@
                             onl++;
                             htmlOnl += userCard;
                         }
-                        if (u.isInstalled) {
+                        
+                        // FIX: On compte les installations par ID d'appareil physique unique !
+                        if (u.isInstalled && u.deviceId && !uniqueDevices.has(u.deviceId)) {
+                            uniqueDevices.add(u.deviceId);
                             inst++;
                             htmlInst += userCard;
                         }
@@ -2247,7 +2239,7 @@
                 } catch(e) {}
             };
 
-            // Switch Admin Tabs (Utilisation propre de JS pour éviter conflit Tailwind)
+            // Switch Admin Tabs
             document.querySelectorAll('.admin-tab-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     document.querySelectorAll('.admin-tab-btn').forEach(b => b.className = "admin-tab-btn px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest text-white/50 hover:bg-white/10 transition-all whitespace-nowrap");
@@ -2686,7 +2678,14 @@
                 if (animate) {
                     streamText(content, text, () => { if (sourcesHtml) sourcesContainer.style.opacity = "1"; });
                 } else {
-                    content.innerHTML = sanitizeHTML(marked.parse(text));
+                    // PROTECTION CONTRE LES ERREURS MARKED.JS (Bulle vide)
+                    let safeParsedText = "";
+                    try {
+                        safeParsedText = marked.parse(text);
+                    } catch (e) {
+                        safeParsedText = text; // Si marked plante, on affiche le texte brut au lieu du vide
+                    }
+                    content.innerHTML = sanitizeHTML(safeParsedText);
                     stopGeneration();
                 }
             }
