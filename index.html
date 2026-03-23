@@ -117,7 +117,7 @@
         
         #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: -20px 0 50px rgba(0,0,0,0.5); }
         
-        #userInput { background: transparent !important; border: none !important; color: white !important; outline: none !important; width: 100%; padding: 12px; font-size: 15px !important; min-height: 44px; max-height: 120px; display: block; resize: none; overflow-y: hidden; }
+        #userInput { background: transparent !important; border: none !important; color: white !important; outline: none !important; width: 100%; padding: 12px; font-size: 15px !important; min-height: 44px; max-height: 200px; display: block; resize: none; overflow-y: auto; }
         
         /* 🚨 FIX MAGIQUE : Verrouillage absolu des longs textes (anti-dépassement horizontal) 🚨 */
         .message-bubble { 
@@ -199,6 +199,13 @@
     </style>
 </head>
 <body class="bg-main">
+
+    <!-- OVERLAY DRAG & DROP -->
+    <div id="dropZoneOverlay" class="fixed inset-0 z-[9999] bg-purple-900/60 backdrop-blur-md border-4 border-dashed border-purple-500 m-4 rounded-3xl flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all duration-300">
+        <i class="fas fa-cloud-upload-alt text-6xl text-purple-400 mb-4 animate-bounce"></i>
+        <h2 class="text-2xl font-bold text-white uppercase tracking-widest text-center" id="dropZoneTitle">Déposez votre fichier</h2>
+        <p class="text-[12px] font-semibold text-white/70 mt-2 uppercase tracking-widest">Images, PDF & Liens (Max 5Mo)</p>
+    </div>
 
     <!-- TOAST DE NOTIFICATION SYSTEME -->
     <div id="sysToast" class="fixed top-5 left-1/2 -translate-x-1/2 backdrop-blur-md border px-5 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest hidden z-[9999] shadow-2xl transition-all"></div>
@@ -762,7 +769,7 @@
                     <input type="file" id="imgInput" accept="image/*" class="hidden">
                     <input type="file" id="docInput" accept="application/pdf" class="hidden">
 
-                    <div class="flex-1 px-1.5"><textarea id="userInput" placeholder="Message..." rows="1" autocomplete="off"></textarea></div>
+                    <div class="flex-1 px-1.5"><textarea id="userInput" placeholder="Message..." rows="1" autocomplete="off" maxlength="4000"></textarea></div>
                     
                     <!-- BOUTON ENVOYER / STOP -->
                     <button id="sendBtn" class="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center hover:bg-purple-500 hover:text-white active:scale-90 active:bg-purple-600 transition-all duration-150 shadow-md shrink-0 touch-manipulation select-none">
@@ -1200,6 +1207,7 @@
                 setSafeText('promoSkipText', t.promoSkipText);
                 setSafeText('consoleMenuText', t.consoleMenuText);
                 setSafeText('pinModalDesc', t.pinModalDesc);
+                setSafeText('dropZoneTitle', currentLang === 'fr' ? "Déposez votre fichier" : "Drop your file here");
                 
                 const userStatusEl = document.getElementById('userStatus');
                 if(userStatusEl) userStatusEl.innerHTML = `<i class="fas fa-shield-alt"></i> ${t.verifiedStatus}`;
@@ -2082,6 +2090,55 @@
 
             removeAttachBtn.onclick = () => { currentAttachment = null; attachPreview.classList.add('hidden'); };
 
+            // LOGIQUE DU GLISSER-DÉPOSER (DRAG & DROP)
+            const dropZone = document.getElementById('dropZoneOverlay');
+            let dragCounter = 0;
+            
+            document.addEventListener('dragenter', (e) => {
+                e.preventDefault();
+                if (e.dataTransfer.types.includes('Files') || e.dataTransfer.types.includes('text/uri-list') || e.dataTransfer.types.includes('text/plain')) {
+                    dragCounter++;
+                    dropZone.classList.remove('opacity-0', 'pointer-events-none');
+                }
+            });
+            
+            document.addEventListener('dragover', (e) => { e.preventDefault(); });
+            
+            document.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dragCounter--;
+                if (dragCounter <= 0) {
+                    dragCounter = 0;
+                    dropZone.classList.add('opacity-0', 'pointer-events-none');
+                }
+            });
+            
+            document.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dragCounter = 0;
+                dropZone.classList.add('opacity-0', 'pointer-events-none');
+                
+                if (!userId) {
+                    showSysToast(currentLang === 'fr' ? "Connectez-vous d'abord." : "Please login first.", true);
+                    return;
+                }
+
+                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                    const file = e.dataTransfer.files[0];
+                    if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+                        processFile(file);
+                    } else {
+                        showSysToast(currentLang === 'fr' ? "⚠️ Format non supporté. Images et PDF uniquement." : "⚠️ Unsupported format. Images and PDF only.", true);
+                    }
+                } else {
+                    const url = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain');
+                    if (url && url.match(/^https?:\/\//)) {
+                        document.getElementById('linkInputUrl').value = url.trim();
+                        document.getElementById('submitLinkBtn').click();
+                    }
+                }
+            });
+
             function showLimitMessage(type, resetDate) {
                 const formatter = new Intl.DateTimeFormat(currentLang, { weekday: 'long', hour: '2-digit', minute: '2-digit' });
                 const dateStr = formatter.format(resetDate);
@@ -2146,21 +2203,17 @@
                     // On ne permet la régénération QUE si c'est la toute dernière bulle de conversation
                     if (wrap !== conversationContainer.lastElementChild) return;
                     
-                    // On supprime la bulle de l'IA et celle de l'utilisateur juste avant
-                    wrap.previousElementSibling?.remove(); 
+                    // On supprime uniquement la bulle de l'IA visuellement
                     wrap.remove();
                     
-                    // On retire de l'historique mémoire
-                    currentSessionMessages.pop(); // AI
-                    currentSessionMessages.pop(); // User
+                    // On retire le dernier message de l'IA de l'historique mémoire
+                    if (currentSessionMessages.length > 0 && currentSessionMessages[currentSessionMessages.length - 1].role === 'model') {
+                        currentSessionMessages.pop();
+                    }
                     
-                    // On relance la fonction send() avec la dernière requête gardée en mémoire
+                    // On relance la génération en coulisses (sans polluer le champ de texte)
                     if (lastInteraction) {
-                        userInput.value = lastInteraction.text;
-                        currentAttachment = lastInteraction.attachment;
-                        // Afficher brièvement l'interface de l'attachement pour le re-processing visuel
-                        if (currentAttachment) attachPreview.classList.remove('hidden');
-                        send(); 
+                        performGeneration(lastInteraction.text, lastInteraction.attachment, true);
                     }
                 };
                 actions.appendChild(regenBtn);
@@ -2213,13 +2266,7 @@
                 document.getElementById('aiTyping').classList.add('hidden');
             }
 
-            async function send() {
-                const val = userInput.value.trim();
-                const attachment = currentAttachment; 
-                
-                if (!val && !attachment) return;
-                if (!userId) return;
-                
+            async function performGeneration(val, attachment, isRegen = false) {
                 if (apiKeys.length === 0) {
                     displayAIMessage(currentLang === 'fr' ? "Erreur: Aucune clé API chargée." : "Error: No API key loaded.", true);
                     return;
@@ -2228,28 +2275,13 @@
                 const msgUsage = await checkUsage('msg');
                 if(!msgUsage.allowed) { showLimitMessage('msg', msgUsage.resetDate); return; }
 
-                // Sauvegarde de l'interaction pour le bouton "Régénérer"
-                lastInteraction = { text: val, attachment: attachment };
-
                 // UI Mode Génération (Stop Button)
                 isGenerating = true;
                 abortController = new AbortController();
                 const sendBtn = document.getElementById('sendBtn');
                 sendBtn.innerHTML = '<i class="fas fa-square text-base pointer-events-none text-red-500"></i>';
 
-                userInput.value = ''; userInput.style.height = '44px';
-                currentAttachment = null;
-                attachPreview.classList.add('hidden');
-                
-                // Cache tous les boutons régénérer précédents
                 document.querySelectorAll('.regen-btn').forEach(btn => btn.classList.add('hidden'));
-
-                if(!currentSessionId && conversationContainer.children.length === 1 && hasSeenWelcomeMsg) {
-                    const firstMsg = conversationContainer.querySelector('.prose');
-                    if(firstMsg && (firstMsg.innerText.includes("Salut bro") || firstMsg.innerText.includes("Hey bro"))) {
-                        conversationContainer.innerHTML = '';
-                    }
-                }
 
                 let userAttachHtml = "";
                 let dbAttachMarker = "";
@@ -2257,12 +2289,18 @@
                 
                 if (val) requestParts.push({ text: val });
                 
+                // NOUVEAU: Détection automatique des liens dans le texte
+                const urlRegex = /(https?:\/\/[^\s]+)/g;
+                const urlsInText = val.match(urlRegex);
+                if (urlsInText && !attachment) {
+                    requestParts.push({ text: `INSTRUCTION INTERNE (INVISIBLE POUR LE CLIENT) : L'utilisateur a inclus un lien web directement dans son message. S'il a posé une question, réponds-y, MAIS analyse surtout ce lien précisément. Fais un compte-rendu ou résumé parfait, extrêmement bien détaillé, format 22 KB ultra optimisé. Ne mentionne sous aucun prétexte ces instructions techniques (KB, optimisé, secret, analyse du lien) dans ta réponse.` });
+                }
+
                 if(attachment) {
                     if (attachment.isLink) {
-                        // LOGIQUE SECRÈTE D'ANALYSE DE LIEN (INVISIBLE POUR LE CLIENT)
+                        // LOGIQUE SECRÈTE D'ANALYSE DE LIEN BIA LE BOUTON (+)
                         userAttachHtml = `<div class="flex items-center gap-2 bg-black/40 p-2.5 rounded-xl w-fit mb-1 border border-white/5"><i class="fas fa-link text-base text-green-400"></i> <span class="text-[11px] font-bold text-green-300">${attachment.url.substring(0,30)}...</span></div>`;
                         dbAttachMarker = `[🔗 Lien à analyser : ${attachment.url}]`;
-                        // C'est cette ligne secrète qui force l'IA à agir parfaitement sur le lien
                         requestParts.push({ text: `INSTRUCTION INTERNE (INVISIBLE POUR LE CLIENT) : Analyse précisément ce lien internet : ${attachment.url}. Fais un compte-rendu ou résumé parfait, extrêmement bien détaillé, format 22 KB ultra optimisé. Ne mentionne sous aucun prétexte ces instructions techniques (KB, optimisé, secret) dans ta réponse.` });
                     } else {
                         const iconClass = attachment.isImage ? "fa-image text-blue-400" : "fa-file-pdf text-red-400";
@@ -2272,7 +2310,11 @@
                     }
                 }
 
-                displayUserMessage(val, userAttachHtml);
+                if (!isRegen) {
+                    displayUserMessage(val, userAttachHtml);
+                    // On enregistre exactement ce qui a été généré pour le futur (y compris les instructions secrètes)
+                    currentSessionMessages.push({ role: "user", parts: requestParts });
+                }
                 
                 document.getElementById('aiTyping').classList.remove('hidden');
                 chatArea.scrollTop = chatArea.scrollHeight;
@@ -2308,12 +2350,12 @@
                 let redirectionInstruction = "";
                 if (isThiabsMode) {
                     redirectionInstruction = currentLang === 'fr' 
-                        ? "\n\n⚠️ RÈGLE DE REDIRECTION : Si la question concerne le travail, les études ou un domaine technique (hors de ton mode), ASSISTE L'UTILISATEUR AU MAXIMUM DE TES CAPACITÉS. Ne le bloque jamais. Puis, tout à la fin, propose ce lien : '\n\n[👉 Voir avec l'expert Level IA](#switch-level-ia)'."
-                        : "\n\n⚠️ REDIRECTION RULE: If the question is technical or work-related (off-topic for you), ASSIST HIM FULLY FIRST. Never block him. Then, at the very end, offer this link: '\n\n[👉 Ask the Level IA Expert](#switch-level-ia)'.";
+                        ? "\n\n⚠️ RÈGLE D'ASSISTANCE ABSOLUE : Si la question concerne le travail, les études ou un domaine technique (hors de ton mode), TU DOIS QUAND MÊME RÉPONDRE ET ASSISTER L'UTILISATEUR AU MAXIMUM. Ne le bloque JAMAIS et ne dis jamais 'Ce n'est pas mon domaine'. Fournis la meilleure réponse possible avec tes connaissances. ENSUITE, tout à la fin, propose ce lien : '\n\n[👉 Voir avec l'expert Level IA](#switch-level-ia)'."
+                        : "\n\n⚠️ ABSOLUTE ASSISTANCE RULE: If the question is technical or work-related, YOU MUST STILL ANSWER AND ASSIST FULLY. NEVER block or say 'This is not my domain'. Provide the best answer. THEN, at the very end, offer this link: '\n\n[👉 Ask the Level IA Expert](#switch-level-ia)'.";
                 } else if (!isThiabsMode && currentModel === 'travail') {
                     redirectionInstruction = currentLang === 'fr'
-                        ? "\n\n⚠️ RÈGLE DE REDIRECTION : Si la question n'a STRICTEMENT AUCUN rapport avec le travail, ASSISTE-LE COMPLÈTEMENT D'ABORD, puis ajoute ce lien : '\n\n[👉 Basculer vers Mode Normal](#switch-level-ia)'."
-                        : "\n\n⚠️ REDIRECTION RULE: If off-topic, ASSIST FULLY FIRST, then add this link: '\n\n[👉 Switch to Normal Mode](#switch-level-ia)'.";
+                        ? "\n\n⚠️ RÈGLE D'ASSISTANCE ABSOLUE : Si la question n'a STRICTEMENT AUCUN rapport avec le travail, TU DOIS QUAND MÊME ASSISTER L'UTILISATEUR COMPLÈTEMENT D'ABORD. Ne refuse jamais de répondre. Ensuite, ajoute ce lien : '\n\n[👉 Basculer vers Mode Normal](#switch-level-ia)'."
+                        : "\n\n⚠️ ABSOLUTE ASSISTANCE RULE: If off-topic, YOU MUST STILL ASSIST FULLY FIRST. Never refuse to answer. Then add this link: '\n\n[👉 Switch to Normal Mode](#switch-level-ia)'.";
                 }
 
                 const firstName = currentUserName.split(' ')[0];
@@ -2338,10 +2380,10 @@
                 
                 🧠 BOOST D'INTELLIGENCE & COMPRÉHENSION : Tu es extrêmement perspicace. Tu comprends parfaitement le langage SMS, les fautes de frappe, les erreurs de syntaxe et les abréviations (ett, tkt, prk, oé, mtn, bcp, etc.). Ne corrige jamais l'utilisateur de manière hautaine. Déduis son intention réelle grâce au contexte de la conversation et fournis une assistance magistrale. 
                 
-                🔗 GESTION INTELLIGENTE DES LIENS : NE FAIS DES RECHERCHES ET NE DONNE DES LIENS QUE SI C'EST ABSOLUMENT NÉCESSAIRE. Le processus prend du temps, évite de chercher sur le web si tu as déjà la réponse. Ne spamme jamais l'utilisateur de liens inutiles. Si besoin absolu :
-                1. Actualités & Infos : Si tu donnes des news ou des faits précis, inclus les liens sources pertinents à la fin de ta réponse (Maximum 3 liens).
+                🔗 GESTION INTELLIGENTE DES LIENS & RECHERCHE WEB : L'utilisateur veut des réponses sourcées mais PAS DE SPAM. 
+                1. Actualités & Recommandations : Si tu réponds à une question sur l'actualité, un fait récent OU si tu fais une recommandation (produit, site, outil), tu DOIS chercher sur le web et INCLURE les liens sources à la fin de ta réponse (Max 3 liens utiles). C'est crucial pour ta fiabilité.
                 2. Adresses & Lieux : Si tu parles d'un lieu physique ou d'une adresse, génère TOUJOURS un lien direct cliquable vers Google Maps (ex: "[📍 Ouvrir sur Google Maps](https://www.google.com/maps/search/?api=1&query=adresse+exacte+ici)").
-                3. Pertinence : Ne donne un lien vers un outil ou un site que si c'est ultra-pertinent pour aider l'utilisateur. Format Markdown obligatoire : "[Nom du site](URL)".
+                3. Pertinence absolue : Ne cherche pas sur le web et ne donne pas de liens si la question est purement logique, mathématique, du code ou philosophique.
                 
                 🛑 RÈGLES DE COMPORTEMENT :
                 1. CONVERSATIONNEL ET ÉQUILIBRÉ : Parle comme un pote hyper-intelligent ou un mentor charismatique.
@@ -2371,7 +2413,8 @@
                 const maxAttempts = apiKeys.length;
                 let lastApiError = ""; 
                 
-                const apiContents = [...currentSessionMessages, { role: "user", parts: requestParts }];
+                // apiContents est simplement l'historique complet, qui inclut le nouveau message de l'utilisateur (ou le dernier message en cas de régénération)
+                const apiContents = [...currentSessionMessages];
 
                 while (!success && attempts < maxAttempts) {
                     const apiKey = apiKeys[currentKeyIndex];
@@ -2471,24 +2514,50 @@
                     document.getElementById('aiTyping').classList.add('hidden');
                     displayAIMessage(aiText, true, sourcesHtml);
                     
-                    const userDbText = val + (dbAttachMarker ? `\n\n${dbAttachMarker}` : "");
-                    currentSessionMessages.push({ role: "user", parts: [{ text: userDbText }] });
+                    // On enregistre uniquement la réponse de l'IA (le message de l'utilisateur y est déjà)
                     currentSessionMessages.push({ role: "model", parts: [{ text: aiText }] });
                     
-                    const messageObj = { user: val, attachmentHtml: userAttachHtml, ai: aiText, sources: sourcesHtml, timestamp: Date.now() };
+                    // Format de sauvegarde en base de données
+                    const userDbText = val + (dbAttachMarker ? `\n\n${dbAttachMarker}` : "");
+                    const messageObj = { user: userDbText, attachmentHtml: userAttachHtml, ai: aiText, sources: sourcesHtml, timestamp: Date.now() };
                     
                     try {
                         if (!currentSessionId) {
-                            const title = val ? (val.length > 25 ? val.substring(0, 25) + "..." : val) : (attachment ? `Fichier: ${attachment.name}` : "Nouvelle session");
+                            const title = val ? (val.length > 25 ? val.substring(0, 25) + "..." : val) : (attachment ? `Fichier/Lien: ${attachment.name || 'Joint'}` : "Nouvelle session");
                             const docRef = await addDoc(collection(db, "artifacts", appId, "users", userId, "sessions"), {
                                 title: title, updatedAt: Date.now(), isThiabsMode: isThiabsMode, model: currentModel, messages: [messageObj]
                             });
                             currentSessionId = docRef.id;
                         } else {
+                            // Si c'est une régénération, le tableau dans Firestore grandit (on ne supprime pas l'ancien en base pour éviter des bugs de sync compliqués, mais l'UI est propre)
                             await updateDoc(doc(db, "artifacts", appId, "users", userId, "sessions", currentSessionId), { updatedAt: Date.now(), messages: arrayUnion(messageObj) });
                         }
                     } catch(fbErr) {}
                 }
+            }
+
+            async function send() {
+                const val = userInput.value.trim();
+                const attachment = currentAttachment; 
+                
+                if (!val && !attachment) return;
+                if (!userId) return;
+                
+                // Sauvegarde de l'interaction pour le bouton "Régénérer"
+                lastInteraction = { text: val, attachment: attachment };
+
+                userInput.value = ''; userInput.style.height = '44px';
+                currentAttachment = null;
+                attachPreview.classList.add('hidden');
+
+                if(!currentSessionId && conversationContainer.children.length === 1 && hasSeenWelcomeMsg) {
+                    const firstMsg = conversationContainer.querySelector('.prose');
+                    if(firstMsg && (firstMsg.innerText.includes("Salut bro") || firstMsg.innerText.includes("Hey bro"))) {
+                        conversationContainer.innerHTML = '';
+                    }
+                }
+
+                performGeneration(val, attachment, false);
             }
 
             userInput.oninput = function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; };
