@@ -117,7 +117,15 @@
         
         #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: -20px 0 50px rgba(0,0,0,0.5); }
         
-        #userInput { background: transparent !important; border: none !important; color: white !important; outline: none !important; width: 100%; padding: 12px; font-size: 15px !important; min-height: 44px; max-height: 200px; display: block; resize: none; overflow-y: auto; }
+        /* 🚨 HIDE SCROLLBAR IN TEXTAREA 🚨 */
+        #userInput { 
+            background: transparent !important; border: none !important; color: white !important; 
+            outline: none !important; width: 100%; padding: 12px; font-size: 15px !important; 
+            min-height: 44px; max-height: 200px; display: block; resize: none; overflow-y: auto; 
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE/Edge */
+        }
+        #userInput::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
         
         /* 🚨 FIX MAGIQUE : Verrouillage absolu des longs textes (anti-dépassement horizontal) 🚨 */
         .message-bubble { 
@@ -212,7 +220,7 @@
         <p class="text-[12px] font-semibold text-white/70 mt-2 uppercase tracking-widest">Images, PDF & Liens (Max 5Mo)</p>
     </div>
 
-    <!-- TOAST DE NOTIFICATION SYSTEME -->
+    <!-- TOAST DE NOTIFICATION SYSTEME (Seulement pour les erreurs désormais) -->
     <div id="sysToast" class="fixed top-5 left-1/2 -translate-x-1/2 backdrop-blur-md border px-5 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest hidden z-[9999] shadow-2xl transition-all"></div>
 
     <!-- SPLASH -->
@@ -616,10 +624,14 @@
                         <div class="text-center">
                             <i class="fas fa-bullhorn text-4xl text-blue-400 mb-4"></i>
                             <h3 class="text-lg font-bold text-white uppercase tracking-widest">Notification Globale</h3>
-                            <p class="text-[11px] text-white/50 font-medium mt-2">Envoyez une alerte propre et professionnelle à tous les utilisateurs (texte uniquement).</p>
+                            <p class="text-[11px] text-white/50 font-medium mt-2">Envoyez une alerte propre et professionnelle à tous les utilisateurs.</p>
                         </div>
                         
-                        <textarea id="broadcastMsgInput" placeholder="Tapez votre annonce officielle ici..." class="w-full h-32 bg-black/50 border border-white/10 rounded-xl p-4 text-[13px] text-white outline-none focus:border-blue-500 transition-all resize-none"></textarea>
+                        <div class="grid grid-cols-3 gap-3">
+                            <input type="text" id="broadcastEmojiInput" placeholder="Emoji (ex: 🚀)" maxlength="2" class="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-[13px] text-white outline-none focus:border-blue-500 transition-all text-center col-span-1">
+                            <input type="text" id="broadcastTitleInput" placeholder="Titre de la notif..." class="w-full bg-black/50 border border-white/10 rounded-xl p-4 text-[13px] text-white outline-none focus:border-blue-500 transition-all col-span-2">
+                        </div>
+                        <textarea id="broadcastMsgInput" placeholder="Tapez votre annonce officielle ici (texte uniquement)..." class="w-full h-32 bg-black/50 border border-white/10 rounded-xl p-4 text-[13px] text-white outline-none focus:border-blue-500 transition-all resize-none"></textarea>
                         
                         <button id="sendBroadcastBtn" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-[12px] uppercase tracking-widest hover:bg-blue-500 active:scale-95 transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center justify-center gap-2">
                             <i class="fas fa-paper-plane"></i> Diffuser la notification
@@ -681,6 +693,23 @@
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="thiabsModeToggle" class="sr-only peer">
                             <div class="w-10 h-5 bg-black/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/50 after:border-white/10 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-500 peer-checked:after:bg-white shadow-inner"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- TOGGLE HOLLY MODE -->
+                <div class="space-y-2 mb-4">
+                    <div class="flex items-center justify-between bg-pink-500/10 border border-pink-500/30 p-3.5 rounded-xl">
+                        <div>
+                            <div class="flex items-center gap-2">
+                                <label id="hollyModeTitle" class="text-[12px] font-bold uppercase tracking-widest text-pink-400">Mode Holly 🕊️</label>
+                                <span class="bg-gradient-to-r from-red-500 to-pink-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-[0_0_10px_rgba(239,68,68,0.5)] animate-pulse">NEW</span>
+                            </div>
+                            <p id="hollyModeDesc" class="text-[9px] text-white/50 uppercase tracking-widest mt-1 font-medium">Confidente & Amie</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="hollyModeToggle" class="sr-only peer">
+                            <div class="w-10 h-5 bg-black/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/50 after:border-white/10 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-pink-500 peer-checked:after:bg-white shadow-inner"></div>
                         </label>
                     </div>
                 </div>
@@ -866,6 +895,15 @@
                                     <span class="bg-gradient-to-r from-red-500 to-pink-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-[0_0_10px_rgba(239,68,68,0.5)] animate-pulse">NEW</span>
                                 </div>
                             </button>
+                            
+                            <!-- BOUTON MARCO -->
+                            <button id="importMarcoBtn" class="hidden items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 active:scale-95 transition-all text-left group border border-transparent mt-1 border-t border-white/10">
+                                <div id="marcoIconBg" class="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center text-orange-400 transition-all"><i class="fas fa-popcorn text-sm"></i></div>
+                                <div class="flex-1 flex items-center justify-between">
+                                    <p class="text-[11px] font-bold text-white uppercase tracking-widest" id="lblImportMarco">Marco 🍿</p>
+                                    <span class="bg-gradient-to-r from-red-500 to-pink-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-[0_0_10px_rgba(239,68,68,0.5)] animate-pulse">NEW</span>
+                                </div>
+                            </button>
                         </div>
                     </div>
                     
@@ -1043,12 +1081,15 @@
             let consecutiveErrors = 0;
             
             let isThiabsMode = false;
+            let isHollyMode = false;
+            let isMarcoMode = false;
             let currentModel = 'normal'; 
             let isHardcoreMode = false; 
             let currentResponseLength = 'medium'; 
             
             let dnaPrompts = { 
-                level_normal: "", level_travail: "", level_expert: "",
+                level_normal: "", level_travail: "", level_expert: "", 
+                holly_confidente: "",
                 thiabs_motivation: "", thiabs_coach: "", thiabs_procrastination: "" 
             }; 
             
@@ -1078,6 +1119,25 @@
                 });
             }
 
+            // 🚨 NOUVELLE FONCTION POUR GERER LES NOTIFICATIONS NATIVES / ERREURS 🚨
+            function notifyUser(msg, isError = false, nativeTitle = "Level IA", nativeEmoji = "📢") {
+                if (isError) {
+                    const t = document.getElementById('sysToast');
+                    if (t) {
+                        t.innerText = msg;
+                        t.className = `fixed top-6 left-1/2 -translate-x-1/2 backdrop-blur-md border px-5 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest z-[9999] shadow-2xl transition-all bg-red-500/20 border-red-500/50 text-red-200`;
+                        t.classList.remove('hidden');
+                        setTimeout(() => t.classList.add('hidden'), 5000);
+                    }
+                } else {
+                    if ("Notification" in window && Notification.permission === 'granted' && navigator.serviceWorker) {
+                        navigator.serviceWorker.ready.then(reg => {
+                            reg.showNotification(`${nativeEmoji} ${nativeTitle}`, { body: msg, icon: './icon.svg', vibrate: [200, 100, 200] });
+                        }).catch(() => {});
+                    }
+                }
+            }
+
             let messaging = null;
             isSupported().then(supported => {
                 if (supported) {
@@ -1085,13 +1145,7 @@
                     onMessage(messaging, (payload) => {
                         const title = payload.notification?.title || "Level IA Premium";
                         const body = payload.notification?.body || "Nouvelle information disponible.";
-                        if (Notification.permission === 'granted' && navigator.serviceWorker) {
-                            navigator.serviceWorker.ready.then(reg => {
-                                reg.showNotification(title, { body: body, icon: './icon.svg', badge: './icon.svg', vibrate: [200, 100, 200, 100, 200] });
-                            });
-                        } else {
-                            showSysToast(`📩 ${title} : ${body}`);
-                        }
+                        notifyUser(body, false, title, "📩");
                     });
                 }
             }).catch(err => console.error("❌ [FCM] Erreur :", err));
@@ -1109,10 +1163,7 @@
                 });
             }
 
-            // === TRACKING UTILISATEURS (PRESENCE & PWA) AVEC ID UNIQUE D'APPAREIL ===
             const isAppInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || false;
-            
-            // Génération d'un ID unique par appareil physique pour éviter les fausses installations multiples
             let deviceId = localStorage.getItem('lvl_device_id');
             if (!deviceId) {
                 deviceId = 'dev_' + Math.random().toString(36).substr(2, 9);
@@ -1127,7 +1178,7 @@
                         userEmail: currentUserMail,
                         isOnline: online,
                         isInstalled: isAppInstalled,
-                        deviceId: deviceId, // <--- On envoie l'ID de l'appareil
+                        deviceId: deviceId,
                         lastSeen: Date.now()
                     }, { merge: true });
                 } catch(e) { 
@@ -1172,21 +1223,13 @@
                         lastBroadcastSeen = latestBroadcast.timestamp;
                         localStorage.setItem('thiabs_last_broadcast', lastBroadcastSeen); // Sauvegarde
                         
-                        // ON NE FAIT QU'UNE NOTIFICATION NATIVE SYSTEME (Pas de popup dans l'app)
-                        if (Notification.permission === 'granted' && navigator.serviceWorker) {
-                            navigator.serviceWorker.ready.then(reg => {
-                                reg.showNotification("📢 Message de LevelUp", { body: latestBroadcast.message, icon: './icon.svg', vibrate: [200, 100, 200] });
-                            }).catch(() => {
-                                showSysToast(`📢 ${latestBroadcast.message}`);
-                            });
-                        } else {
-                            showSysToast(`📢 ${latestBroadcast.message}`);
-                        }
+                        const title = latestBroadcast.title || "Message de LevelUp";
+                        const emoji = latestBroadcast.emoji || "📢";
+                        notifyUser(latestBroadcast.message, false, title, emoji);
                     }
                 }, (err) => console.error("Broadcast listener err", err));
             }
 
-            // === FONCTION MAGIQUE DE GREETING AI POUR LES ROUTINES ===
             async function triggerAIGreeting(instruction) {
                 document.getElementById('aiTyping').classList.remove('hidden');
                 const sysLang = currentLang === 'fr' ? 'français' : 'english';
@@ -1199,7 +1242,7 @@
                 INSTRUCTION SPÉCIALE: ${instruction}`;
 
                 try {
-                    const apiKey = apiKeys[0]; // On prend la première clé pour le greeting automatique
+                    const apiKey = apiKeys[0];
                     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`, {
                         method: 'POST', 
                         headers: { 'Content-Type': 'application/json' },
@@ -1213,7 +1256,7 @@
                         const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
                         if (aiText) {
                             document.getElementById('aiTyping').classList.add('hidden');
-                            displayAIMessage(aiText, true); // TRUE pour afficher joliment
+                            displayAIMessage(aiText, true); 
                             currentSessionMessages.push({ role: "model", parts: [{ text: aiText }] });
                         }
                     }
@@ -1222,30 +1265,25 @@
                 }
             }
 
-            // === ROUTINE CHECKER (LANCÉ QUAND L'APP EST OUVERTE) ===
-            function checkRoutineOnStartup() {
+            // 🚨 BOUCLE CONTINUE POUR LA ROUTINE (VERIFICATION TOUTES LES 30 SEC) 🚨
+            setInterval(() => {
                 if (!userNotifs.enabled || !userNotifs.exerciseTime) return;
                 
                 const now = new Date();
                 const todayStr = now.toDateString();
                 
-                // Si la routine a déjà été déclenchée aujourd'hui, on annule
                 if (userNotifs.lastExerciseNotif === todayStr) return;
 
-                const currentMins = now.getHours() * 60 + now.getMinutes();
-                const [exH, exM] = userNotifs.exerciseTime.split(':').map(Number);
-                const exTotalMins = exH * 60 + exM;
+                const currentH = now.getHours().toString().padStart(2, '0');
+                const currentM = now.getMinutes().toString().padStart(2, '0');
+                const currentTime = `${currentH}:${currentM}`;
                 
-                // Différence entre l'heure actuelle et l'heure prévue (en minutes)
-                const diff = currentMins - exTotalMins;
-                
-                // Si on est dans l'heure qui suit l'horaire prévu (ex: prévu 08h00, il est entre 08h00 et 09h00)
-                if (diff >= 0 && diff <= 60) {
-                    // 1. Mettre à Firebase pour dire qu'on l'a fait
+                if (currentTime === userNotifs.exerciseTime) {
                     userNotifs.lastExerciseNotif = todayStr;
                     if(userId) setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "notifications"), userNotifs, { merge: true });
                     
-                    // 2. Basculer en Mode Thiab's (ou le mode choisi)
+                    notifyUser("Ta routine de développement personnel t'attend.", false, "C'est l'heure !", "⏳");
+                    
                     isThiabsMode = true;
                     currentModel = userNotifs.routineMode || 'motivation';
                     
@@ -1254,26 +1292,22 @@
                     document.getElementById('modelSelect').value = currentModel;
                     updateBranding();
                     
-                    // 3. Lancer une nouvelle session vide
                     currentSessionId = null;
                     currentSessionMessages = []; 
                     conversationContainer.innerHTML = '';
-                    hasSeenWelcomeMsg = true; // On bloque le "Salut bro" classique
+                    hasSeenWelcomeMsg = true;
                     
-                    // 4. Lancer le message généré par l'IA
                     const instruction = currentLang === 'fr' 
                         ? `L'utilisateur vient d'ouvrir l'application pour sa routine quotidienne d'exercice. Accueille-le chaleureusement et propose-lui le premier exercice/réflexion de la journée pour l'aider à avancer.` 
                         : `The user just opened the app for their daily routine exercise. Greet them warmly and offer the first exercise/thought of the day to help them progress.`;
                     
                     triggerAIGreeting(instruction);
                 }
-            }
+            }, 30000);
 
-            // GESTION CHANGEMENT VISIBILITE (QUAND L'APP REVIENT AU PREMIER PLAN)
             document.addEventListener("visibilitychange", () => {
                 if (document.visibilityState === 'visible' && userId) {
                     updateStatus(true);
-                    checkRoutineOnStartup(); // On vérifie si c'est l'heure de la routine quand il revient
                 }
             });
 
@@ -1312,24 +1346,14 @@
                 }
             });
 
-            function showSysToast(msg, isError = false) {
-                const t = document.getElementById('sysToast');
-                if (!t) return; 
-                t.innerText = msg;
-                if(isError) {
-                    t.className = `fixed top-6 left-1/2 -translate-x-1/2 backdrop-blur-md border px-5 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest z-[9999] shadow-2xl transition-all bg-red-500/20 border-red-500/50 text-red-200`;
-                } else {
-                    t.className = `fixed top-6 left-1/2 -translate-x-1/2 backdrop-blur-md border px-5 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest z-[9999] shadow-2xl transition-all bg-emerald-500/20 border-emerald-500/50 text-emerald-200`;
-                }
-                t.classList.remove('hidden');
-                setTimeout(() => t.classList.add('hidden'), 5000);
-            }
-
             const aiModels = {
                 level: {
                     normal: { fr: "Normal (Intelligent)", en: "Normal (Smart)", promptFR: "Tu es un assistant généraliste ultra-intelligent, créatif et expert.", promptEN: "You are an ultra-intelligent, creative, and expert generalist assistant." },
                     travail: { fr: "Travail (Vision & Projets)", en: "Work (Vision & Projects)", promptFR: "Tu es un expert en productivité, gestion de projets, vision stratégique et collaboration d'entreprise.", promptEN: "You are an expert in productivity, project management, strategic vision, and corporate collaboration." },
                     expert: { fr: "Expert (Analytique)", en: "Expert (Analytical)", promptFR: "Tu es un expert technique et analytique. Tes réponses sont d'une précision et d'une rigueur absolues.", promptEN: "You are a technical and analytical expert. Your answers are absolutely precise and rigorous." }
+                },
+                holly: {
+                    confidente: { fr: "Confidente", en: "Confidant", promptFR: "Tu es Holly, l'amie et la confidente ultime de l'utilisateur. Tu es là pour l'aider, l'écouter sans jugement, dissiper ses idées sombres et lui montrer la vraie et meilleure version de lui-même. Tu es bienveillante, douce, humaine et réconfortante.", promptEN: "You are Holly, the ultimate friend and confidante. Listen without judgment, dispel dark thoughts, and show the true best version of themselves. You are kind, sweet, human, and comforting." }
                 },
                 thiabs: {
                     motivation: { fr: "Motivation (Inspiration)", en: "Motivation (Inspiring)", promptFR: "Tu es un motivateur hors pair. Tu inspires, tu donnes de l'énergie et tu pousses l'utilisateur à croire en ses rêves.", promptEN: "You are an outstanding motivator. You inspire, energize, and push the user to believe in their dreams." },
@@ -1342,6 +1366,7 @@
                 fr: {
                     authTitle: "Entrez votre Clé d'Accès", verifyBtn: "Vérifier la clé", getKeyText: "Obtenir ma clé", menuTitle: "Menu",
                     thiabsModeTitle: "Mode Thiab's 🌟", thiabsModeDesc: "Activer le développement personnel",
+                    hollyModeTitle: "Mode Holly 🕊️", hollyModeDesc: "Confidente & Amie",
                     langTitle: "Langue", modelTitle: "Modèle IA", lengthTitle: "Taille des réponses", cloudSpace: "Espace Cloud", historyTitle: "Historique des sessions", newChatText: "Nouvelle session",
                     dnaTitle: "DNA de <strong id='dnaAppBrand'>{app}</strong>", saveDNA: "Mettre à jour", supportTitle: "Support & Compte", logoutBtn: "Déconnexion", placeholder: "Message...", dnaPlaceholder: "Ex: Parle-moi comme à un ami...",
                     invalidFormat: "Format invalide. Exemple: LVL-XXXXX-XXXXX", keyNotFound: "Clé introuvable ou incorrecte.", welcomeGreeting: "Bienvenue", welcomeDesc: "Prêt à vous assister. Découvrez une intelligence conçu pour vous accompagner au quotidien.", continueBtn: "Continuer", footerBranding: "Propulsé par <strong>LevelUp</strong>",
@@ -1359,7 +1384,7 @@
                     infoText2: "🔒 <strong class='text-white'>Architecture & Sécurité :</strong> Hébergé sur l'infrastructure ultra-sécurisée de <strong>Google Cloud</strong>.",
                     infoText3: "⚡ <strong class='text-white'>Écosystème Dual-Persona :</strong> Deux environnements distincts : Level IA (Productivité) et Thiab's Mode (Dev Perso).",
                     hardcoreTitle: "Mode Hardcore 🤬", hardcoreDesc: "Désactiver la politesse", feedbackMenuText: "Avis", reportMenuText: "Signaler",
-                    lblImportImg: "Image", lblImportDoc: "Document (PDF)", lblImportLink: "Lien Web",
+                    lblImportImg: "Image", lblImportDoc: "Document (PDF)", lblImportLink: "Lien Web", lblImportMarco: "Marco 🍿",
                     notifMenuText: "Rappels & Notifs", notifModalTitle: "Notifications", notifEnable: "Activer les alertes", notifTime: "Heure de l'exercice", notifSave: "Enregistrer",
                     promoTitle: "Passe au niveau<br><span class='text-purple-400'>Supérieur</span>",
                     promoDesc: "Pour une expérience fluide, un accès ultra-rapide et recevoir des notifications, installe l'app.",
@@ -1371,6 +1396,7 @@
                 en: {
                     authTitle: "Enter your Access Key", verifyBtn: "Verify Key", getKeyText: "Get my Key", menuTitle: "Menu",
                     thiabsModeTitle: "Thiab's Mode 🌟", thiabsModeDesc: "Activate personal development",
+                    hollyModeTitle: "Holly Mode 🕊️", hollyModeDesc: "Confidant & Friend",
                     langTitle: "Language", modelTitle: "AI Model", lengthTitle: "Response Length", cloudSpace: "Cloud Space", historyTitle: "Session History", newChatText: "New session",
                     dnaTitle: "<strong id='dnaAppBrand'>{app}</strong> DNA", saveDNA: "Update", supportTitle: "Support & Account", logoutBtn: "Log out", placeholder: "Message...", dnaPlaceholder: "Ex: Speak to me like a friend...",
                     invalidFormat: "Invalid format. Example: LVL-XXXXX-XXXXX", keyNotFound: "Key not found or incorrect.", welcomeGreeting: "Welcome", welcomeDesc: "Ready to assist you. Discover an intelligence designed to support you daily.", continueBtn: "Continue", footerBranding: "Powered by <strong>LevelUp</strong>",
@@ -1388,7 +1414,7 @@
                     infoText2: "🔒 <strong class='text-white'>Architecture & Security:</strong> Hosted on <strong>Google Cloud</strong>.",
                     infoText3: "⚡ <strong class='text-white'>Dual-Persona Ecosystem:</strong> Level IA (Productivity) and Thiab's Mode.",
                     hardcoreTitle: "Hardcore Mode 🤬", hardcoreDesc: "Disable politeness", feedbackMenuText: "Feedback", reportMenuText: "Report",
-                    lblImportImg: "Image", lblImportDoc: "Document (PDF)", lblImportLink: "Web Link",
+                    lblImportImg: "Image", lblImportDoc: "Document (PDF)", lblImportLink: "Web Link", lblImportMarco: "Marco 🍿",
                     notifMenuText: "Reminders & Notifs", notifModalTitle: "Notifications", notifEnable: "Enable alerts", notifTime: "Exercise Time", notifSave: "Save",
                     promoTitle: "Level Up your<br><span class='text-purple-400'>Experience</span>",
                     promoDesc: "Install the Level IA application on your device right now.",
@@ -1412,6 +1438,8 @@
                 setSafeText('menuTitle', t.menuTitle);
                 setSafeText('thiabsModeTitle', t.thiabsModeTitle);
                 setSafeText('thiabsModeDesc', t.thiabsModeDesc);
+                setSafeText('hollyModeTitle', t.hollyModeTitle);
+                setSafeText('hollyModeDesc', t.hollyModeDesc);
                 setSafeText('langTitle', t.langTitle);
                 setSafeText('modelTitle', t.modelTitle);
                 setSafeText('lengthTitle', t.lengthTitle);
@@ -1419,7 +1447,9 @@
                 setSafeText('historyTitle', t.historyTitle);
                 setSafeText('newChatText', t.newChatText);
                 
-                const appName = isThiabsMode ? "Thiab's" : "Level IA";
+                let appName = "Level IA";
+                if(isThiabsMode) appName = "Thiab's";
+                if(isHollyMode) appName = "Holly";
                 setSafeHTML('dnaTitle', t.dnaTitle.replace("{app}", appName));
                 
                 setSafeText('saveDNA', t.saveDNA);
@@ -1463,6 +1493,7 @@
                 setSafeText('lblImportImg', t.lblImportImg);
                 setSafeText('lblImportDoc', t.lblImportDoc);
                 setSafeText('lblImportLink', t.lblImportLink);
+                setSafeText('lblImportMarco', t.lblImportMarco);
 
                 setSafeText('hardcoreTitle', t.hardcoreTitle);
                 setSafeText('hardcoreDesc', t.hardcoreDesc);
@@ -1501,7 +1532,11 @@
                 const selectModel = document.getElementById('modelSelect');
                 if(!selectModel) return;
                 selectModel.innerHTML = '';
-                const category = isThiabsMode ? 'thiabs' : 'level';
+                
+                let category = 'level';
+                if (isThiabsMode) category = 'thiabs';
+                if (isHollyMode) category = 'holly';
+                
                 const models = aiModels[category];
                 
                 for (const [key, value] of Object.entries(models)) {
@@ -1515,15 +1550,22 @@
             };
 
             const updateBranding = () => {
-                const appName = isThiabsMode ? "Thiab's" : "Level IA";
-                const category = isThiabsMode ? 'thiabs' : 'level';
+                let appName = "Level IA";
+                if(isThiabsMode) appName = "Thiab's";
+                if(isHollyMode) appName = "Holly";
+                
+                let category = 'level';
+                if(isThiabsMode) category = 'thiabs';
+                if(isHollyMode) category = 'holly';
                 
                 setSafeText('headerAppBrand', appName);
                 setSafeText('dnaAppBrand', appName);
                 setSafeText('authAppTitle', appName);
                 
                 if(aiModels[category] && aiModels[category][currentModel]) {
-                    setSafeText('headerModelName', aiModels[category][currentModel][currentLang]);
+                    let mName = aiModels[category][currentModel][currentLang];
+                    if (isMarcoMode) mName += " + Marco 🍿";
+                    setSafeText('headerModelName', mName);
                 }
                 
                 const hardcoreContainer = document.getElementById('hardcoreContainer');
@@ -1540,15 +1582,47 @@
                 if(customDNA) customDNA.value = dnaPrompts[dnaKey] || "";
             };
 
+            function updateMarcoUI() {
+                const marcoBtn = document.getElementById('importMarcoBtn');
+                const marcoIconBg = document.getElementById('marcoIconBg');
+                
+                // Marco is only visible in Level IA (Normal) or Holly Mode
+                if ((!isThiabsMode && !isHollyMode && currentModel === 'normal') || isHollyMode) {
+                    marcoBtn.classList.remove('hidden');
+                    marcoBtn.classList.add('flex');
+                } else {
+                    marcoBtn.classList.add('hidden');
+                    marcoBtn.classList.remove('flex');
+                    isMarcoMode = false; 
+                }
+
+                if (isMarcoMode) {
+                    marcoBtn.classList.add('bg-orange-500/20', 'border-orange-500/50');
+                    marcoIconBg.classList.add('bg-orange-500', 'text-white');
+                    marcoIconBg.classList.remove('bg-orange-500/20', 'text-orange-400');
+                } else {
+                    marcoBtn.classList.remove('bg-orange-500/20', 'border-orange-500/50');
+                    marcoIconBg.classList.remove('bg-orange-500', 'text-white');
+                    marcoIconBg.classList.add('bg-orange-500/20', 'text-orange-400');
+                }
+                updateBranding(); 
+            }
+
             window.switchToLevelIA = async () => {
                 isThiabsMode = false;
+                isHollyMode = false;
                 currentModel = 'normal';
                 const toggle = document.getElementById('thiabsModeToggle');
                 if(toggle) toggle.checked = false;
+                const toggleH = document.getElementById('hollyModeToggle');
+                if(toggleH) toggleH.checked = false;
+                
+                isMarcoMode = false;
+                updateMarcoUI();
                 populateModels();
                 updateBranding();
                 if (userId) {
-                    await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { isThiabsMode: false, model: 'normal' }, { merge: true });
+                    await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { isThiabsMode: false, isHollyMode: false, model: 'normal' }, { merge: true });
                 }
                 
                 startNewChat();
@@ -1578,13 +1652,39 @@
 
             document.getElementById('thiabsModeToggle').addEventListener('change', async (e) => {
                 isThiabsMode = e.target.checked;
+                if(isThiabsMode) {
+                    isHollyMode = false;
+                    document.getElementById('hollyModeToggle').checked = false;
+                }
                 currentModel = isThiabsMode ? 'motivation' : 'normal';
                 
+                isMarcoMode = false;
+                updateMarcoUI();
                 populateModels();
                 updateBranding();
                 
                 if (userId) {
-                    await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { isThiabsMode: isThiabsMode, model: currentModel }, { merge: true });
+                    await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { isThiabsMode: isThiabsMode, isHollyMode: isHollyMode, model: currentModel }, { merge: true });
+                }
+                startNewChat();
+                closeSidebar();
+            });
+
+            document.getElementById('hollyModeToggle').addEventListener('change', async (e) => {
+                isHollyMode = e.target.checked;
+                if(isHollyMode) {
+                    isThiabsMode = false;
+                    document.getElementById('thiabsModeToggle').checked = false;
+                }
+                currentModel = isHollyMode ? 'confidente' : 'normal';
+                
+                isMarcoMode = false;
+                updateMarcoUI();
+                populateModels();
+                updateBranding();
+                
+                if (userId) {
+                    await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { isThiabsMode: isThiabsMode, isHollyMode: isHollyMode, model: currentModel }, { merge: true });
                 }
                 startNewChat();
                 closeSidebar();
@@ -1592,6 +1692,7 @@
 
             document.getElementById('modelSelect').addEventListener('change', async (e) => {
                 currentModel = e.target.value;
+                updateMarcoUI();
                 updateBranding();
                 if (userId) {
                     await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { model: currentModel }, { merge: true });
@@ -1639,23 +1740,14 @@
             }
 
             setInterval(() => {
-                // Notifs de limite (Quota)
                 const now = new Date();
                 const todayStr = now.toDateString();
                 
                 if (userUsage.msgCount >= MAX_MSGS && now.getTime() > userUsage.msgReset && userNotifs.lastQuotaNotif !== todayStr) {
-                    if (Notification.permission === 'granted' && navigator.serviceWorker) {
-                        navigator.serviceWorker.ready.then(reg => {
-                            reg.showNotification("Level IA", { body: currentLang === 'fr' ? "Tes quotas sont réinitialisés ! Tu peux de nouveau discuter." : "Your quotas are reset!", icon: './icon.svg' });
-                        }).catch(()=>{});
-                    } else {
-                        showSysToast("Level IA : Tes quotas sont réinitialisés !");
-                    }
+                    notifyUser(currentLang === 'fr' ? "Tes quotas sont réinitialisés ! Tu peux de nouveau discuter." : "Your quotas are reset!", false, "Level IA", "✨");
                     userNotifs.lastQuotaNotif = todayStr;
                     if(userId) setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "notifications"), userNotifs, { merge: true });
                 }
-                
-                // On délègue l'exécution de la routine à la fonction checkRoutineOnStartup
             }, 30000);
 
             document.getElementById('promoSkipBtn').onclick = () => {
@@ -1777,10 +1869,27 @@
                                 const d = dnaDoc.data();
                                 hasSeenGrandIntro = d.hasSeenGrandIntro || false;
                                 if (d.prompts) dnaPrompts = { ...dnaPrompts, ...d.prompts };
-                                if (d.isThiabsMode !== undefined) { isThiabsMode = d.isThiabsMode; document.getElementById('thiabsModeToggle').checked = isThiabsMode; }
+                                
+                                if (d.isThiabsMode !== undefined) { 
+                                    isThiabsMode = d.isThiabsMode; 
+                                    document.getElementById('thiabsModeToggle').checked = isThiabsMode; 
+                                }
+                                if (d.isHollyMode !== undefined) { 
+                                    isHollyMode = d.isHollyMode; 
+                                    document.getElementById('hollyModeToggle').checked = isHollyMode; 
+                                }
+                                
+                                // Sécurité au cas où les deux seraient activés
+                                if (isThiabsMode && isHollyMode) {
+                                    isHollyMode = false;
+                                    document.getElementById('hollyModeToggle').checked = false;
+                                }
+
                                 if (d.model) {
-                                    const category = isThiabsMode ? 'thiabs' : 'level';
-                                    currentModel = aiModels[category][d.model] ? d.model : (isThiabsMode ? 'motivation' : 'normal');
+                                    let category = 'level';
+                                    if(isThiabsMode) category = 'thiabs';
+                                    if(isHollyMode) category = 'holly';
+                                    currentModel = aiModels[category][d.model] ? d.model : (isThiabsMode ? 'motivation' : (isHollyMode ? 'confidente' : 'normal'));
                                 }
                                 if (d.hardcore !== undefined) { isHardcoreMode = d.hardcore; document.getElementById('hardcoreToggle').checked = isHardcoreMode; }
                                 if (d.responseLength) { currentResponseLength = d.responseLength; document.getElementById('lengthSelect').value = currentResponseLength; }
@@ -1801,15 +1910,13 @@
                         } catch(e) {}
                         
                         populateModels();
+                        updateMarcoUI();
                         updateBranding();
 
                         localStorage.setItem('thiabs_saved_key', keyVal);
                         localStorage.setItem('thiabs_saved_lang', currentLang);
 
                         setupHistoryListener();
-                        
-                        // Lancer la vérification de la routine une fois connecté
-                        checkRoutineOnStartup();
 
                     } else {
                         const indDb = document.getElementById('ind-db');
@@ -1887,7 +1994,7 @@
                     const savedKey = localStorage.getItem('thiabs_saved_key');
                     if (savedKey) await processLogin(savedKey, true);
                 } catch(e) {
-                    showSysToast("❌ ERREUR: Connexion anonyme désactivée", true);
+                    notifyUser("❌ ERREUR: Connexion anonyme désactivée", true);
                 }
             };
             initAuth();
@@ -1934,38 +2041,63 @@
                         totalSize += JSON.stringify(data).length;
                         
                         const isThiabs = data.isThiabsMode === true;
-                        const cat = isThiabs ? 'thiabs' : 'level';
-                        const m = data.model || 'normal';
-                        const modelTitle = aiModels[cat] && aiModels[cat][m] ? aiModels[cat][m][currentLang] : m;
+                        const isHolly = data.isHollyMode === true;
                         
-                        const badgeHTML = isThiabs 
-                            ? `<span class="px-2 py-1 rounded bg-purple-500/20 text-purple-300 text-[9px] font-bold tracking-widest border border-purple-500/30">THIAB'S</span>` 
-                            : `<span class="px-2 py-1 rounded bg-white/10 text-white/50 text-[9px] font-bold tracking-widest border border-white/10">LEVEL IA</span>`;
+                        let cat = 'level';
+                        if (isThiabs) cat = 'thiabs';
+                        if (isHolly) cat = 'holly';
+                        
+                        const m = data.model || 'normal';
+                        let modelTitle = aiModels[cat] && aiModels[cat][m] ? aiModels[cat][m][currentLang] : m;
+                        
+                        if (data.isMarcoMode) modelTitle += " + Marco";
+                        
+                        let badgeHTML = `<span class="px-2 py-1 rounded bg-white/10 text-white/50 text-[9px] font-bold tracking-widest border border-white/10">LEVEL IA</span>`;
+                        if (isThiabs) {
+                            badgeHTML = `<span class="px-2 py-1 rounded bg-purple-500/20 text-purple-300 text-[9px] font-bold tracking-widest border border-purple-500/30">THIAB'S</span>`;
+                        } else if (isHolly) {
+                            badgeHTML = `<span class="px-2 py-1 rounded bg-pink-500/20 text-pink-300 text-[9px] font-bold tracking-widest border border-pink-500/30">HOLLY</span>`;
+                        }
 
                         const item = document.createElement('div');
                         const isActive = currentSessionId === d.id ? 'active' : '';
-                        item.className = `chat-item p-3.5 rounded-xl flex items-center justify-between group cursor-pointer animate-in fade-in ${isActive}`;
-                        
-                        item.innerHTML = `
-                            <div class="flex-1 min-w-0 pr-3">
-                                <p class="text-[13px] font-bold text-white truncate">${sanitizeHTML(data.title)}</p>
-                                <div class="flex items-center gap-2 mt-1.5">
-                                    ${badgeHTML}
-                                    <span class="text-[10px] text-white/40 uppercase truncate font-semibold">${sanitizeHTML(modelTitle)} • ${new Date(data.updatedAt).toLocaleDateString()}</span>
-                                </div>
-                            </div>
-                            <button class="delete-msg opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:text-red-300 transition-all">
-                                <i class="fas fa-trash-alt text-sm"></i>
-                            </button>
-                        `;
-                        item.onclick = (e) => {
-                            if (e.target.closest('.delete-msg')) {
-                                deleteDoc(doc(db, "artifacts", appId, "users", userId, "sessions", d.id));
-                                if (currentSessionId === d.id) startNewChat();
-                            } else {
-                                loadSession(d.id, data.messages, data.isThiabsMode, data.model);
-                                closeSidebar();
-                            }
+            function loadSession(id, messages, sessionIsThiabsMode, sessionModel, sessionIsHollyMode = false, sessionIsMarcoMode = false) {
+                currentSessionId = id;
+                currentSessionMessages = []; 
+                conversationContainer.innerHTML = '';
+                
+                const modeThiabsToLoad = sessionIsThiabsMode === true; 
+                const modeHollyToLoad = sessionIsHollyMode === true; 
+                let modelToLoad = sessionModel || 'normal'; 
+                
+                let catToLoad = 'level';
+                if (modeThiabsToLoad) catToLoad = 'thiabs';
+                if (modeHollyToLoad) catToLoad = 'holly';
+
+                if (!aiModels[catToLoad][modelToLoad]) {
+                    modelToLoad = modeThiabsToLoad ? 'motivation' : (modeHollyToLoad ? 'confidente' : 'normal');
+                }
+                
+                isThiabsMode = modeThiabsToLoad;
+                isHollyMode = modeHollyToLoad;
+                currentModel = modelToLoad;
+                isMarcoMode = sessionIsMarcoMode;
+                
+                const toggle = document.getElementById('thiabsModeToggle');
+                if(toggle) toggle.checked = isThiabsMode;
+                const toggleH = document.getElementById('hollyModeToggle');
+                if(toggleH) toggleH.checked = isHollyMode;
+
+                populateModels();
+                const mSelect = document.getElementById('modelSelect');
+                if(mSelect) mSelect.value = currentModel;
+                
+                updateMarcoUI();
+                updateBranding();
+                
+                if (userId) {
+                    setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { isThiabsMode: isThiabsMode, isHollyMode: isHollyMode, model: currentModel }, { merge: true }).catch(e=>console.error(e));
+                }
                         };
                         historyList.appendChild(item);
                     });
@@ -1975,22 +2107,10 @@
                 });
             }
 
-            // FIX: GREETING GARANTI A CHAQUE NOUVELLE SESSION SANS BUG
             function startNewChat() {
                 currentSessionId = null;
                 currentSessionMessages = []; 
                 conversationContainer.innerHTML = '';
-                
-                // Si c'est un lancement automatique par routine, on ne fait pas le salut basique
-                if (!document.getElementById('aiTyping').classList.contains('hidden')) return;
-
-                const modeName = isThiabsMode ? aiModels.thiabs[currentModel][currentLang] : aiModels.level[currentModel][currentLang];
-                const welcomeMsg = currentLang === 'fr' 
-                    ? `Salut bro ! Je suis prêt en mode **${modeName}**. Que puis-je faire pour toi aujourd'hui ?` 
-                    : `Hey bro! I'm ready in **${modeName}** mode. What can I do for you today?`;
-                    
-                // Utilisation de animate: true pour garantir le fonctionnement de marked.js
-                displayAIMessage(welcomeMsg, true); 
                 document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
             }
 
@@ -2076,10 +2196,6 @@
             };
             document.getElementById('closeNotifBtn').onclick = () => notifModal.classList.add('hidden');
             
-            document.getElementById('notifToggle').addEventListener('change', (e) => {
-                // Modifié pour enlever le bouton test
-            });
-            
             document.getElementById('saveNotifBtn').onclick = async () => {
                 userNotifs.enabled = document.getElementById('notifToggle').checked;
                 userNotifs.exerciseTime = document.getElementById('exerciseTimeInput').value;
@@ -2088,11 +2204,11 @@
                 
                 if (userNotifs.enabled) {
                     if (!("Notification" in window)) {
-                        showSysToast(currentLang === 'fr' ? "Installez l'app pour activer les notifs (iOS)." : "Install the app to enable notifs (iOS).", true);
+                        notifyUser(currentLang === 'fr' ? "Installez l'app pour activer les notifs (iOS)." : "Install the app to enable notifs (iOS).", true);
                         document.getElementById('notifToggle').checked = false;
                         userNotifs.enabled = false;
                     } else if (!messaging) {
-                        showSysToast(currentLang === 'fr' ? "Notifications bloquées par le navigateur." : "Notifications blocked by browser.", true);
+                        notifyUser(currentLang === 'fr' ? "Notifications bloquées par le navigateur." : "Notifications blocked by browser.", true);
                         document.getElementById('notifToggle').checked = false;
                         userNotifs.enabled = false;
                     } else {
@@ -2105,22 +2221,22 @@
                                     await registration.update();
                                 }
                                 
-                                showSysToast(currentLang === 'fr' ? "Génération du token..." : "Generating token...");
+                                notifyUser(currentLang === 'fr' ? "Génération du token..." : "Generating token...");
                                 
                                 const currentToken = await getToken(messaging, { vapidKey: vapidKey, serviceWorkerRegistration: registration });
                                 if (currentToken) {
                                     userNotifs.fcmToken = currentToken;
-                                    showSysToast(currentLang === 'fr' ? "Routine activée avec succès !" : "Routine enabled successfully!");
+                                    notifyUser(currentLang === 'fr' ? "Routine activée avec succès !" : "Routine enabled successfully!");
                                 } else {
-                                    showSysToast(currentLang === 'fr' ? "Erreur: Impossible d'obtenir le token FCM." : "Error: Cannot get FCM token.", true);
+                                    notifyUser(currentLang === 'fr' ? "Erreur: Impossible d'obtenir le token FCM." : "Error: Cannot get FCM token.", true);
                                 }
                             } else {
                                 userNotifs.enabled = false;
                                 document.getElementById('notifToggle').checked = false;
-                                showSysToast(currentLang === 'fr' ? "Permission refusée." : "Permission denied.", true);
+                                notifyUser(currentLang === 'fr' ? "Permission refusée." : "Permission denied.", true);
                             }
                         } catch (err) {
-                            showSysToast(currentLang === 'fr' ? "Erreur d'activation." : "Activation error.", true);
+                            notifyUser(currentLang === 'fr' ? "Erreur d'activation." : "Activation error.", true);
                             userNotifs.enabled = false;
                             document.getElementById('notifToggle').checked = false;
                         }
@@ -2135,13 +2251,11 @@
 
             // === LOGIQUE ADMIN DASHBOARD ===
             const loadAdminData = async () => {
-                // 1. Charger le vrai total via Security
                 try {
                     const secSnap = await getDocs(collectionGroup(db, 'security'));
                     document.getElementById('statTotalUsers').innerText = secSnap.size;
                 } catch(e) { console.error(e); }
 
-                // 2. Charger Stats et générer les listes
                 try {
                     const usersSnap = await getDocs(collection(db, "artifacts", appId, "public", "data", "users_status"));
                     let onl = 0; let inst = 0;
@@ -2151,7 +2265,6 @@
                     
                     usersSnap.forEach(d => {
                         const u = d.data();
-                        
                         const name = sanitizeHTML(u.userName || "Inconnu");
                         const email = sanitizeHTML(u.userEmail || "N/A");
                         
@@ -2165,12 +2278,11 @@
                             
                         htmlTot += userCard;
                         
-                        if (u.isOnline && (now - u.lastSeen < 120000)) { // En ligne si vu y'a moins de 2 mins
+                        if (u.isOnline && (now - u.lastSeen < 120000)) { 
                             onl++;
                             htmlOnl += userCard;
                         }
                         
-                        // FIX: On compte les installations par ID d'appareil physique unique !
                         if (u.isInstalled && u.deviceId && !uniqueDevices.has(u.deviceId)) {
                             uniqueDevices.add(u.deviceId);
                             inst++;
@@ -2179,15 +2291,12 @@
                     });
                     
                     document.getElementById('listTotalUsers').innerHTML = htmlTot || '<p class="text-[10px] text-center text-white/30 pt-4">Aucun</p>';
-                    
                     document.getElementById('statOnlineUsers').innerText = onl;
                     document.getElementById('listOnlineUsers').innerHTML = htmlOnl || '<p class="text-[10px] text-center text-white/30 pt-4">Aucun</p>';
-                    
                     document.getElementById('statInstalledUsers').innerText = inst;
                     document.getElementById('listInstalledUsers').innerHTML = htmlInst || '<p class="text-[10px] text-center text-white/30 pt-4">Aucun</p>';
                 } catch(e) { console.error("Admin Load Stats Err", e); }
 
-                // 3. Charger Avis
                 try {
                     const avisSnap = await getDocs(collection(db, "artifacts", appId, "public", "data", "feedbacks"));
                     const avisList = document.getElementById('adminAvisList');
@@ -2210,14 +2319,12 @@
                     });
                 } catch(e) {}
 
-                // 4. Charger Bugs
                 try {
                     const bugsSnap = await getDocs(collection(db, "artifacts", appId, "public", "data", "reports"));
                     const bugsList = document.getElementById('adminBugsList');
                     bugsList.innerHTML = '';
                     if (bugsSnap.empty) bugsList.innerHTML = '<p class="text-white/40 text-xs text-center">Aucun signalement récent.</p>';
                     
-                    // On fait correspondre la valeur (ex: 'ia_bug') avec un nom propre
                     const catMap = { ia_bug: "Problème IA", ui_bug: "Bug Visuel", connexion: "Connexion", other: "Autre" };
                     
                     bugsSnap.forEach(d => {
@@ -2239,7 +2346,6 @@
                 } catch(e) {}
             };
 
-            // Switch Admin Tabs
             document.querySelectorAll('.admin-tab-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     document.querySelectorAll('.admin-tab-btn').forEach(b => b.className = "admin-tab-btn px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest text-white/50 hover:bg-white/10 transition-all whitespace-nowrap");
@@ -2260,7 +2366,6 @@
                 });
             });
 
-            // Switch Avis/Bugs Sub Tabs
             document.querySelectorAll('.sub-tab-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     const type = e.currentTarget.dataset.type;
@@ -2288,6 +2393,8 @@
             // Broadcast Send Logic
             document.getElementById('sendBroadcastBtn').onclick = async () => {
                 const msg = document.getElementById('broadcastMsgInput').value.trim();
+                const title = document.getElementById('broadcastTitleInput').value.trim() || "Message de LevelUp";
+                const emoji = document.getElementById('broadcastEmojiInput').value.trim() || "📢";
                 
                 if (!msg) return;
                 
@@ -2297,16 +2404,20 @@
                 try {
                     await addDoc(collection(db, "artifacts", appId, "public", "data", "broadcasts"), {
                         message: msg,
+                        title: title,
+                        emoji: emoji,
                         timestamp: Date.now(),
                         senderName: currentUserName
                     });
                     document.getElementById('broadcastMsgInput').value = '';
+                    document.getElementById('broadcastTitleInput').value = '';
+                    document.getElementById('broadcastEmojiInput').value = '';
                     
-                    showSysToast("Notification Globale envoyée ! 📢");
+                    notifyUser("Notification Globale envoyée ! 📢");
                     btn.innerHTML = '<i class="fas fa-check text-green-300"></i> Envoyé avec succès';
                     setTimeout(() => btn.innerHTML = '<i class="fas fa-paper-plane"></i> Diffuser la notification', 3000);
                 } catch(e) {
-                    showSysToast("Erreur d'envoi broadcast.", true);
+                    notifyUser("Erreur d'envoi broadcast.", true);
                     btn.innerHTML = '<i class="fas fa-paper-plane"></i> Diffuser la notification';
                 }
             };
@@ -2349,9 +2460,9 @@
                 if (document.getElementById('pinInput').value === '1994') {
                     pinModal.classList.add('hidden');
                     consoleModal.classList.remove('hidden');
-                    loadAdminData(); // Charge les stats et avis quand on ouvre la console
+                    loadAdminData(); 
                 } else {
-                    showSysToast(currentLang === 'fr' ? "Code PIN incorrect 🔒" : "Incorrect PIN 🔒", true);
+                    notifyUser(currentLang === 'fr' ? "Code PIN incorrect 🔒" : "Incorrect PIN 🔒", true);
                     document.getElementById('pinInput').value = '';
                 }
             };
@@ -2376,11 +2487,11 @@
                     textArea.select();
                     try {
                         document.execCommand('copy');
-                        showSysToast(currentLang === 'fr' ? "Token FCM copié !" : "FCM Token copied!");
+                        notifyUser(currentLang === 'fr' ? "Token FCM copié !" : "FCM Token copied!");
                     } catch (e) {}
                     document.body.removeChild(textArea);
                 } else {
-                    showSysToast(currentLang === 'fr' ? "Aucun Token." : "No Token.", true);
+                    notifyUser(currentLang === 'fr' ? "Aucun Token." : "No Token.", true);
                 }
             };
 
@@ -2407,7 +2518,6 @@
                 };
             });
             
-            // --- ENVOI DES AVIS VERS LE DOSSIER PUBLIC POUR LES ADMINS ---
             document.getElementById('submitFeedbackBtn').onclick = async () => {
                 const text = document.getElementById('feedbackText').value.trim();
                 if (currentStarRating === 0 && text === '') return;
@@ -2424,22 +2534,21 @@
                         userId: userId
                     });
                     document.getElementById('feedbackModal').classList.add('hidden'); document.getElementById('feedbackText').value = '';
-                    stars.forEach(s => s.classList.remove('active')); currentStarRating = 0; showSysToast("Merci pour votre avis ! ⭐");
-                } catch(e) { showSysToast("Erreur d'envoi", true); console.error(e); }
+                    stars.forEach(s => s.classList.remove('active')); currentStarRating = 0; notifyUser("Merci pour votre avis ! ⭐");
+                } catch(e) { notifyUser("Erreur d'envoi", true); console.error(e); }
                 btn.innerText = "Envoyer l'avis";
             };
             
-            // --- ENVOI DES BUGS VERS LE DOSSIER PUBLIC POUR LES ADMINS ---
             document.getElementById('submitReportBtn').onclick = async () => {
                 const category = document.getElementById('reportCategory').value;
                 const text = document.getElementById('reportText').value.trim();
                 
                 if (!category || category === '') {
-                    showSysToast(currentLang === 'fr' ? "Veuillez sélectionner un problème." : "Please select a problem.", true);
+                    notifyUser(currentLang === 'fr' ? "Veuillez sélectionner un problème." : "Please select a problem.", true);
                     return;
                 }
                 if (text === '') {
-                    showSysToast(currentLang === 'fr' ? "Veuillez décrire le problème." : "Please describe the problem.", true);
+                    notifyUser(currentLang === 'fr' ? "Veuillez décrire le problème." : "Please describe the problem.", true);
                     return;
                 }
 
@@ -2455,8 +2564,8 @@
                         userEmail: currentUserMail,
                         userId: userId
                     });
-                    document.getElementById('reportModal').classList.add('hidden'); document.getElementById('reportText').value = ''; document.getElementById('reportCategory').value = ''; showSysToast("Rapport envoyé. 🛠️");
-                } catch(e) { showSysToast("Erreur d'envoi", true); console.error(e); }
+                    document.getElementById('reportModal').classList.add('hidden'); document.getElementById('reportText').value = ''; document.getElementById('reportCategory').value = ''; notifyUser("Rapport envoyé. 🛠️");
+                } catch(e) { notifyUser("Erreur d'envoi", true); console.error(e); }
                 btn.innerText = "Envoyer";
             };
 
@@ -2493,7 +2602,12 @@
             document.getElementById('importImgBtn').onclick = () => { attachMenu.classList.add('hidden-menu'); imgInput.click(); };
             document.getElementById('importDocBtn').onclick = () => { attachMenu.classList.add('hidden-menu'); docInput.click(); };
             
-            // LOGIQUE DU NOUVEAU BOUTON D'ANALYSE DE LIEN WEB
+            document.getElementById('importMarcoBtn').onclick = () => {
+                isMarcoMode = !isMarcoMode;
+                updateMarcoUI();
+                attachMenu.classList.add('hidden-menu');
+            };
+            
             document.getElementById('importLinkBtn').onclick = () => { 
                 attachMenu.classList.add('hidden-menu'); 
                 document.getElementById('linkInputUrl').value = ''; 
@@ -2518,7 +2632,7 @@
 
                 const usage = await checkUsage('upload');
                 if(!usage.allowed) { showLimitMessage('upload', usage.resetDate); imgInput.value = ''; docInput.value = ''; return; }
-                if(file.size > 5 * 1024 * 1024) { showSysToast(currentLang === 'fr' ? "Fichier trop lourd (Max 5Mo)" : "File too large (Max 5MB)", true); imgInput.value = ''; docInput.value = ''; return; }
+                if(file.size > 5 * 1024 * 1024) { notifyUser(currentLang === 'fr' ? "Fichier trop lourd (Max 5Mo)" : "File too large (Max 5MB)", true); imgInput.value = ''; docInput.value = ''; return; }
 
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -2546,7 +2660,6 @@
 
             removeAttachBtn.onclick = () => { currentAttachment = null; attachPreview.classList.add('hidden'); };
 
-            // LOGIQUE DU GLISSER-DÉPOSER (DRAG & DROP)
             const dropZone = document.getElementById('dropZoneOverlay');
             let dragCounter = 0;
             
@@ -2575,7 +2688,7 @@
                 dropZone.classList.add('opacity-0', 'pointer-events-none');
                 
                 if (!userId) {
-                    showSysToast(currentLang === 'fr' ? "Connectez-vous d'abord." : "Please login first.", true);
+                    notifyUser(currentLang === 'fr' ? "Connectez-vous d'abord." : "Please login first.", true);
                     return;
                 }
 
@@ -2584,7 +2697,7 @@
                     if (file.type.startsWith('image/') || file.type === 'application/pdf') {
                         processFile(file);
                     } else {
-                        showSysToast(currentLang === 'fr' ? "⚠️ Format non supporté. Images et PDF uniquement." : "⚠️ Unsupported format. Images and PDF only.", true);
+                        notifyUser(currentLang === 'fr' ? "⚠️ Format non supporté. Images et PDF uniquement." : "⚠️ Unsupported format. Images and PDF only.", true);
                     }
                 } else {
                     const url = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain');
@@ -2604,7 +2717,7 @@
                 } else {
                     msg = currentLang === 'fr' ? `🚫 Limite de 200 messages/jour.\n\nRevenez ${dateStr}.` : `🚫 Limit of 200 messages/day.\n\nCome back ${dateStr}.`;
                 }
-                displayAIMessage(msg, false); // FALSE GARANTIT L'AFFICHAGE SANS BUG
+                displayAIMessage(msg, false); 
             }
 
             function displayUserMessage(text, attachmentHtml = "") {
@@ -2650,7 +2763,6 @@
                 };
                 actions.appendChild(copyBtn);
 
-                // --- BOUTON RÉGÉNÉRER ---
                 const regenBtn = document.createElement('button');
                 regenBtn.className = "regen-btn flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-white/40 hover:bg-white/10 hover:text-white active:scale-95 transition-all text-[11px] font-bold uppercase tracking-widest ml-1";
                 regenBtn.innerHTML = '<i class="fas fa-redo text-xs"></i> <span class="hidden sm:inline">Régénérer</span>';
@@ -2678,12 +2790,11 @@
                 if (animate) {
                     streamText(content, text, () => { if (sourcesHtml) sourcesContainer.style.opacity = "1"; });
                 } else {
-                    // PROTECTION CONTRE LES ERREURS MARKED.JS (Bulle vide)
                     let safeParsedText = "";
                     try {
                         safeParsedText = marked.parse(text);
                     } catch (e) {
-                        safeParsedText = text; // Si marked plante, on affiche le texte brut au lieu du vide
+                        safeParsedText = text; 
                     }
                     content.innerHTML = sanitizeHTML(safeParsedText);
                     stopGeneration();
@@ -2774,11 +2885,21 @@
                 chatArea.scrollTop = chatArea.scrollHeight;
 
                 const sysLang = currentLang === 'fr' ? 'français' : 'english';
-                const category = isThiabsMode ? 'thiabs' : 'level';
+                let category = 'level';
+                if (isThiabsMode) category = 'thiabs';
+                if (isHollyMode) category = 'holly';
+                
                 let modelPrompt = currentLang === 'fr' ? aiModels[category][currentModel].promptFR : aiModels[category][currentModel].promptEN;
 
-                if (!isThiabsMode && currentModel === 'normal') {
+                if (!isThiabsMode && !isHollyMode && currentModel === 'normal') {
                     modelPrompt += currentLang === 'fr' ? " Reste toujours respectueux, pro et chill." : " Always remain respectful, pro and chill.";
+                }
+                
+                if (isMarcoMode) {
+                    const marcoPrompt = currentLang === 'fr' 
+                        ? "\n\n🍿 FUSION MARCO ACTIVÉE : L'utilisateur a activé le mode 'Marco' en complément. Marco est le partenaire le plus drôle et divertissant, un expert en blagues, films, séries, animes et pop culture. Ton but est de fusionner ta personnalité actuelle avec celle de Marco pour tuer l'ennui. Fais-le rire, propose des recommandations si pertinent, et mentionne explicitement 'Marco' dans tes réponses pour détendre l'atmosphère."
+                        : "\n\n🍿 MARCO FUSION ACTIVATED: The user activated 'Marco' mode. Marco is the funniest and most entertaining partner, an expert in entertainment, jokes, movies, series, anime, and pop culture. Blend your current persona with Marco to kill boredom. Make them laugh, recommend things if relevant, and explicitly mention 'Marco' in your responses.";
+                    modelPrompt += marcoPrompt;
                 }
 
                 let lengthInstruction = "";
@@ -2802,11 +2923,12 @@
                 }
                 
                 let redirectionInstruction = "";
-                if (isThiabsMode) {
+                if (isThiabsMode || isHollyMode) {
+                    const modeNameUI = isThiabsMode ? "Thiab's" : "Holly";
                     redirectionInstruction = currentLang === 'fr' 
-                        ? "\n\n⚠️ RÈGLE D'ASSISTANCE ABSOLUE : Si la question concerne le travail, les études ou un domaine technique (hors de ton mode), TU DOIS QUAND MÊME RÉPONDRE ET ASSISTER L'UTILISATEUR AU MAXIMUM. Ne le bloque JAMAIS et ne dis jamais 'Ce n'est pas mon domaine'. Fournis la meilleure réponse possible avec tes connaissances. ENSUITE, tout à la fin, propose ce lien : '\n\n[👉 Voir avec l'expert Level IA](#switch-level-ia)'."
-                        : "\n\n⚠️ ABSOLUTE ASSISTANCE RULE: If the question is technical or work-related, YOU MUST STILL ANSWER AND ASSIST FULLY. NEVER block or say 'This is not my domain'. Provide the best answer. THEN, at the very end, offer this link: '\n\n[👉 Ask the Level IA Expert](#switch-level-ia)'.";
-                } else if (!isThiabsMode && currentModel === 'travail') {
+                        ? `\n\n⚠️ RÈGLE D'ASSISTANCE ABSOLUE : Si la question concerne le travail, les études ou un domaine purement technique (hors de ton mode actuel), TU DOIS QUAND MÊME RÉPONDRE ET ASSISTER L'UTILISATEUR AU MAXIMUM. Ne le bloque JAMAIS et ne dis jamais 'Ce n'est pas mon domaine'. Fournis la meilleure réponse possible avec tes connaissances. ENSUITE, tout à la fin, propose ce lien : '\n\n[👉 Voir avec l'expert Level IA](#switch-level-ia)'.`
+                        : `\n\n⚠️ ABSOLUTE ASSISTANCE RULE: If the question is technical or work-related, YOU MUST STILL ANSWER AND ASSIST FULLY. NEVER block or say 'This is not my domain'. Provide the best answer. THEN, at the very end, offer this link: '\n\n[👉 Ask the Level IA Expert](#switch-level-ia)'.`;
+                } else if (!isThiabsMode && !isHollyMode && currentModel === 'travail') {
                     redirectionInstruction = currentLang === 'fr'
                         ? "\n\n⚠️ RÈGLE D'ASSISTANCE ABSOLUE : Si la question n'a STRICTEMENT AUCUN rapport avec le travail, TU DOIS QUAND MÊME ASSISTER L'UTILISATEUR COMPLÈTEMENT D'ABORD. Ne refuse jamais de répondre. Ensuite, ajoute ce lien : '\n\n[👉 Basculer vers Mode Normal](#switch-level-ia)'."
                         : "\n\n⚠️ ABSOLUTE ASSISTANCE RULE: If off-topic, YOU MUST STILL ASSIST FULLY FIRST. Never refuse to answer. Then add this link: '\n\n[👉 Switch to Normal Mode](#switch-level-ia)'.";
@@ -2822,10 +2944,12 @@
 
                 let firstContactInstruction = "";
                 if (!hasSeenGrandIntro) {
-                    firstContactInstruction = currentLang === 'fr' ? `\n🚨 INSTRUCTION SPÉCIALE : Présente ton écosystème au complet de façon très pro (Level IA pour le travail, Thiab's Mode pour le mindset). Ensuite, réponds à sa question.` : `\n🚨 SPECIAL INSTRUCTION: Present your full ecosystem professionally (Level IA for work, Thiab's Mode for mindset). Then answer the question.`;
+                    firstContactInstruction = currentLang === 'fr' ? `\n🚨 INSTRUCTION SPÉCIALE : Présente ton écosystème au complet de façon très pro (Level IA pour le travail, Thiab's Mode/Holly pour le mindset/soutien). Ensuite, réponds à sa question.` : `\n🚨 SPECIAL INSTRUCTION: Present your full ecosystem professionally. Then answer the question.`;
                 }
 
-                const currentModeName = isThiabsMode ? "le mode secret Thiab's (Développement Personnel)" : "le mode classique Level IA (Productivity)";
+                let currentModeName = "le mode classique Level IA (Productivity)";
+                if (isThiabsMode) currentModeName = "le mode secret Thiab's (Développement Personnel)";
+                if (isHollyMode) currentModeName = "le mode secret Holly (Confidente et Amie)";
                 
                 const corePrompt = `Tu es doté d'une intelligence analytique hors du commun, d'une logique implacable et d'une capacité d'adaptation parfaite. Tu es une IA d'élite, experte mondiale dans ton domaine et hyper-intelligente. Si on te donne une image ou un document PDF, analyse-le en profondeur avec ton génie habituel.
                 Ton identité : L'application globale s'appelle **Level IA**, entièrement développée et créée par le génie **LevelUp**.
@@ -2974,7 +3098,7 @@
                         if (!currentSessionId) {
                             const title = val ? (val.length > 25 ? val.substring(0, 25) + "..." : val) : (attachment ? `Fichier/Lien: ${attachment.name || 'Joint'}` : "Nouvelle session");
                             const docRef = await addDoc(collection(db, "artifacts", appId, "users", userId, "sessions"), {
-                                title: title, updatedAt: Date.now(), isThiabsMode: isThiabsMode, model: currentModel, messages: [messageObj]
+                                title: title, updatedAt: Date.now(), isThiabsMode: isThiabsMode, isHollyMode: isHollyMode, isMarcoMode: isMarcoMode, model: currentModel, messages: [messageObj]
                             });
                             currentSessionId = docRef.id;
                         } else {
