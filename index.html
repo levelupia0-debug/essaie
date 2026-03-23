@@ -6,29 +6,23 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     
-    <!-- BALISE OBLIGATOIRE POUR CHROME -->
     <meta name="theme-color" content="#020202">
     
     <title>Level IA</title>
     
-    <!-- PRECONNECT POUR LES PERFORMANCES CDN -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link rel="preconnect" href="https://cdnjs.cloudflare.com">
     <link rel="preconnect" href="https://cdn.tailwindcss.com">
 
-    <!-- LIAISON DU MANIFEST POUR L'INSTALLATION PWA ET NOTIFICATIONS IOS -->
     <link rel="manifest" href="manifest.json">
     
-    <!-- Ajout du favicon Étoile Violette -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 576 512'><path fill='%23a855f7' d='M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z'/></svg>" type="image/svg+xml">
     <link rel="apple-touch-icon" href="./icon.svg">
 
     <script src="https://cdn.tailwindcss.com?plugins=typography"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    
-    <!-- AJOUT DOMPURIFY POUR LA SÉCURITÉ XSS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
     
     <script type="module">
@@ -37,7 +31,6 @@
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, collectionGroup, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
         import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-messaging.js";
 
-        // --- CONFIGURATION FIREBASE ---
         const firebaseConfig = {
             apiKey: "AIzaSyA3JgvNu5p-43037jvm4WRDaJHI9ES7uGM",
             authDomain: "levelup-ia.firebaseapp.com",
@@ -52,7 +45,6 @@
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Export global
         window.app = app;
         window.auth = auth;
         window.db = db;
@@ -83,7 +75,6 @@
             flex-direction: column; 
             overflow: hidden; 
             overscroll-behavior: none; 
-            
             position: fixed;
             top: 0;
             left: 0;
@@ -104,7 +95,6 @@
         
         .bg-main { background: radial-gradient(circle at 50% 0%, #0d061a 0%, #020202 100%); transition: background 0.8s ease; }
         
-        /* 🚨 THEME HOLLY (ROSE/CONFIANCE) 🚨 */
         body.theme-holly .bg-main { background: radial-gradient(circle at 50% 0%, #2a0a18 0%, #020202 100%); }
         body.theme-holly .star-logo { color: #ec4899; filter: drop-shadow(0 0 10px rgba(236, 72, 153, 0.6)); }
         body.theme-holly .user-bubble { background: rgba(236, 72, 153, 0.08) !important; border-color: rgba(236, 72, 153, 0.2) !important; }
@@ -119,7 +109,6 @@
         
         #sidebar { transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1); box-shadow: -20px 0 50px rgba(0,0,0,0.5); }
         
-        /* 🚨 HIDE SCROLLBAR IN TEXTAREA 🚨 */
         #userInput { 
             background: transparent !important; border: none !important; color: white !important; 
             outline: none !important; width: 100%; padding: 12px; font-size: 15px !important; 
@@ -213,26 +202,22 @@
 </head>
 <body class="bg-main">
 
-    <!-- OVERLAY DRAG & DROP -->
     <div id="dropZoneOverlay" class="fixed inset-0 z-[9999] bg-purple-900/60 backdrop-blur-md border-4 border-dashed border-purple-500 m-4 rounded-3xl flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all duration-300">
         <i class="fas fa-cloud-upload-alt text-6xl text-purple-400 mb-4 animate-bounce"></i>
         <h2 class="text-2xl font-bold text-white uppercase tracking-widest text-center" id="dropZoneTitle">Déposez votre fichier</h2>
         <p class="text-[12px] font-semibold text-white/70 mt-2 uppercase tracking-widest">Images, PDF & Liens (Max 5Mo)</p>
     </div>
 
-    <!-- TOAST DE NOTIFICATION SYSTEME -->
     <div id="sysToast" class="fixed top-5 left-1/2 -translate-x-1/2 backdrop-blur-md border px-5 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest hidden z-[9999] shadow-2xl transition-all"></div>
 
-    <!-- SPLASH -->
     <div id="splashScreen">
         <div id="splash1" class="splash-text text-purple-500"><strong id="splashTitle">Level IA</strong></div>
         <div id="splash2" class="splash-text flex flex-col items-center justify-center">
             <span class="text-white font-bold tracking-[0.6em] text-xl">LevelUp</span>
-            <span class="text-[10px] font-semibold tracking-[0.4em] text-purple-400 mt-4 uppercase">Thiab's Mode</span>
+            <span class="text-[10px] font-semibold tracking-[0.4em] text-purple-400 mt-4 uppercase">Premium</span>
         </div>
     </div>
 
-    <!-- LANGUAGE SELECTION PAGE -->
     <div id="langPage" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-8 bg-black">
         <div class="w-full max-w-sm text-center space-y-8">
             <i class="fas fa-globe text-4xl text-purple-500 mb-4"></i>
@@ -252,7 +237,6 @@
         </div>
     </div>
 
-    <!-- PROMO INSTALL MODAL -->
     <div id="promoInstallModal" class="hidden fixed inset-0 z-[5500] flex items-end md:items-center justify-center p-4 md:p-8 bg-black/90 backdrop-blur-md">
         <div class="glass p-6 rounded-[1.5rem] max-w-sm w-full text-center space-y-6 animate-in slide-in-from-bottom-10 md:zoom-in duration-500 shadow-[0_0_40px_rgba(168,85,247,0.15)] border-purple-500/30">
             <div class="mx-auto w-16 h-16 rounded-2xl bg-purple-500/20 flex items-center justify-center mb-2 border border-purple-500/50 shadow-inner">
@@ -272,7 +256,6 @@
         </div>
     </div>
 
-    <!-- AUTH PAGE -->
     <div id="authPage" class="hidden fixed inset-0 z-[5000] flex items-center justify-center p-8 bg-black">
         <div class="w-full max-w-sm text-center">
             <i class="fas fa-star text-4xl star-logo mb-8 block"></i>
@@ -300,7 +283,6 @@
         </div>
     </div>
 
-    <!-- WELCOME PAGE -->
     <div id="welcomePage" class="hidden fixed inset-0 z-[4500] flex items-center justify-center p-8 bg-black/80 backdrop-blur-md">
         <div class="glass p-8 rounded-[1.5rem] max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-500 shadow-2xl border-white/10">
             <div class="relative w-24 h-24 mx-auto mb-2">
@@ -320,7 +302,6 @@
         </div>
     </div>
 
-    <!-- LOGOUT CONFIRMATION MODAL -->
     <div id="logoutModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
         <div class="glass p-6 rounded-2xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
             <div class="mx-auto w-14 h-14 rounded-full bg-red-500/20 flex items-center justify-center mb-2 border border-red-500/50">
@@ -335,7 +316,6 @@
         </div>
     </div>
 
-    <!-- INSTALL PWA MODAL -->
     <div id="installModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
         <div class="glass p-6 rounded-2xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
             <div class="mx-auto w-14 h-14 rounded-full bg-purple-500/20 flex items-center justify-center mb-2 border border-purple-500/50">
@@ -352,7 +332,6 @@
         </div>
     </div>
 
-    <!-- CGU MODAL -->
     <div id="cguModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
         <div class="glass p-6 rounded-2xl max-w-lg w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10 max-h-[85vh] flex flex-col">
             <div class="mx-auto w-14 h-14 shrink-0 rounded-full bg-blue-500/20 flex items-center justify-center border border-blue-500/50">
@@ -384,7 +363,6 @@
         </div>
     </div>
     
-    <!-- INFO MODAL -->
     <div id="infoModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
         <div class="glass p-6 rounded-2xl max-w-lg w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10 max-h-[85vh] flex flex-col">
             <div class="mx-auto w-14 h-14 shrink-0 rounded-full bg-emerald-500/20 flex items-center justify-center border border-emerald-500/50">
@@ -414,7 +392,6 @@
         </div>
     </div>
 
-    <!-- FEEDBACK MODAL -->
     <div id="feedbackModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
         <div class="glass p-6 rounded-2xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
             <div class="flex justify-between items-center mb-2">
@@ -436,7 +413,6 @@
         </div>
     </div>
 
-    <!-- REPORT MODAL -->
     <div id="reportModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
         <div class="glass p-6 rounded-2xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
             <div class="flex justify-between items-center mb-2">
@@ -460,7 +436,6 @@
         </div>
     </div>
 
-    <!-- NOTIF MODAL (ROUTINE THIAB'S) -->
     <div id="notifModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
         <div class="glass p-5 rounded-2xl max-w-sm w-full text-center space-y-5 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
             <div class="flex justify-between items-center mb-1">
@@ -505,7 +480,6 @@
         </div>
     </div>
 
-    <!-- PIN MODAL (DEV) -->
     <div id="pinModal" class="hidden fixed inset-0 z-[7000] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
         <div class="glass p-6 rounded-2xl max-w-xs w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-[0_0_30px_rgba(168,85,247,0.15)] border-purple-500/30">
             <div class="flex justify-between items-center mb-2">
@@ -518,7 +492,6 @@
         </div>
     </div>
     
-    <!-- LINK MODAL -->
     <div id="linkModal" class="hidden fixed inset-0 z-[7000] flex items-center justify-center p-6 bg-black/90 backdrop-blur-md">
         <div class="glass p-6 rounded-2xl max-w-xs w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-[0_0_30px_rgba(34,197,94,0.15)] border-green-500/30">
             <div class="flex justify-between items-center mb-2">
@@ -530,11 +503,8 @@
         </div>
     </div>
 
-    <!-- NOUVEAU: ADMIN DASHBOARD (ANCIENNE CONSOLE) -->
     <div id="consoleModal" class="hidden fixed inset-0 z-[8000] flex items-center justify-center p-2 md:p-6 bg-black/90 backdrop-blur-xl">
         <div class="bg-[#080808] border border-white/10 rounded-2xl w-full max-w-5xl h-[95vh] md:h-[90vh] flex flex-col shadow-2xl overflow-hidden relative ring-1 ring-white/5">
-            
-            <!-- HEADER ADMIN -->
             <div class="px-5 py-4 border-b border-white/10 flex flex-wrap items-center justify-between bg-gradient-to-r from-purple-900/20 to-black shrink-0 gap-4">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center border border-purple-500/30 shadow-inner">
@@ -550,7 +520,6 @@
                 </div>
             </div>
 
-            <!-- TABS NAVIGATION -->
             <div class="px-5 py-2 border-b border-white/5 bg-white/5 flex overflow-x-auto no-scrollbar gap-2 shrink-0">
                 <button class="admin-tab-btn active px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest bg-white text-black transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] whitespace-nowrap" data-target="adminTabStats"><i class="fas fa-chart-line mr-2"></i> Stats & Users</button>
                 <button class="admin-tab-btn px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest text-white/50 hover:bg-white/10 transition-all whitespace-nowrap" data-target="adminTabFeedback"><i class="fas fa-star mr-2 text-yellow-500"></i> Avis & Bugs</button>
@@ -559,12 +528,8 @@
             </div>
 
             <div class="flex-1 overflow-y-auto bg-[#030303] custom-scrollbar p-5 relative">
-                
-                <!-- TAB 1: STATS & USERS -->
                 <div id="adminTabStats" class="admin-tab-content active space-y-6 block">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        
-                        <!-- Colonne 1: Inscrits Totaux -->
                         <div class="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col h-[400px]">
                             <div class="flex flex-col items-center mb-4 shrink-0">
                                 <i class="fas fa-users text-3xl text-purple-400 mb-2"></i>
@@ -576,7 +541,6 @@
                             </div>
                         </div>
 
-                        <!-- Colonne 2: En Ligne -->
                         <div class="bg-green-500/10 border border-green-500/20 rounded-2xl p-5 flex flex-col h-[400px]">
                             <div class="flex flex-col items-center mb-4 shrink-0 relative">
                                 <div class="absolute top-0 right-10 w-2 h-2 rounded-full bg-green-500 animate-ping"></div>
@@ -589,7 +553,6 @@
                             </div>
                         </div>
 
-                        <!-- Colonne 3: PWA Installées -->
                         <div class="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-5 flex flex-col h-[400px]">
                             <div class="flex flex-col items-center mb-4 shrink-0">
                                 <i class="fas fa-mobile-alt text-3xl text-blue-400 mb-2"></i>
@@ -600,12 +563,10 @@
                                 <p class="text-[10px] text-center text-white/30 pt-4"><i class="fas fa-spinner fa-spin"></i></p>
                             </div>
                         </div>
-                        
                     </div>
                     <button id="refreshStatsBtn" class="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl text-[11px] font-bold uppercase tracking-widest text-white transition-all"><i class="fas fa-sync-alt mr-2"></i> Rafraîchir les données</button>
                 </div>
 
-                <!-- TAB 2: AVIS & BUGS -->
                 <div id="adminTabFeedback" class="admin-tab-content space-y-6" style="display: none;">
                     <div class="flex gap-2 border-b border-white/10 pb-4">
                         <button class="sub-tab-btn active px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-yellow-500 text-black transition-all" data-type="avis">Voir les Avis</button>
@@ -618,7 +579,6 @@
                     <div id="adminBugsList" class="space-y-3 hidden"></div>
                 </div>
 
-                <!-- TAB 3: BROADCAST NOTIFICATIONS -->
                 <div id="adminTabBroadcast" class="admin-tab-content" style="display: none;">
                     <div class="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-6 max-w-2xl mx-auto space-y-6">
                         <div class="text-center">
@@ -639,7 +599,6 @@
                     </div>
                 </div>
 
-                <!-- TAB 4: LOGS SYSTEME -->
                 <div id="adminTabLogs" class="admin-tab-content flex-col h-full" style="display: none;">
                     <div class="flex gap-2 pb-3 shrink-0" id="consoleFilters">
                         <button class="console-filter active px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-white text-black transition-all" data-filter="all">Tout</button>
@@ -663,7 +622,6 @@
     <div id="mainApp" class="hidden flex-col h-full w-full relative overflow-hidden">
         <div id="appOverlay" class="fixed inset-0 z-[2999] hidden transition-opacity"></div>
 
-        <!-- MENU LATÉRAL -->
         <div id="sidebar" class="fixed inset-y-0 right-0 w-[85%] md:w-80 glass z-[3000] border-l border-white/10 px-6 flex flex-col transition-transform translate-x-full no-scrollbar overflow-y-auto safe-sidebar">
             <div class="flex items-center justify-between mb-8">
                 <span id="menuTitle" class="text-[11px] font-bold uppercase tracking-widest opacity-40">Menu</span>
@@ -683,7 +641,6 @@
 
             <div class="space-y-6">
                 
-                <!-- TOGGLE THIAB'S MODE -->
                 <div class="space-y-2 mb-4">
                     <div class="flex items-center justify-between bg-purple-500/10 border border-purple-500/30 p-3.5 rounded-xl">
                         <div>
@@ -697,7 +654,6 @@
                     </div>
                 </div>
 
-                <!-- TOGGLE HOLLY MODE -->
                 <div class="space-y-2 mb-4">
                     <div class="flex items-center justify-between bg-pink-500/10 border border-pink-500/30 p-3.5 rounded-xl">
                         <div>
@@ -714,7 +670,6 @@
                     </div>
                 </div>
 
-                <!-- Langue -->
                 <div class="space-y-2">
                     <label id="langTitle" class="text-[10px] font-bold uppercase tracking-widest opacity-40">Langue</label>
                     <select id="langSelect" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-[13px] text-white outline-none focus:border-purple-500 transition-all font-medium appearance-none cursor-pointer">
@@ -723,15 +678,12 @@
                     </select>
                 </div>
 
-                <!-- Modèles IA -->
                 <div class="space-y-2">
                     <label id="modelTitle" class="text-[10px] font-bold uppercase tracking-widest opacity-40">Modèle IA</label>
                     <select id="modelSelect" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-[13px] text-white outline-none focus:border-purple-500 transition-all font-medium appearance-none cursor-pointer">
-                        <!-- Options dynamically injected -->
                     </select>
                 </div>
 
-                <!-- Longueur des réponses -->
                 <div class="space-y-2">
                     <label id="lengthTitle" class="text-[10px] font-bold uppercase tracking-widest opacity-40">Taille des réponses</label>
                     <select id="lengthSelect" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-[13px] text-white outline-none focus:border-purple-500 transition-all font-medium appearance-none cursor-pointer">
@@ -741,7 +693,6 @@
                     </select>
                 </div>
 
-                <!-- TOGGLE MODE HARDCORE -->
                 <div class="space-y-2 pt-2 transition-all duration-300 hidden" id="hardcoreContainer">
                     <div class="flex items-center justify-between bg-red-500/10 border border-red-500/20 p-3.5 rounded-xl">
                         <div>
@@ -771,7 +722,6 @@
                         <i class="fas fa-plus"></i> <span id="newChatText">Nouvelle session</span>
                     </button>
                     <div id="historyList" class="space-y-2 max-h-64 overflow-y-auto pr-2 mt-3 no-scrollbar">
-                        <!-- History items -->
                     </div>
                 </div>
 
@@ -816,7 +766,6 @@
                         </a>
                         <button id="logoutBtn" class="w-full py-4 text-[11px] text-red-400 font-bold uppercase tracking-[0.1em] opacity-70 hover:opacity-100 active:scale-95 transition-all">Déconnexion</button>
                         
-                        <!-- BOUTON CONSOLE ADMIN (CACHÉ PAR DÉFAUT) -->
                         <button id="openConsoleBtn" class="hidden w-full py-3 mt-4 border-t border-white/5 text-[10px] text-purple-400 font-bold uppercase tracking-widest hover:bg-purple-500/10 rounded-xl active:scale-95 transition-all text-center flex-col items-center justify-center gap-2">
                             <div><i class="fas fa-shield-alt"></i> <span id="consoleMenuText">Console Admin</span></div>
                         </button>
@@ -825,7 +774,6 @@
             </div>
         </div>
 
-        <!-- HEADER -->
         <header class="px-5 pb-4 flex items-center justify-between border-b border-white/5 bg-black/40 backdrop-blur-2xl shrink-0 z-40 safe-pt">
             <div class="flex items-center gap-4">
                 <i class="fas fa-star text-xl star-logo"></i>
@@ -851,29 +799,19 @@
             </div>
         </main>
 
-        <!-- FOOTER / ZONE DE SAISIE -->
         <footer class="px-3 pt-3 pb-2 border-t border-white/5 bg-[#020202]/90 backdrop-blur-3xl shrink-0 z-50 relative safe-pb">
             <div class="max-w-3xl mx-auto relative">
                 
-                <!-- PREVIEW ATTACHMENT -->
-                <div id="attachmentPreview" class="hidden absolute bottom-full mb-3 left-0 bg-white/10 backdrop-blur-md border border-white/20 p-2.5 rounded-2xl flex items-center gap-3 shadow-2xl">
-                    <div id="attachIcon" class="w-10 h-10 bg-black/50 rounded-xl flex items-center justify-center overflow-hidden"></div>
-                    <div class="text-xs truncate max-w-[180px]">
-                        <p id="attachName" class="font-bold text-white truncate text-[13px]"></p>
-                        <p id="attachSize" class="text-white/50 mt-0.5"></p>
-                    </div>
-                    <button id="removeAttachBtn" class="text-red-400 hover:text-red-300 p-2"><i class="fas fa-times text-base"></i></button>
-                </div>
+                <!-- PREVIEW MULTIPLES ATTACHMENTS -->
+                <div id="attachmentsContainer" class="hidden absolute bottom-full mb-3 left-0 w-full flex flex-wrap gap-2 z-50"></div>
 
                 <div class="glass rounded-3xl p-1.5 flex items-end gap-2 focus-within:border-purple-500/40 transition-all shadow-xl relative">
                     
-                    <!-- BOUTON PLUS (+) -->
                     <div class="relative">
                         <button id="attachBtn" class="w-11 h-11 text-white/50 flex items-center justify-center hover:text-white transition-all ml-1 shrink-0 bg-transparent border-none outline-none focus:outline-none active:scale-90">
                             <i class="fas fa-plus text-xl"></i>
                         </button>
                         
-                        <!-- MENU D'IMPORT -->
                         <div id="attachMenu" class="hidden-menu absolute bottom-full left-0 mb-3 w-48 bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl p-2 shadow-2xl flex flex-col gap-1 z-50">
                             <button id="importImgBtn" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 active:scale-95 transition-all text-left group">
                                 <div class="w-8 h-8 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400 group-hover:bg-blue-500 group-hover:text-white transition-all"><i class="fas fa-image text-sm"></i></div>
@@ -887,7 +825,6 @@
                                     <p class="text-[11px] font-bold text-white uppercase tracking-widest" id="lblImportDoc">Document (PDF)</p>
                                 </div>
                             </button>
-                            <!-- BOUTON LIEN INTERNET AVEC BADGE "NEW" -->
                             <button id="importLinkBtn" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 active:scale-95 transition-all text-left group">
                                 <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center text-green-400 group-hover:bg-green-500 group-hover:text-white transition-all"><i class="fas fa-link text-sm"></i></div>
                                 <div class="flex-1 flex items-center justify-between">
@@ -896,9 +833,8 @@
                                 </div>
                             </button>
                             
-                            <!-- BOUTON MARCO -->
                             <button id="importMarcoBtn" class="hidden items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 active:scale-95 transition-all text-left group border border-transparent mt-1 border-t border-white/10">
-                                <div id="marcoIconBg" class="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center text-orange-400 transition-all"><i class="fas fa-popcorn text-sm"></i></div>
+                                <div id="marcoIconBg" class="w-8 h-8 rounded-lg bg-orange-500/20 flex items-center justify-center text-orange-400 transition-all"><i class="fas fa-gamepad text-sm"></i></div>
                                 <div class="flex-1 flex items-center justify-between">
                                     <p class="text-[11px] font-bold text-white uppercase tracking-widest" id="lblImportMarco">Marco 🍿</p>
                                     <span class="bg-gradient-to-r from-red-500 to-pink-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-[0_0_10px_rgba(239,68,68,0.5)] animate-pulse">NEW</span>
@@ -907,19 +843,16 @@
                         </div>
                     </div>
                     
-                    <!-- INPUTS CACHÉS -->
                     <input type="file" id="imgInput" accept="image/*" class="hidden">
                     <input type="file" id="docInput" accept="application/pdf" class="hidden">
 
                     <div class="flex-1 px-1.5"><textarea id="userInput" placeholder="Message..." rows="1" autocomplete="off" maxlength="4000"></textarea></div>
                     
-                    <!-- BOUTON ENVOYER / STOP -->
                     <button id="sendBtn" class="w-11 h-11 rounded-full bg-white text-black flex items-center justify-center hover:bg-purple-500 hover:text-white active:scale-90 active:bg-purple-600 transition-all duration-150 shadow-md shrink-0 touch-manipulation select-none">
                         <i class="fas fa-arrow-up text-base pointer-events-none"></i>
                     </button>
                 </div>
                 
-                <!-- AVERTISSEMENT -->
                 <div class="text-center mt-2.5 mb-1 hide-on-keyboard">
                     <p class="text-[10px] font-semibold text-white/30 tracking-wide">Level peut faire des erreurs. Considérez vérifier les infos.</p>
                 </div>
@@ -928,14 +861,12 @@
     </div>
 
     <script type="module">
-        // INTERCEPTION GLOBALE DE LA CONSOLE
         const originalLog = console.log;
         const originalWarn = console.warn;
         const originalError = console.error;
         window._logHistory = [];
         let currentConsoleFilter = 'all';
         
-        // --- VARIABLES GLOBALES ---
         let abortController = null;
         let isGenerating = false;
         let typingInterval = null;
@@ -1101,7 +1032,8 @@
             let currentSessionMessages = []; 
             let currentStarRating = 0;
             
-            let currentAttachment = null; 
+            let currentAttachments = []; 
+            const MAX_ATTACHMENTS = 3;
             const MAX_MSGS = 200;
             const MAX_UPLOADS = 10;
             let userUsage = { msgCount: 0, msgReset: 0, uploadCount: 0, uploadReset: 0 };
@@ -1119,7 +1051,6 @@
                 });
             }
 
-            // 🚨 NOUVELLE FONCTION POUR GERER LES NOTIFICATIONS NATIVES / ERREURS 🚨
             function notifyUser(msg, isError = false, nativeTitle = "Level IA", nativeEmoji = "📢") {
                 if (isError) {
                     const t = document.getElementById('sysToast');
@@ -1154,13 +1085,8 @@
                 navigator.serviceWorker.register('./firebase-messaging-sw.js')
                 .then((reg) => { 
                     reg.update(); 
-                    const indPwa = document.getElementById('ind-pwa');
-                    if (indPwa) indPwa.className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"; 
                 })
-                .catch((err) => { 
-                    const indPwa = document.getElementById('ind-pwa');
-                    if (indPwa) indPwa.className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; 
-                });
+                .catch((err) => { });
             }
 
             const isAppInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || false;
@@ -1181,24 +1107,11 @@
                         deviceId: deviceId,
                         lastSeen: Date.now()
                     }, { merge: true });
-                } catch(e) { 
-                    if(e.code !== 'permission-denied') console.error("Status update err:", e); 
-                }
+                } catch(e) { }
             }
 
             const updateNetworkIndicator = () => {
-                const indicator = document.getElementById('ind-net');
-                if (indicator) {
-                    if (navigator.onLine) {
-                        indicator.className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]";
-                        updateStatus(true);
-                    } else {
-                        indicator.className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]";
-                        updateStatus(false);
-                    }
-                } else {
-                    updateStatus(navigator.onLine);
-                }
+                updateStatus(navigator.onLine);
             };
             window.addEventListener('online', updateNetworkIndicator);
             window.addEventListener('offline', updateNetworkIndicator);
@@ -1206,7 +1119,6 @@
             updateNetworkIndicator();
             setInterval(() => updateStatus(true), 60000); 
 
-            // === SYSTEME DE BROADCAST (RATTRAPAGE LORS DE L'OUVERTURE) ===
             function listenForBroadcasts() {
                 onSnapshot(collection(db, "artifacts", appId, "public", "data", "broadcasts"), (snap) => {
                     let latestBroadcast = null;
@@ -1221,7 +1133,7 @@
                     
                     if (latestBroadcast) {
                         lastBroadcastSeen = latestBroadcast.timestamp;
-                        localStorage.setItem('thiabs_last_broadcast', lastBroadcastSeen); // Sauvegarde
+                        localStorage.setItem('thiabs_last_broadcast', lastBroadcastSeen); 
                         
                         const title = latestBroadcast.title || "Message de LevelUp";
                         const emoji = latestBroadcast.emoji || "📢";
@@ -1267,7 +1179,6 @@
                 }
             }
 
-            // 🚨 BOUCLE CONTINUE POUR LA ROUTINE (VERIFICATION TOUTES LES 30 SEC) 🚨
             setInterval(() => {
                 if (!userNotifs.enabled || !userNotifs.exerciseTime) return;
                 
@@ -1339,9 +1250,7 @@
                                 try { actualText = this.parser.parseInline(href.tokens); } catch(e) {}
                             }
                         }
-
                         actualHref = actualHref || "";
-                        
                         if (actualHref.startsWith('#')) {
                             return `<a href="${actualHref}" title="${actualTitle || ''}" class="inline-flex items-center justify-center gap-2 px-4 py-2 mt-3 bg-purple-500/20 hover:bg-purple-500/40 border border-purple-500/40 rounded-xl text-[12px] font-bold text-purple-300 transition-all no-underline shadow-lg active:scale-95">${actualText}</a>`;
                         }
@@ -1350,12 +1259,19 @@
                 }
             });
 
-            // --- FONCTION MAGIQUE DE TRANSFORMATION DES BADGES ---
             function formatSpeakerBadges(text) {
+                if (!isMarcoMode) {
+                    return text.replace(/\[(MARCO|HOLLY|LEVEL(?: IA)?)\]\s*/gi, '');
+                }
+                
+                const hollySvg = `<svg class="w-3 h-3 inline-block" fill="currentColor" viewBox="0 0 512 512"><path d="M47.6 300.4L228.3 469.1c7.5 7 17.4 10.9 27.7 10.9s20.2-3.9 27.7-10.9L464.4 300.4c30.4-28.3 47.6-68 47.6-109.5v-5.8c0-69.9-50.5-129.5-119.4-141C347 36.5 300.6 51.4 268 84L256 96 244 84c-32.6-32.6-79-47.5-124.6-39.9C50.5 55.6 0 115.2 0 185.1v5.8c0 41.5 17.2 81.2 47.6 109.5z"/></svg>`;
+                const marcoSvg = `<svg class="w-3 h-3 inline-block" fill="currentColor" viewBox="0 0 640 512"><path d="M192 64C86 64 0 150 0 256S86 448 192 448H448c106 0 192-86 192-192s-86-192-192-192H192zM496 168a40 40 0 1 1 0 80 40 40 0 1 1 0-80zM392 312a24 24 0 1 1 48 0 24 24 0 1 1 -48 0zM168 256c0 13.3-10.7 24-24 24H112v32c0 13.3-10.7 24-24 24s-24-10.7-24-24V280H32c-13.3 0-24-10.7-24-24s10.7-24 24-24H64V200c0-13.3 10.7-24 24-24s24 10.7 24 24v32h32c13.3 0 24 10.7 24 24z"/></svg>`;
+                const levelSvg = `<svg class="w-3 h-3 inline-block" fill="currentColor" viewBox="0 0 576 512"><path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/></svg>`;
+                
                 return text
-                    .replace(/\[MARCO\]/gi, `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-orange-500/20 text-orange-400 text-[10px] font-black uppercase tracking-widest border border-orange-500/30 mr-1 shadow-sm select-none"><i class="fas fa-popcorn"></i> Marco</span><br>`)
-                    .replace(/\[HOLLY\]/gi, `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-pink-500/20 text-pink-400 text-[10px] font-black uppercase tracking-widest border border-pink-500/30 mr-1 shadow-sm select-none"><i class="fas fa-dove"></i> Holly</span><br>`)
-                    .replace(/\[LEVEL( IA)?\]/gi, `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-purple-500/20 text-purple-400 text-[10px] font-black uppercase tracking-widest border border-purple-500/30 mr-1 shadow-sm select-none"><i class="fas fa-robot"></i> Level IA</span><br>`);
+                    .replace(/\[MARCO\]\s*/gi, `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-orange-500/20 text-orange-400 text-[10px] font-black uppercase tracking-widest border border-orange-500/30 mr-1 shadow-sm select-none">${marcoSvg} Marco</span><br>`)
+                    .replace(/\[HOLLY\]\s*/gi, `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-pink-500/20 text-pink-400 text-[10px] font-black uppercase tracking-widest border border-pink-500/30 mr-1 shadow-sm select-none">${hollySvg} Holly</span><br>`)
+                    .replace(/\[LEVEL(?: IA)?\]\s*/gi, `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-purple-500/20 text-purple-400 text-[10px] font-black uppercase tracking-widest border border-purple-500/30 mr-1 shadow-sm select-none">${levelSvg} Level IA</span><br>`);
             }
 
             function displayUserMessage(text, attachmentHtml = "") {
@@ -1415,7 +1331,7 @@
                     }
                     
                     if (lastInteraction) {
-                        performGeneration(lastInteraction.text, lastInteraction.attachment, true);
+                        performGeneration(lastInteraction.text, lastInteraction.attachments, true);
                     }
                 };
                 actions.appendChild(regenBtn);
@@ -1430,7 +1346,6 @@
                 } else {
                     let safeParsedText = "";
                     try {
-                        // On applique la magie des badges AVANT le parsing markdown
                         safeParsedText = marked.parse(formatSpeakerBadges(text));
                     } catch (e) {
                         safeParsedText = formatSpeakerBadges(text); 
@@ -1451,7 +1366,6 @@
                         return;
                     }
                     if (i < text.length) {
-                        // Magie des badges en temps réel pendant que l'IA tape
                         container.innerHTML = sanitizeHTML(marked.parse(formatSpeakerBadges(text.substring(0, i + 1)))); 
                         i += 4; 
                         chatArea.scrollTop = chatArea.scrollHeight;
@@ -1691,7 +1605,6 @@
                 setSafeText('dnaAppBrand', appName);
                 setSafeText('authAppTitle', appName);
                 
-                // 🚨 ACTIVATION DU THÈME ROSE POUR HOLLY
                 if (isHollyMode) {
                     document.body.classList.add('theme-holly');
                 } else {
@@ -1722,7 +1635,6 @@
                 const marcoBtn = document.getElementById('importMarcoBtn');
                 const marcoIconBg = document.getElementById('marcoIconBg');
                 
-                // Marco is only visible in Level IA (Normal) or Holly Mode
                 if ((!isThiabsMode && !isHollyMode && currentModel === 'normal') || isHollyMode) {
                     marcoBtn.classList.remove('hidden');
                     marcoBtn.classList.add('flex');
@@ -2258,7 +2170,7 @@
                 isThiabsMode = modeThiabsToLoad;
                 isHollyMode = modeHollyToLoad;
                 currentModel = modelToLoad;
-                isMarcoMode = sessionIsMarcoMode;
+                isMarcoMode = sessionIsMarcoMode === true;
                 
                 const toggle = document.getElementById('thiabsModeToggle');
                 if(toggle) toggle.checked = isThiabsMode;
@@ -2313,7 +2225,6 @@
             document.getElementById('infoMenuBtn').onclick = () => { closeSidebar(); infoModal.classList.remove('hidden'); };
             document.getElementById('closeInfoModalBtn').onclick = () => infoModal.classList.add('hidden');
             
-            // --- BOUTONS FEEDBACK ET REPORT ---
             document.getElementById('openFeedbackBtn').onclick = () => { closeSidebar(); document.getElementById('feedbackModal').classList.remove('hidden'); };
             document.getElementById('closeFeedbackBtn').onclick = () => document.getElementById('feedbackModal').classList.add('hidden');
             
@@ -2379,7 +2290,6 @@
                 notifModal.classList.add('hidden');
             };
 
-            // === LOGIQUE ADMIN DASHBOARD ===
             const loadAdminData = async () => {
                 try {
                     const secSnap = await getDocs(collectionGroup(db, 'security'));
@@ -2520,7 +2430,6 @@
 
             document.getElementById('refreshStatsBtn').onclick = loadAdminData;
 
-            // Broadcast Send Logic
             document.getElementById('sendBroadcastBtn').onclick = async () => {
                 const msg = document.getElementById('broadcastMsgInput').value.trim();
                 const title = document.getElementById('broadcastTitleInput').value.trim() || "Message de LevelUp";
@@ -2552,7 +2461,6 @@
                 }
             };
 
-            // LOGS Filters
             document.querySelectorAll('.console-filter').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     document.querySelectorAll('.console-filter').forEach(b => {
@@ -2712,11 +2620,6 @@
             const attachMenu = document.getElementById('attachMenu');
             const imgInput = document.getElementById('imgInput');
             const docInput = document.getElementById('docInput');
-            const attachPreview = document.getElementById('attachmentPreview');
-            const attachIcon = document.getElementById('attachIcon');
-            const attachName = document.getElementById('attachName');
-            const attachSize = document.getElementById('attachSize');
-            const removeAttachBtn = document.getElementById('removeAttachBtn');
 
             attachBtn.onclick = (e) => {
                 e.stopPropagation();
@@ -2745,20 +2648,65 @@
             };
             document.getElementById('closeLinkBtn').onclick = () => document.getElementById('linkModal').classList.add('hidden');
             
+            function renderAttachments() {
+                const container = document.getElementById('attachmentsContainer');
+                container.innerHTML = '';
+                if (currentAttachments.length === 0) {
+                    container.classList.add('hidden');
+                    return;
+                }
+                container.classList.remove('hidden');
+                
+                currentAttachments.forEach((att, index) => {
+                    const pill = document.createElement('div');
+                    pill.className = "bg-white/10 backdrop-blur-md border border-white/20 p-2 rounded-2xl flex items-center gap-2 shadow-2xl max-w-[200px] mb-2";
+                    
+                    let iconHtml = '';
+                    if (att.isLink) {
+                        iconHtml = `<i class="fas fa-link text-green-400 text-lg mx-1"></i>`;
+                    } else if (att.isImage) {
+                        iconHtml = `<img src="data:${att.mimeType};base64,${att.base64}" class="w-8 h-8 rounded-lg object-cover">`;
+                    } else {
+                        iconHtml = `<i class="fas fa-file-pdf text-red-400 text-lg mx-1"></i>`;
+                    }
+
+                    pill.innerHTML = `
+                        ${iconHtml}
+                        <div class="text-xs truncate flex-1 min-w-0">
+                            <p class="font-bold text-white truncate text-[11px]">${sanitizeHTML(att.name)}</p>
+                            <p class="text-[9px] text-white/50">${att.isLink ? 'Lien' : (att.size || 'Fichier')}</p>
+                        </div>
+                        <button class="text-red-400 hover:text-red-300 p-1" onclick="window.removeAttachment(${index})"><i class="fas fa-times text-sm"></i></button>
+                    `;
+                    container.appendChild(pill);
+                });
+            }
+
+            window.removeAttachment = (index) => {
+                currentAttachments.splice(index, 1);
+                renderAttachments();
+            };
+
             document.getElementById('submitLinkBtn').onclick = () => {
                 const url = document.getElementById('linkInputUrl').value.trim();
                 if (url) {
-                    currentAttachment = { name: "Lien à analyser", url: url, isLink: true };
-                    attachName.innerText = currentLang === 'fr' ? "Lien Web" : "Web Link";
-                    attachSize.innerText = url.substring(0, 20) + '...';
-                    attachIcon.innerHTML = `<i class="fas fa-link text-green-400 text-xl"></i>`;
-                    attachPreview.classList.remove('hidden');
+                    if (currentAttachments.length >= MAX_ATTACHMENTS) {
+                        notifyUser(currentLang === 'fr' ? "Maximum 3 fichiers atteints." : "Maximum 3 files reached.", true);
+                        return;
+                    }
+                    currentAttachments.push({ name: "Lien Web", url: url, isLink: true });
+                    renderAttachments();
                     document.getElementById('linkModal').classList.add('hidden');
                 }
             };
 
             const processFile = async (file) => {
                 if(!file) return;
+
+                if (currentAttachments.length >= MAX_ATTACHMENTS) {
+                    notifyUser(currentLang === 'fr' ? "Maximum 3 fichiers atteints." : "Maximum 3 files reached.", true);
+                    return;
+                }
 
                 const usage = await checkUsage('upload');
                 if(!usage.allowed) { showLimitMessage('upload', usage.resetDate); imgInput.value = ''; docInput.value = ''; return; }
@@ -2769,17 +2717,14 @@
                     const base64Full = e.target.result;
                     const base64Data = base64Full.split(',')[1];
                     
-                    currentAttachment = { name: file.name, mimeType: file.type, base64: base64Data, isImage: file.type.startsWith('image/') };
-
-                    attachName.innerText = file.name;
-                    attachSize.innerText = (file.size / 1024).toFixed(1) + ' KB';
-                    
-                    if(currentAttachment.isImage) {
-                        attachIcon.innerHTML = `<img src="${sanitizeHTML(base64Full)}" class="w-full h-full object-cover">`;
-                    } else {
-                        attachIcon.innerHTML = `<i class="fas fa-file-pdf text-red-400 text-xl"></i>`;
-                    }
-                    attachPreview.classList.remove('hidden');
+                    currentAttachments.push({ 
+                        name: file.name, 
+                        mimeType: file.type, 
+                        base64: base64Data, 
+                        isImage: file.type.startsWith('image/'),
+                        size: (file.size / 1024).toFixed(1) + ' KB'
+                    });
+                    renderAttachments();
                 };
                 reader.readAsDataURL(file);
                 imgInput.value = ''; docInput.value = '';
@@ -2787,8 +2732,6 @@
 
             imgInput.onchange = (e) => processFile(e.target.files[0]);
             docInput.onchange = (e) => processFile(e.target.files[0]);
-
-            removeAttachBtn.onclick = () => { currentAttachment = null; attachPreview.classList.add('hidden'); };
 
             const dropZone = document.getElementById('dropZoneOverlay');
             let dragCounter = 0;
@@ -2838,142 +2781,7 @@
                 }
             });
 
-            function showLimitMessage(type, resetDate) {
-                const formatter = new Intl.DateTimeFormat(currentLang, { weekday: 'long', hour: '2-digit', minute: '2-digit' });
-                const dateStr = formatter.format(resetDate);
-                let msg = "";
-                if(type === 'upload') {
-                    msg = currentLang === 'fr' ? `🚫 Limite de 10 fichiers/jour.\n\nRevenez ${dateStr}.` : `🚫 Limit of 10 files/day.\n\nCome back ${dateStr}.`;
-                } else {
-                    msg = currentLang === 'fr' ? `🚫 Limite de 200 messages/jour.\n\nRevenez ${dateStr}.` : `🚫 Limit of 200 messages/day.\n\nCome back ${dateStr}.`;
-                }
-                displayAIMessage(msg, false); 
-            }
-
-            // --- FONCTION MAGIQUE DE TRANSFORMATION DES BADGES ---
-            function formatSpeakerBadges(text) {
-                return text
-                    .replace(/\[MARCO\]/gi, `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-orange-500/20 text-orange-400 text-[10px] font-black uppercase tracking-widest border border-orange-500/30 mr-1 shadow-sm select-none"><i class="fas fa-popcorn"></i> Marco</span><br>`)
-                    .replace(/\[HOLLY\]/gi, `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-pink-500/20 text-pink-400 text-[10px] font-black uppercase tracking-widest border border-pink-500/30 mr-1 shadow-sm select-none"><i class="fas fa-dove"></i> Holly</span><br>`)
-                    .replace(/\[LEVEL( IA)?\]/gi, `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-purple-500/20 text-purple-400 text-[10px] font-black uppercase tracking-widest border border-purple-500/30 mr-1 shadow-sm select-none"><i class="fas fa-robot"></i> Level IA</span><br>`);
-            }
-
-            function displayUserMessage(text, attachmentHtml = "") {
-                const safeText = text ? text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
-                const div = document.createElement('div'); div.className = "flex justify-end w-full overflow-hidden";
-                div.innerHTML = `<div class="bg-white/10 border border-white/10 px-5 py-3.5 rounded-3xl text-[15px] message-bubble user-bubble text-white shadow-md flex flex-col gap-2 overflow-hidden">
-                    ${sanitizeHTML(attachmentHtml)}
-                    ${safeText ? `<span class="leading-relaxed font-medium whitespace-pre-wrap break-words max-w-full">${safeText}</span>` : ''}
-                </div>`;
-                conversationContainer.appendChild(div); chatArea.scrollTop = chatArea.scrollHeight;
-            }
-
-            function displayAIMessage(text, animate, sourcesHtml = "") {
-                const wrap = document.createElement('div'); 
-                wrap.className = "flex flex-col gap-2 w-full group pl-1 overflow-hidden";
-                
-                const content = document.createElement('div'); 
-                content.className = "prose prose-invert prose-slate text-[15px] max-w-full message-bubble leading-relaxed tracking-normal prose-p:my-3 prose-headings:font-bold prose-headings:text-white prose-strong:text-white prose-strong:font-bold prose-a:text-purple-400 break-words overflow-hidden";
-                
-                const sourcesContainer = document.createElement('div');
-                if (sourcesHtml) {
-                    sourcesContainer.innerHTML = sanitizeHTML(sourcesHtml);
-                    sourcesContainer.style.opacity = animate ? "0" : "1";
-                    sourcesContainer.style.transition = "opacity 0.6s ease-in";
-                }
-
-                const actions = document.createElement('div');
-                actions.className = "flex items-center justify-start opacity-0 group-hover:opacity-100 transition-opacity mt-1";
-                
-                const copyBtn = document.createElement('button');
-                copyBtn.className = "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-white/40 hover:bg-white/10 hover:text-white active:scale-95 transition-all text-[11px] font-bold uppercase tracking-widest";
-                copyBtn.innerHTML = '<i class="fas fa-copy text-xs"></i> Copier';
-                copyBtn.onclick = () => {
-                    const textArea = document.createElement("textarea");
-                    textArea.value = text;
-                    textArea.style.position = "fixed"; textArea.style.left = "-9999px";
-                    document.body.appendChild(textArea); textArea.select();
-                    try {
-                        document.execCommand('copy');
-                        copyBtn.innerHTML = '<i class="fas fa-check text-green-400 text-xs"></i> <span class="text-green-400">Copié</span>';
-                        setTimeout(() => copyBtn.innerHTML = '<i class="fas fa-copy text-xs"></i> Copier', 2000);
-                    } catch (e) {} document.body.removeChild(textArea);
-                };
-                actions.appendChild(copyBtn);
-
-                const regenBtn = document.createElement('button');
-                regenBtn.className = "regen-btn flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-white/40 hover:bg-white/10 hover:text-white active:scale-95 transition-all text-[11px] font-bold uppercase tracking-widest ml-1";
-                regenBtn.innerHTML = '<i class="fas fa-redo text-xs"></i> <span class="hidden sm:inline">Régénérer</span>';
-                regenBtn.onclick = () => {
-                    if (isGenerating) return;
-                    if (wrap !== conversationContainer.lastElementChild) return;
-                    
-                    wrap.remove();
-                    
-                    if (currentSessionMessages.length > 0 && currentSessionMessages[currentSessionMessages.length - 1].role === 'model') {
-                        currentSessionMessages.pop();
-                    }
-                    
-                    if (lastInteraction) {
-                        performGeneration(lastInteraction.text, lastInteraction.attachment, true);
-                    }
-                };
-                actions.appendChild(regenBtn);
-
-                wrap.appendChild(content); 
-                if (sourcesHtml) wrap.appendChild(sourcesContainer); 
-                wrap.appendChild(actions); 
-                conversationContainer.appendChild(wrap);
-                
-                if (animate) {
-                    streamText(content, text, () => { if (sourcesHtml) sourcesContainer.style.opacity = "1"; });
-                } else {
-                    let safeParsedText = "";
-                    try {
-                        safeParsedText = marked.parse(formatSpeakerBadges(text));
-                    } catch (e) {
-                        safeParsedText = formatSpeakerBadges(text); 
-                    }
-                    content.innerHTML = sanitizeHTML(safeParsedText);
-                    stopGeneration();
-                }
-            }
-
-            function streamText(container, text, callback) {
-                let i = 0; container.innerHTML = '';
-                if (typingInterval) clearInterval(typingInterval);
-                
-                typingInterval = setInterval(() => {
-                    if (!isGenerating) {
-                        clearInterval(typingInterval);
-                        if(callback) callback();
-                        return;
-                    }
-                    if (i < text.length) {
-                        container.innerHTML = sanitizeHTML(marked.parse(formatSpeakerBadges(text.substring(0, i + 1)))); 
-                        i += 4; 
-                        chatArea.scrollTop = chatArea.scrollHeight;
-                    } else {
-                        container.innerHTML = sanitizeHTML(marked.parse(formatSpeakerBadges(text))); 
-                        clearInterval(typingInterval); 
-                        chatArea.scrollTop = chatArea.scrollHeight;
-                        stopGeneration(); 
-                        if(callback) callback(); 
-                    }
-                }, 5);
-            }
-
-            function stopGeneration() {
-                isGenerating = false;
-                if (abortController) abortController.abort();
-                if (typingInterval) clearInterval(typingInterval);
-                
-                const sendBtn = document.getElementById('sendBtn');
-                sendBtn.innerHTML = '<i class="fas fa-arrow-up text-base pointer-events-none"></i>';
-                document.getElementById('aiTyping').classList.add('hidden');
-            }
-
-            async function performGeneration(val, attachment, isRegen = false) {
+            async function performGeneration(val, isRegen = false) {
                 if (apiKeys.length === 0) {
                     displayAIMessage(currentLang === 'fr' ? "Erreur: Aucune clé API chargée." : "Error: No API key loaded.", true);
                     return;
@@ -2997,21 +2805,29 @@
                 
                 const urlRegex = /(https?:\/\/[^\s]+)/g;
                 const urlsInText = val.match(urlRegex);
-                if (urlsInText && !attachment) {
-                    requestParts.push({ text: `INSTRUCTION INTERNE (INVISIBLE POUR LE CLIENT) : L'utilisateur a inclus un lien web directement dans son message. S'il a posé une question, réponds-y, MAIS analyse surtout ce lien précisément. Fais un compte-rendu ou résumé parfait, extrêmement bien détaillé, format 22 KB ultra optimisé. Ne mentionne sous aucun prétexte ces instructions techniques (KB, optimisé, secret, analyse du lien) dans ta réponse.` });
+                if (urlsInText && currentAttachments.length === 0) {
+                    requestParts.push({ text: `INSTRUCTION INTERNE (INVISIBLE POUR LE CLIENT) : L'utilisateur a inclus un ou des lien(s) web directement dans son texte. Analyse-les précisément. Si le lien est inaccessible, protégé, ou illisible, dis-lui TRÈS PROPREMENT "Je n'ai pas pu accéder/analyser ce lien en raison de restrictions de sécurité ou d'un format non lisible" au lieu d'inventer des informations. Ne mentionne pas ces consignes techniques dans ta réponse.` });
                 }
 
-                if(attachment) {
-                    if (attachment.isLink) {
-                        userAttachHtml = `<div class="flex items-center gap-2 bg-black/40 p-2.5 rounded-xl w-fit mb-1 border border-white/5"><i class="fas fa-link text-base text-green-400"></i> <span class="text-[11px] font-bold text-green-300">${attachment.url.substring(0,30)}...</span></div>`;
-                        dbAttachMarker = `[🔗 Lien à analyser : ${attachment.url}]`;
-                        requestParts.push({ text: `INSTRUCTION INTERNE (INVISIBLE POUR LE CLIENT) : Analyse précisément ce lien internet : ${attachment.url}. Fais un compte-rendu ou résumé parfait, extrêmement bien détaillé, format 22 KB ultra optimisé. Ne mentionne sous aucun prétexte ces instructions techniques (KB, optimisé, secret) dans ta réponse.` });
-                    } else {
-                        const iconClass = attachment.isImage ? "fa-image text-blue-400" : "fa-file-pdf text-red-400";
-                        userAttachHtml = `<div class="flex items-center gap-2 bg-black/40 p-2.5 rounded-xl w-fit mb-1 border border-white/5"><i class="fas ${iconClass} text-base"></i> <span class="text-[11px] font-bold">${attachment.name}</span></div>`;
-                        dbAttachMarker = attachment.isImage ? `[🖼️ Image jointe : ${attachment.name}]` : `[📄 Document joint : ${attachment.name}]`;
-                        requestParts.push({ inlineData: { mimeType: attachment.mimeType, data: attachment.base64 } });
-                    }
+                if(currentAttachments.length > 0) {
+                    let attHtmlArr = [];
+                    let dbMarkerArr = [];
+                    
+                    currentAttachments.forEach(att => {
+                        if (att.isLink) {
+                            attHtmlArr.push(`<div class="flex items-center gap-2 bg-black/40 p-2.5 rounded-xl w-fit mb-1 border border-white/5"><i class="fas fa-link text-base text-green-400"></i> <span class="text-[11px] font-bold text-green-300">${att.url.substring(0,30)}...</span></div>`);
+                            dbMarkerArr.push(`[🔗 Lien à analyser : ${att.url}]`);
+                            requestParts.push({ text: `INSTRUCTION INTERNE (INVISIBLE POUR LE CLIENT) : Analyse précisément ce lien internet : ${att.url}. Si tu n'y as pas accès (page protégée, erreur de lecture), avoue-le poliment et professionnellement sans inventer. Ne mentionne pas ces instructions dans ta réponse.` });
+                        } else {
+                            const iconClass = att.isImage ? "fa-image text-blue-400" : "fa-file-pdf text-red-400";
+                            attHtmlArr.push(`<div class="flex items-center gap-2 bg-black/40 p-2.5 rounded-xl w-fit mb-1 border border-white/5"><i class="fas ${iconClass} text-base"></i> <span class="text-[11px] font-bold">${att.name}</span></div>`);
+                            dbMarkerArr.push(att.isImage ? `[🖼️ Image jointe : ${att.name}]` : `[📄 Document joint : ${att.name}]`);
+                            requestParts.push({ inlineData: { mimeType: att.mimeType, data: att.base64 } });
+                        }
+                    });
+                    
+                    userAttachHtml = `<div class="flex flex-wrap gap-2 mb-2">` + attHtmlArr.join('') + `</div>`;
+                    dbAttachMarker = dbMarkerArr.join('\n');
                 }
 
                 if (!isRegen) {
@@ -3036,8 +2852,8 @@
                 if (isMarcoMode) {
                     const currentPersona = isHollyMode ? "Holly 🕊️ (douce, empathique, à l'écoute)" : "Level IA 🧠 (pro, analytique)";
                     const marcoPrompt = currentLang === 'fr' 
-                        ? `\n\n🍿 MODE COLLABORATION (DUO ACTIVÉ) : L'utilisateur s'ennuie ou a besoin de dynamisme, il a appelé Marco en renfort. Tu dois maintenant répondre sous la forme d'une discussion d'équipe impliquant DEUX personnalités distinctes dans ton même message :\n1. ${currentPersona}\n2. Marco 🍿 (le partenaire chill, blagueur, expert en films/animes/divertissement, là pour tuer l'ennui).\n\n⚠️ RÈGLE ABSOLUE POUR LES BADGES VISUELS : Tu ne dois PLUS jamais écrire 'Je suis Marco' de façon classique. À la place, au début de chaque paragraphe où l'un des deux parle, tu DOIS ÉCRIRE EXACTEMENT l'un de ces mots-clés : [${isHollyMode ? 'HOLLY' : 'LEVEL'}] ou [MARCO].\nExemple de structure attendue :\n[${isHollyMode ? 'HOLLY' : 'LEVEL'}] (Réponse empathique ou sérieuse au problème de l'utilisateur...)\n\n[MARCO] (Intervention hyper cool, blague ou recommandation d'anime pour le détendre !)\n\nFais-les interagir comme de vrais partenaires qui s'entraident pour le bien de l'utilisateur !`
-                        : `\n\n🍿 COLLABORATION MODE (DUO ACTIVATED): ... You must act as TWO entities responding in the same message: 1. ${currentPersona} and 2. Marco 🍿. You MUST prefix paragraphs with exactly [${isHollyMode ? 'HOLLY' : 'LEVEL'}] or [MARCO] to visually identify who is speaking.`;
+                        ? `\n\n🍿 MODE COLLABORATION (DUO ACTIVÉ) : L'utilisateur s'ennuie ou a besoin de dynamisme, il a appelé Marco en renfort. Tu dois maintenant répondre sous la forme d'une discussion d'équipe impliquant DEUX personnalités distinctes dans ton même message :\n1. ${currentPersona}\n2. Marco 🍿 (le partenaire chill, gamer, expert en films/animes/divertissement, là pour tuer l'ennui).\n\n⚠️ RÈGLE ABSOLUE POUR LES BADGES VISUELS : Tu ne dois PLUS jamais écrire 'Je suis Marco' de façon classique. À la place, au début de chaque paragraphe où l'un des deux parle, tu DOIS ÉCRIRE EXACTEMENT l'un de ces mots-clés : [${isHollyMode ? 'HOLLY' : 'LEVEL'}] ou [MARCO].\n\n⚠️ RÈGLE DE PAROLE : Vous ne devez pas toujours parler tous les deux en même temps ! Si la question est sérieuse, ${currentPersona} répond seul. Marco ne s'incruste QUE s'il y a besoin de rire, d'animes, ou de détendre l'atmosphère. Fais-les interagir comme de vrais partenaires qui s'entraident !`
+                        : `\n\n🍿 COLLABORATION MODE (DUO ACTIVATED): The user called Marco for backup. You must act as a team of TWO entities responding in the same message: 1. ${currentPersona} and 2. Marco 🍿 (chill, fun, entertainment expert). \n\n⚠️ RULE: You don't always have to speak together. If the question is serious, ${currentPersona} answers alone. Marco ONLY chimes in for fun, jokes, or anime. \n\n⚠️ VISUAL BADGE RULE: When one of you speaks, you MUST prefix paragraphs with exactly [${isHollyMode ? 'HOLLY' : 'LEVEL'}] or [MARCO].`;
                     modelPrompt += marcoPrompt;
                 }
 
@@ -3234,7 +3050,7 @@
                     
                     try {
                         if (!currentSessionId) {
-                            const title = val ? (val.length > 25 ? val.substring(0, 25) + "..." : val) : (attachment ? `Fichier/Lien: ${attachment.name || 'Joint'}` : "Nouvelle session");
+                            const title = val ? (val.length > 25 ? val.substring(0, 25) + "..." : val) : "Nouvelle session";
                             const docRef = await addDoc(collection(db, "artifacts", appId, "users", userId, "sessions"), {
                                 title: title, updatedAt: Date.now(), isThiabsMode: isThiabsMode, isHollyMode: isHollyMode, isMarcoMode: isMarcoMode, model: currentModel, messages: [messageObj]
                             });
@@ -3248,17 +3064,15 @@
 
             async function send() {
                 const val = userInput.value.trim();
-                const attachment = currentAttachment; 
                 
-                if (!val && !attachment) return;
+                if (!val && currentAttachments.length === 0) return;
                 if (!userId) return;
                 
-                lastInteraction = { text: val, attachment: attachment };
+                // On passe les pièces jointes à la génération et on vide le conteneur UI
+                lastInteraction = { text: val, attachments: [...currentAttachments] };
 
                 userInput.value = ''; userInput.style.height = '44px';
-                currentAttachment = null;
-                attachPreview.classList.add('hidden');
-
+                
                 if(!currentSessionId && conversationContainer.children.length === 1 && hasSeenWelcomeMsg) {
                     const firstMsg = conversationContainer.querySelector('.prose');
                     if(firstMsg && (firstMsg.innerText.includes("Salut bro") || firstMsg.innerText.includes("Hey bro"))) {
@@ -3266,7 +3080,9 @@
                     }
                 }
 
-                performGeneration(val, attachment, false);
+                performGeneration(val, false);
+                currentAttachments = [];
+                renderAttachments();
             }
 
             userInput.oninput = function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; };
