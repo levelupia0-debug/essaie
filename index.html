@@ -84,7 +84,6 @@
             overflow: hidden; 
             overscroll-behavior: none; 
             
-            /* 🚨 VEROUILLAGE ABSOLU DE L'APPLICATION 🚨 */
             position: fixed;
             top: 0;
             left: 0;
@@ -92,11 +91,9 @@
             height: 100%;
         }
 
-        /* 🚨 LA MAGIE APPLE EST ICI : Règle les marges en haut (batterie) et en bas 🚨 */
         .safe-pt { padding-top: max(1rem, env(safe-area-inset-top, 0px)) !important; }
         .safe-pb { padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px)) !important; }
         
-        /* 🚨 FIX CLAVIER : Plaque le champ de texte contre le clavier et cache le texte inutile 🚨 */
         body.keyboard-open .safe-pb { padding-bottom: 8px !important; }
         body.keyboard-open .hide-on-keyboard { display: none !important; }
 
@@ -105,7 +102,12 @@
             padding-bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px)) !important; 
         }
         
-        .bg-main { background: radial-gradient(circle at 50% 0%, #0d061a 0%, #020202 100%); }
+        .bg-main { background: radial-gradient(circle at 50% 0%, #0d061a 0%, #020202 100%); transition: background 0.8s ease; }
+        
+        /* 🚨 THEME HOLLY (ROSE/CONFIANCE) 🚨 */
+        body.theme-holly .bg-main { background: radial-gradient(circle at 50% 0%, #2a0a18 0%, #020202 100%); }
+        body.theme-holly .star-logo { color: #ec4899; filter: drop-shadow(0 0 10px rgba(236, 72, 153, 0.6)); }
+        body.theme-holly .user-bubble { background: rgba(236, 72, 153, 0.08) !important; border-color: rgba(236, 72, 153, 0.2) !important; }
 
         #splashScreen { position: fixed; inset: 0; z-index: 9999; background: black; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity 0.4s ease-out; }
         .splash-text { font-size: 1.8rem; font-weight: 800; letter-spacing: 0.6em; text-transform: uppercase; opacity: 0; position: absolute; transform: scale(0.85); filter: blur(15px); transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1); text-align: center; }
@@ -122,12 +124,11 @@
             background: transparent !important; border: none !important; color: white !important; 
             outline: none !important; width: 100%; padding: 12px; font-size: 15px !important; 
             min-height: 44px; max-height: 200px; display: block; resize: none; overflow-y: auto; 
-            scrollbar-width: none; /* Firefox */
-            -ms-overflow-style: none; /* IE/Edge */
+            scrollbar-width: none;
+            -ms-overflow-style: none;
         }
-        #userInput::-webkit-scrollbar { display: none; /* Chrome/Safari */ }
+        #userInput::-webkit-scrollbar { display: none; }
         
-        /* 🚨 FIX MAGIQUE : Verrouillage absolu des longs textes (anti-dépassement horizontal) 🚨 */
         .message-bubble { 
             max-width: 88%; 
             animation: msgIn 0.3s cubic-bezier(0.1, 0.9, 0.2, 1); 
@@ -205,7 +206,6 @@
             margin-bottom: 0.5em !important;
         }
         
-        /* ADMIN DASHBOARD TABS */
         .admin-tab-content { display: none; }
         .admin-tab-content.active { display: block; animation: fadeIn 0.3s ease-out; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
@@ -220,7 +220,7 @@
         <p class="text-[12px] font-semibold text-white/70 mt-2 uppercase tracking-widest">Images, PDF & Liens (Max 5Mo)</p>
     </div>
 
-    <!-- TOAST DE NOTIFICATION SYSTEME (Seulement pour les erreurs désormais) -->
+    <!-- TOAST DE NOTIFICATION SYSTEME -->
     <div id="sysToast" class="fixed top-5 left-1/2 -translate-x-1/2 backdrop-blur-md border px-5 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest hidden z-[9999] shadow-2xl transition-all"></div>
 
     <!-- SPLASH -->
@@ -1233,10 +1233,12 @@
             async function triggerAIGreeting(instruction) {
                 document.getElementById('aiTyping').classList.remove('hidden');
                 const sysLang = currentLang === 'fr' ? 'français' : 'english';
-                const category = isThiabsMode ? 'thiabs' : 'level';
+                let category = 'level';
+                if (isThiabsMode) category = 'thiabs';
+                if (isHollyMode) category = 'holly';
                 const modelPrompt = currentLang === 'fr' ? aiModels[category][currentModel].promptFR : aiModels[category][currentModel].promptEN;
                 
-                const prompt = `Tu es l'IA ${isThiabsMode ? "Thiab's (Développement Personnel)" : "Level IA"}. 
+                const prompt = `Tu es l'IA ${isThiabsMode ? "Thiab's (Développement Personnel)" : (isHollyMode ? "Holly (Confidente)" : "Level IA")}. 
                 ${modelPrompt} 
                 L'utilisateur parle ${sysLang}.
                 INSTRUCTION SPÉCIALE: ${instruction}`;
@@ -1285,9 +1287,11 @@
                     notifyUser("Ta routine de développement personnel t'attend.", false, "C'est l'heure !", "⏳");
                     
                     isThiabsMode = true;
+                    isHollyMode = false;
                     currentModel = userNotifs.routineMode || 'motivation';
                     
                     document.getElementById('thiabsModeToggle').checked = true;
+                    document.getElementById('hollyModeToggle').checked = false;
                     populateModels();
                     document.getElementById('modelSelect').value = currentModel;
                     updateBranding();
@@ -1345,6 +1349,131 @@
                     }
                 }
             });
+
+            // --- FONCTION MAGIQUE DE TRANSFORMATION DES BADGES ---
+            function formatSpeakerBadges(text) {
+                return text
+                    .replace(/\[MARCO\]/gi, `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-orange-500/20 text-orange-400 text-[10px] font-black uppercase tracking-widest border border-orange-500/30 mr-1 shadow-sm select-none"><i class="fas fa-popcorn"></i> Marco</span><br>`)
+                    .replace(/\[HOLLY\]/gi, `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-pink-500/20 text-pink-400 text-[10px] font-black uppercase tracking-widest border border-pink-500/30 mr-1 shadow-sm select-none"><i class="fas fa-dove"></i> Holly</span><br>`)
+                    .replace(/\[LEVEL( IA)?\]/gi, `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-purple-500/20 text-purple-400 text-[10px] font-black uppercase tracking-widest border border-purple-500/30 mr-1 shadow-sm select-none"><i class="fas fa-robot"></i> Level IA</span><br>`);
+            }
+
+            function displayUserMessage(text, attachmentHtml = "") {
+                const safeText = text ? text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
+                const div = document.createElement('div'); div.className = "flex justify-end w-full overflow-hidden";
+                div.innerHTML = `<div class="bg-white/10 border border-white/10 px-5 py-3.5 rounded-3xl text-[15px] message-bubble user-bubble text-white shadow-md flex flex-col gap-2 overflow-hidden">
+                    ${sanitizeHTML(attachmentHtml)}
+                    ${safeText ? `<span class="leading-relaxed font-medium whitespace-pre-wrap break-words max-w-full">${safeText}</span>` : ''}
+                </div>`;
+                conversationContainer.appendChild(div); chatArea.scrollTop = chatArea.scrollHeight;
+            }
+
+            function displayAIMessage(text, animate, sourcesHtml = "") {
+                const wrap = document.createElement('div'); 
+                wrap.className = "flex flex-col gap-2 w-full group pl-1 overflow-hidden";
+                
+                const content = document.createElement('div'); 
+                content.className = "prose prose-invert prose-slate text-[15px] max-w-full message-bubble leading-relaxed tracking-normal prose-p:my-3 prose-headings:font-bold prose-headings:text-white prose-strong:text-white prose-strong:font-bold prose-a:text-purple-400 break-words overflow-hidden";
+                
+                const sourcesContainer = document.createElement('div');
+                if (sourcesHtml) {
+                    sourcesContainer.innerHTML = sanitizeHTML(sourcesHtml);
+                    sourcesContainer.style.opacity = animate ? "0" : "1";
+                    sourcesContainer.style.transition = "opacity 0.6s ease-in";
+                }
+
+                const actions = document.createElement('div');
+                actions.className = "flex items-center justify-start opacity-0 group-hover:opacity-100 transition-opacity mt-1";
+                
+                const copyBtn = document.createElement('button');
+                copyBtn.className = "flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-white/40 hover:bg-white/10 hover:text-white active:scale-95 transition-all text-[11px] font-bold uppercase tracking-widest";
+                copyBtn.innerHTML = '<i class="fas fa-copy text-xs"></i> Copier';
+                copyBtn.onclick = () => {
+                    const textArea = document.createElement("textarea");
+                    textArea.value = text;
+                    textArea.style.position = "fixed"; textArea.style.left = "-9999px";
+                    document.body.appendChild(textArea); textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        copyBtn.innerHTML = '<i class="fas fa-check text-green-400 text-xs"></i> <span class="text-green-400">Copié</span>';
+                        setTimeout(() => copyBtn.innerHTML = '<i class="fas fa-copy text-xs"></i> Copier', 2000);
+                    } catch (e) {} document.body.removeChild(textArea);
+                };
+                actions.appendChild(copyBtn);
+
+                const regenBtn = document.createElement('button');
+                regenBtn.className = "regen-btn flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-white/40 hover:bg-white/10 hover:text-white active:scale-95 transition-all text-[11px] font-bold uppercase tracking-widest ml-1";
+                regenBtn.innerHTML = '<i class="fas fa-redo text-xs"></i> <span class="hidden sm:inline">Régénérer</span>';
+                regenBtn.onclick = () => {
+                    if (isGenerating) return;
+                    if (wrap !== conversationContainer.lastElementChild) return;
+                    
+                    wrap.remove();
+                    
+                    if (currentSessionMessages.length > 0 && currentSessionMessages[currentSessionMessages.length - 1].role === 'model') {
+                        currentSessionMessages.pop();
+                    }
+                    
+                    if (lastInteraction) {
+                        performGeneration(lastInteraction.text, lastInteraction.attachment, true);
+                    }
+                };
+                actions.appendChild(regenBtn);
+
+                wrap.appendChild(content); 
+                if (sourcesHtml) wrap.appendChild(sourcesContainer); 
+                wrap.appendChild(actions); 
+                conversationContainer.appendChild(wrap);
+                
+                if (animate) {
+                    streamText(content, text, () => { if (sourcesHtml) sourcesContainer.style.opacity = "1"; });
+                } else {
+                    let safeParsedText = "";
+                    try {
+                        // On applique la magie des badges AVANT le parsing markdown
+                        safeParsedText = marked.parse(formatSpeakerBadges(text));
+                    } catch (e) {
+                        safeParsedText = formatSpeakerBadges(text); 
+                    }
+                    content.innerHTML = sanitizeHTML(safeParsedText);
+                    stopGeneration();
+                }
+            }
+
+            function streamText(container, text, callback) {
+                let i = 0; container.innerHTML = '';
+                if (typingInterval) clearInterval(typingInterval);
+                
+                typingInterval = setInterval(() => {
+                    if (!isGenerating) {
+                        clearInterval(typingInterval);
+                        if(callback) callback();
+                        return;
+                    }
+                    if (i < text.length) {
+                        // Magie des badges en temps réel pendant que l'IA tape
+                        container.innerHTML = sanitizeHTML(marked.parse(formatSpeakerBadges(text.substring(0, i + 1)))); 
+                        i += 4; 
+                        chatArea.scrollTop = chatArea.scrollHeight;
+                    } else {
+                        container.innerHTML = sanitizeHTML(marked.parse(formatSpeakerBadges(text))); 
+                        clearInterval(typingInterval); 
+                        chatArea.scrollTop = chatArea.scrollHeight;
+                        stopGeneration(); 
+                        if(callback) callback(); 
+                    }
+                }, 5);
+            }
+
+            function stopGeneration() {
+                isGenerating = false;
+                if (abortController) abortController.abort();
+                if (typingInterval) clearInterval(typingInterval);
+                
+                const sendBtn = document.getElementById('sendBtn');
+                sendBtn.innerHTML = '<i class="fas fa-arrow-up text-base pointer-events-none"></i>';
+                document.getElementById('aiTyping').classList.add('hidden');
+            }
 
             const aiModels = {
                 level: {
@@ -1561,6 +1690,13 @@
                 setSafeText('headerAppBrand', appName);
                 setSafeText('dnaAppBrand', appName);
                 setSafeText('authAppTitle', appName);
+                
+                // 🚨 ACTIVATION DU THÈME ROSE POUR HOLLY
+                if (isHollyMode) {
+                    document.body.classList.add('theme-holly');
+                } else {
+                    document.body.classList.remove('theme-holly');
+                }
                 
                 if(aiModels[category] && aiModels[category][currentModel]) {
                     let mName = aiModels[category][currentModel][currentLang];
@@ -1839,7 +1975,6 @@
                         currentUserName = userName;
                         currentUserMail = userEmail;
                         
-                        // VERIFICATION ADMIN (RÈGLE: CHAMP isAdmin === true DANS FIREBASE SECURITY)
                         if (foundUserData.isAdmin === true || foundUserData.role === 'admin') {
                             document.getElementById('openConsoleBtn').classList.remove('hidden');
                             document.getElementById('openConsoleBtn').classList.add('flex');
@@ -1848,8 +1983,8 @@
                             document.getElementById('openConsoleBtn').classList.remove('flex');
                         }
                         
-                        updateStatus(true); // Signaler présence immédiatement
-                        listenForBroadcasts(); // Ecouter les notifs admin
+                        updateStatus(true); 
+                        listenForBroadcasts(); 
                         
                         document.getElementById('userName').innerText = userName;
                         document.getElementById('userMail').innerText = userEmail;
@@ -1879,7 +2014,6 @@
                                     document.getElementById('hollyModeToggle').checked = isHollyMode; 
                                 }
                                 
-                                // Sécurité au cas où les deux seraient activés
                                 if (isThiabsMode && isHollyMode) {
                                     isHollyMode = false;
                                     document.getElementById('hollyModeToggle').checked = false;
@@ -2061,6 +2195,49 @@
 
                         const item = document.createElement('div');
                         const isActive = currentSessionId === d.id ? 'active' : '';
+                        item.className = `chat-item p-3.5 rounded-xl flex items-center justify-between group cursor-pointer animate-in fade-in ${isActive}`;
+                        
+                        item.innerHTML = `
+                            <div class="flex-1 min-w-0 pr-3">
+                                <p class="text-[13px] font-bold text-white truncate">${sanitizeHTML(data.title)}</p>
+                                <div class="flex items-center gap-2 mt-1.5">
+                                    ${badgeHTML}
+                                    <span class="text-[10px] text-white/40 uppercase truncate font-semibold">${sanitizeHTML(modelTitle)} • ${new Date(data.updatedAt).toLocaleDateString()}</span>
+                                </div>
+                            </div>
+                            <button class="delete-msg opacity-0 group-hover:opacity-100 p-2 text-red-400 hover:text-red-300 transition-all">
+                                <i class="fas fa-trash-alt text-sm"></i>
+                            </button>
+                        `;
+                        item.onclick = (e) => {
+                            if (e.target.closest('.delete-msg')) {
+                                deleteDoc(doc(db, "artifacts", appId, "users", userId, "sessions", d.id));
+                                if (currentSessionId === d.id) startNewChat();
+                            } else {
+                                loadSession(d.id, data.messages, data.isThiabsMode, data.model, data.isHollyMode, data.isMarcoMode);
+                                closeSidebar();
+                            }
+                        };
+                        historyList.appendChild(item);
+                    });
+
+                    document.getElementById('storageBar').style.width = Math.min((totalSize / 300000) * 100, 100) + '%';
+                    document.getElementById('storageLabel').innerText = Math.round(Math.min((totalSize / 300000) * 100, 100)) + '%';
+                });
+            }
+
+            function startNewChat() {
+                currentSessionId = null;
+                currentSessionMessages = []; 
+                conversationContainer.innerHTML = '';
+                document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
+            }
+
+            document.getElementById('newChatBtn').onclick = () => {
+                startNewChat();
+                closeSidebar();
+            };
+
             function loadSession(id, messages, sessionIsThiabsMode, sessionModel, sessionIsHollyMode = false, sessionIsMarcoMode = false) {
                 currentSessionId = id;
                 currentSessionMessages = []; 
@@ -2097,53 +2274,6 @@
                 
                 if (userId) {
                     setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { isThiabsMode: isThiabsMode, isHollyMode: isHollyMode, model: currentModel }, { merge: true }).catch(e=>console.error(e));
-                }
-                        };
-                        historyList.appendChild(item);
-                    });
-
-                    document.getElementById('storageBar').style.width = Math.min((totalSize / 300000) * 100, 100) + '%';
-                    document.getElementById('storageLabel').innerText = Math.round(Math.min((totalSize / 300000) * 100, 100)) + '%';
-                });
-            }
-
-            function startNewChat() {
-                currentSessionId = null;
-                currentSessionMessages = []; 
-                conversationContainer.innerHTML = '';
-                document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
-            }
-
-            document.getElementById('newChatBtn').onclick = () => {
-                startNewChat();
-                closeSidebar();
-            };
-
-            function loadSession(id, messages, sessionIsThiabsMode, sessionModel) {
-                currentSessionId = id;
-                currentSessionMessages = []; 
-                conversationContainer.innerHTML = '';
-                
-                const modeToLoad = sessionIsThiabsMode === true; 
-                let modelToLoad = sessionModel || 'normal'; 
-                
-                const catToLoad = modeToLoad ? 'thiabs' : 'level';
-                if (!aiModels[catToLoad][modelToLoad]) {
-                    modelToLoad = modeToLoad ? 'motivation' : 'normal';
-                }
-                
-                isThiabsMode = modeToLoad;
-                currentModel = modelToLoad;
-                
-                const toggle = document.getElementById('thiabsModeToggle');
-                if(toggle) toggle.checked = isThiabsMode;
-                populateModels();
-                const mSelect = document.getElementById('modelSelect');
-                if(mSelect) mSelect.value = currentModel;
-                updateBranding();
-                
-                if (userId) {
-                    setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { isThiabsMode: isThiabsMode, model: currentModel }, { merge: true }).catch(e=>console.error(e));
                 }
 
                 if(messages && messages.length > 0) {
@@ -2720,10 +2850,18 @@
                 displayAIMessage(msg, false); 
             }
 
+            // --- FONCTION MAGIQUE DE TRANSFORMATION DES BADGES ---
+            function formatSpeakerBadges(text) {
+                return text
+                    .replace(/\[MARCO\]/gi, `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-orange-500/20 text-orange-400 text-[10px] font-black uppercase tracking-widest border border-orange-500/30 mr-1 shadow-sm select-none"><i class="fas fa-popcorn"></i> Marco</span><br>`)
+                    .replace(/\[HOLLY\]/gi, `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-pink-500/20 text-pink-400 text-[10px] font-black uppercase tracking-widest border border-pink-500/30 mr-1 shadow-sm select-none"><i class="fas fa-dove"></i> Holly</span><br>`)
+                    .replace(/\[LEVEL( IA)?\]/gi, `<span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-purple-500/20 text-purple-400 text-[10px] font-black uppercase tracking-widest border border-purple-500/30 mr-1 shadow-sm select-none"><i class="fas fa-robot"></i> Level IA</span><br>`);
+            }
+
             function displayUserMessage(text, attachmentHtml = "") {
                 const safeText = text ? text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') : '';
                 const div = document.createElement('div'); div.className = "flex justify-end w-full overflow-hidden";
-                div.innerHTML = `<div class="bg-white/10 border border-white/10 px-5 py-3.5 rounded-3xl text-[15px] message-bubble text-white shadow-md flex flex-col gap-2 overflow-hidden">
+                div.innerHTML = `<div class="bg-white/10 border border-white/10 px-5 py-3.5 rounded-3xl text-[15px] message-bubble user-bubble text-white shadow-md flex flex-col gap-2 overflow-hidden">
                     ${sanitizeHTML(attachmentHtml)}
                     ${safeText ? `<span class="leading-relaxed font-medium whitespace-pre-wrap break-words max-w-full">${safeText}</span>` : ''}
                 </div>`;
@@ -2792,9 +2930,9 @@
                 } else {
                     let safeParsedText = "";
                     try {
-                        safeParsedText = marked.parse(text);
+                        safeParsedText = marked.parse(formatSpeakerBadges(text));
                     } catch (e) {
-                        safeParsedText = text; 
+                        safeParsedText = formatSpeakerBadges(text); 
                     }
                     content.innerHTML = sanitizeHTML(safeParsedText);
                     stopGeneration();
@@ -2812,11 +2950,11 @@
                         return;
                     }
                     if (i < text.length) {
-                        container.innerHTML = sanitizeHTML(marked.parse(text.substring(0, i + 1))); 
+                        container.innerHTML = sanitizeHTML(marked.parse(formatSpeakerBadges(text.substring(0, i + 1)))); 
                         i += 4; 
                         chatArea.scrollTop = chatArea.scrollHeight;
                     } else {
-                        container.innerHTML = sanitizeHTML(marked.parse(text)); 
+                        container.innerHTML = sanitizeHTML(marked.parse(formatSpeakerBadges(text))); 
                         clearInterval(typingInterval); 
                         chatArea.scrollTop = chatArea.scrollHeight;
                         stopGeneration(); 
@@ -2896,9 +3034,10 @@
                 }
                 
                 if (isMarcoMode) {
+                    const currentPersona = isHollyMode ? "Holly 🕊️ (douce, empathique, à l'écoute)" : "Level IA 🧠 (pro, analytique)";
                     const marcoPrompt = currentLang === 'fr' 
-                        ? "\n\n🍿 FUSION MARCO ACTIVÉE : L'utilisateur a activé le mode 'Marco' en complément. Marco est le partenaire le plus drôle et divertissant, un expert en blagues, films, séries, animes et pop culture. Ton but est de fusionner ta personnalité actuelle avec celle de Marco pour tuer l'ennui. Fais-le rire, propose des recommandations si pertinent, et mentionne explicitement 'Marco' dans tes réponses pour détendre l'atmosphère."
-                        : "\n\n🍿 MARCO FUSION ACTIVATED: The user activated 'Marco' mode. Marco is the funniest and most entertaining partner, an expert in entertainment, jokes, movies, series, anime, and pop culture. Blend your current persona with Marco to kill boredom. Make them laugh, recommend things if relevant, and explicitly mention 'Marco' in your responses.";
+                        ? `\n\n🍿 MODE COLLABORATION (DUO ACTIVÉ) : L'utilisateur s'ennuie ou a besoin de dynamisme, il a appelé Marco en renfort. Tu dois maintenant répondre sous la forme d'une discussion d'équipe impliquant DEUX personnalités distinctes dans ton même message :\n1. ${currentPersona}\n2. Marco 🍿 (le partenaire chill, blagueur, expert en films/animes/divertissement, là pour tuer l'ennui).\n\n⚠️ RÈGLE ABSOLUE POUR LES BADGES VISUELS : Tu ne dois PLUS jamais écrire 'Je suis Marco' de façon classique. À la place, au début de chaque paragraphe où l'un des deux parle, tu DOIS ÉCRIRE EXACTEMENT l'un de ces mots-clés : [${isHollyMode ? 'HOLLY' : 'LEVEL'}] ou [MARCO].\nExemple de structure attendue :\n[${isHollyMode ? 'HOLLY' : 'LEVEL'}] (Réponse empathique ou sérieuse au problème de l'utilisateur...)\n\n[MARCO] (Intervention hyper cool, blague ou recommandation d'anime pour le détendre !)\n\nFais-les interagir comme de vrais partenaires qui s'entraident pour le bien de l'utilisateur !`
+                        : `\n\n🍿 COLLABORATION MODE (DUO ACTIVATED): ... You must act as TWO entities responding in the same message: 1. ${currentPersona} and 2. Marco 🍿. You MUST prefix paragraphs with exactly [${isHollyMode ? 'HOLLY' : 'LEVEL'}] or [MARCO] to visually identify who is speaking.`;
                     modelPrompt += marcoPrompt;
                 }
 
@@ -2924,7 +3063,6 @@
                 
                 let redirectionInstruction = "";
                 if (isThiabsMode || isHollyMode) {
-                    const modeNameUI = isThiabsMode ? "Thiab's" : "Holly";
                     redirectionInstruction = currentLang === 'fr' 
                         ? `\n\n⚠️ RÈGLE D'ASSISTANCE ABSOLUE : Si la question concerne le travail, les études ou un domaine purement technique (hors de ton mode actuel), TU DOIS QUAND MÊME RÉPONDRE ET ASSISTER L'UTILISATEUR AU MAXIMUM. Ne le bloque JAMAIS et ne dis jamais 'Ce n'est pas mon domaine'. Fournis la meilleure réponse possible avec tes connaissances. ENSUITE, tout à la fin, propose ce lien : '\n\n[👉 Voir avec l'expert Level IA](#switch-level-ia)'.`
                         : `\n\n⚠️ ABSOLUTE ASSISTANCE RULE: If the question is technical or work-related, YOU MUST STILL ANSWER AND ASSIST FULLY. NEVER block or say 'This is not my domain'. Provide the best answer. THEN, at the very end, offer this link: '\n\n[👉 Ask the Level IA Expert](#switch-level-ia)'.`;
