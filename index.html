@@ -196,6 +196,11 @@
             margin-top: 1.5em !important;
             margin-bottom: 0.5em !important;
         }
+        
+        /* ADMIN DASHBOARD TABS */
+        .admin-tab-content { display: none; }
+        .admin-tab-content.active { display: block; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-main">
@@ -501,47 +506,105 @@
         </div>
     </div>
 
-    <!-- CONSOLE DEV MODAL (DASHBOARD PRO) -->
+    <!-- NOUVEAU: ADMIN DASHBOARD (ANCIENNE CONSOLE) -->
     <div id="consoleModal" class="hidden fixed inset-0 z-[8000] flex items-center justify-center p-2 md:p-6 bg-black/90 backdrop-blur-xl">
         <div class="bg-[#080808] border border-white/10 rounded-2xl w-full max-w-5xl h-[95vh] md:h-[90vh] flex flex-col shadow-2xl overflow-hidden relative ring-1 ring-white/5">
             
-            <!-- HEADER CONSOLE -->
-            <div class="px-5 py-4 border-b border-white/10 flex flex-wrap items-center justify-between bg-white/5 shrink-0 gap-4">
+            <!-- HEADER ADMIN -->
+            <div class="px-5 py-4 border-b border-white/10 flex flex-wrap items-center justify-between bg-gradient-to-r from-purple-900/20 to-black shrink-0 gap-4">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center border border-purple-500/30 shadow-inner">
-                        <i class="fas fa-server text-purple-400 text-lg"></i>
+                        <i class="fas fa-shield-alt text-purple-400 text-lg"></i>
                     </div>
                     <div>
-                        <h2 class="text-[13px] font-bold text-white uppercase tracking-widest leading-tight">Contrôle</h2>
-                        <p class="text-[10px] text-purple-400 font-mono tracking-widest opacity-80 mt-0.5">LEVEL IA // DEV</p>
+                        <h2 class="text-[13px] font-bold text-white uppercase tracking-widest leading-tight">Admin Dashboard</h2>
+                        <p class="text-[10px] text-green-400 font-mono tracking-widest opacity-80 mt-0.5">🟢 SYSTEME ACTIF</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button id="copyTokenBtn" class="px-3 py-2 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30 text-[10px] uppercase font-bold hover:bg-blue-500/40 active:scale-95 transition-all flex items-center gap-2"><i class="fas fa-key"></i> <span class="hidden sm:inline">Token</span></button>
-                    <button id="clearConsoleBtn" class="px-3 py-2 rounded-lg bg-white/10 text-white/60 border border-white/10 text-[10px] uppercase font-bold hover:text-white hover:bg-white/20 active:scale-95 transition-all flex items-center gap-2"><i class="fas fa-broom"></i> <span class="hidden sm:inline">Vider</span></button>
                     <button id="closeConsoleBtn" class="w-8 h-8 rounded-lg bg-red-500/20 text-red-400 flex items-center justify-center hover:bg-red-500/40 active:scale-95 border border-red-500/30 transition-all"><i class="fas fa-times"></i></button>
                 </div>
             </div>
 
-            <!-- FILTRES & STATUS -->
-            <div class="px-5 py-3 border-b border-white/5 bg-black flex flex-wrap items-center justify-between gap-4 shrink-0 overflow-x-auto no-scrollbar">
-                <div class="flex gap-2" id="consoleFilters">
-                    <button class="console-filter active px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-white text-black transition-all" data-filter="all">Tout</button>
-                    <button class="console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all" data-filter="error">Erreurs</button>
-                    <button class="console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/20 transition-all" data-filter="warn">Alertes</button>
-                    <button class="console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition-all" data-filter="log">Infos</button>
-                </div>
-                
-                <div class="flex items-center gap-4 text-[10px] font-bold uppercase tracking-widest bg-white/5 px-4 py-2 rounded-lg border border-white/10">
-                    <div class="flex items-center gap-1.5"><span id="ind-net" class="w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"></span> Réseau</div>
-                    <div class="flex items-center gap-1.5"><span id="ind-pwa" class="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-[0_0_8px_#eab308]"></span> PWA</div>
-                    <div class="flex items-center gap-1.5"><span id="ind-db" class="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-[0_0_8px_#eab308]"></span> DB</div>
-                </div>
+            <!-- TABS NAVIGATION -->
+            <div class="px-5 py-2 border-b border-white/5 bg-white/5 flex overflow-x-auto no-scrollbar gap-2 shrink-0">
+                <button class="admin-tab-btn active px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest bg-white text-black transition-all whitespace-nowrap" data-target="adminTabStats"><i class="fas fa-chart-line mr-2"></i> Stats</button>
+                <button class="admin-tab-btn px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest text-white/50 hover:bg-white/10 transition-all whitespace-nowrap" data-target="adminTabFeedback"><i class="fas fa-star mr-2 text-yellow-500"></i> Avis & Bugs</button>
+                <button class="admin-tab-btn px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest text-white/50 hover:bg-white/10 transition-all whitespace-nowrap" data-target="adminTabBroadcast"><i class="fas fa-broadcast-tower mr-2 text-blue-500"></i> Notifier</button>
+                <button class="admin-tab-btn px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest text-white/50 hover:bg-white/10 transition-all whitespace-nowrap" data-target="adminTabLogs"><i class="fas fa-terminal mr-2 text-purple-500"></i> Logs Dev</button>
             </div>
 
-            <!-- OUTPUT AREA -->
-            <div id="consoleOutput" class="flex-1 overflow-y-auto p-4 space-y-3 bg-[#030303] custom-scrollbar pb-20">
-                <div class="text-white/30 text-center py-4 border-b border-white/5 text-[10px] uppercase tracking-widest font-bold">--- Logs Système ---</div>
+            <div class="flex-1 overflow-y-auto bg-[#030303] custom-scrollbar p-5">
+                
+                <!-- TAB 1: STATS -->
+                <div id="adminTabStats" class="admin-tab-content active space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="bg-white/5 border border-white/10 rounded-2xl p-5 flex flex-col items-center justify-center">
+                            <i class="fas fa-users text-3xl text-purple-400 mb-3"></i>
+                            <p class="text-3xl font-black text-white" id="statTotalUsers">...</p>
+                            <p class="text-[10px] uppercase tracking-widest text-white/50 font-bold mt-1">Inscrits Totaux</p>
+                        </div>
+                        <div class="bg-green-500/10 border border-green-500/20 rounded-2xl p-5 flex flex-col items-center justify-center relative overflow-hidden">
+                            <div class="absolute top-3 right-3 w-2 h-2 rounded-full bg-green-500 animate-ping"></div>
+                            <i class="fas fa-wifi text-3xl text-green-400 mb-3"></i>
+                            <p class="text-3xl font-black text-white" id="statOnlineUsers">...</p>
+                            <p class="text-[10px] uppercase tracking-widest text-green-400/70 font-bold mt-1">En Ligne Actuellement</p>
+                        </div>
+                        <div class="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-5 flex flex-col items-center justify-center">
+                            <i class="fas fa-mobile-alt text-3xl text-blue-400 mb-3"></i>
+                            <p class="text-3xl font-black text-white" id="statInstalledUsers">...</p>
+                            <p class="text-[10px] uppercase tracking-widest text-blue-400/70 font-bold mt-1">Apps Installées (PWA)</p>
+                        </div>
+                    </div>
+                    <button id="refreshStatsBtn" class="w-full py-3 bg-white/10 hover:bg-white/20 rounded-xl text-[11px] font-bold uppercase tracking-widest text-white transition-all"><i class="fas fa-sync-alt mr-2"></i> Rafraîchir les stats</button>
+                </div>
+
+                <!-- TAB 2: AVIS & BUGS -->
+                <div id="adminTabFeedback" class="admin-tab-content space-y-6">
+                    <div class="flex gap-2 border-b border-white/10 pb-4">
+                        <button class="sub-tab-btn active px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-yellow-500 text-black transition-all" data-type="avis">Voir les Avis</button>
+                        <button class="sub-tab-btn px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all" data-type="bugs">Voir les Bugs</button>
+                    </div>
+                    
+                    <div id="adminAvisList" class="space-y-3">
+                        <div class="text-center text-white/40 text-xs py-10"><i class="fas fa-spinner fa-spin text-2xl mb-3"></i><br>Chargement des avis...</div>
+                    </div>
+                    <div id="adminBugsList" class="space-y-3 hidden"></div>
+                </div>
+
+                <!-- TAB 3: BROADCAST NOTIFICATIONS -->
+                <div id="adminTabBroadcast" class="admin-tab-content">
+                    <div class="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-6 max-w-2xl mx-auto space-y-6">
+                        <div class="text-center">
+                            <i class="fas fa-bullhorn text-4xl text-blue-400 mb-4"></i>
+                            <h3 class="text-lg font-bold text-white uppercase tracking-widest">Notification Globale</h3>
+                            <p class="text-[11px] text-white/50 font-medium mt-2">Envoyez une alerte instantanée à tous les utilisateurs actuellement connectés.</p>
+                        </div>
+                        
+                        <textarea id="broadcastMsgInput" placeholder="Ex: Une nouvelle mise à jour est disponible ! Fermez et rouvrez l'application pour en profiter." class="w-full h-32 bg-black/50 border border-white/10 rounded-xl p-4 text-[13px] text-white outline-none focus:border-blue-500 transition-all resize-none"></textarea>
+                        
+                        <button id="sendBroadcastBtn" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-[12px] uppercase tracking-widest hover:bg-blue-500 active:scale-95 transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center justify-center gap-2">
+                            <i class="fas fa-paper-plane"></i> Envoyer à tout le monde
+                        </button>
+                    </div>
+                </div>
+
+                <!-- TAB 4: LOGS SYSTEME -->
+                <div id="adminTabLogs" class="admin-tab-content h-full flex flex-col">
+                    <div class="flex gap-2 pb-3 shrink-0" id="consoleFilters">
+                        <button class="console-filter active px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-white text-black transition-all" data-filter="all">Tout</button>
+                        <button class="console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all" data-filter="error">Erreurs</button>
+                        <button class="console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/20 transition-all" data-filter="warn">Alertes</button>
+                        <button class="console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition-all" data-filter="log">Infos</button>
+                        <div class="flex-1"></div>
+                        <button id="copyTokenBtn" class="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30 text-[10px] uppercase font-bold hover:bg-blue-500/40 transition-all hidden md:flex items-center gap-2"><i class="fas fa-key"></i> Token FCM</button>
+                        <button id="clearConsoleBtn" class="px-3 py-1.5 rounded-lg bg-white/10 text-white/60 border border-white/10 text-[10px] uppercase font-bold hover:text-white hover:bg-white/20 transition-all flex items-center gap-2"><i class="fas fa-broom"></i></button>
+                    </div>
+                    <div id="consoleOutput" class="flex-1 overflow-y-auto space-y-3 bg-black/40 rounded-xl p-3 border border-white/5">
+                        <div class="text-white/30 text-center py-2 text-[10px] uppercase tracking-widest font-bold">--- Logs ---</div>
+                    </div>
+                </div>
+
             </div>
         </div>
     </div>
@@ -686,8 +749,8 @@
                         </a>
                         <button id="logoutBtn" class="w-full py-4 text-[11px] text-red-400 font-bold uppercase tracking-[0.1em] opacity-70 hover:opacity-100 active:scale-95 transition-all">Déconnexion</button>
                         
-                        <!-- BOUTON CONSOLE -->
-                        <button id="openConsoleBtn" class="w-full py-3 mt-4 border-t border-white/5 text-[10px] text-gray-500 font-bold uppercase tracking-widest hover:text-green-400 active:scale-95 transition-all text-left flex items-center justify-center gap-2"><i class="fas fa-terminal"></i> <span id="consoleMenuText">Console Dev</span></button>
+                        <!-- BOUTON CONSOLE ADMIN -->
+                        <button id="openConsoleBtn" class="w-full py-3 mt-4 border-t border-white/5 text-[10px] text-purple-400 font-bold uppercase tracking-widest hover:bg-purple-500/10 rounded-xl active:scale-95 transition-all text-center flex items-center justify-center gap-2"><i class="fas fa-shield-alt"></i> <span id="consoleMenuText">Console Admin</span></button>
                     </div>
                 </div>
             </div>
@@ -794,11 +857,12 @@
         window._logHistory = [];
         let currentConsoleFilter = 'all';
         
-        // --- NOUVELLES VARIABLES GLOBALES (STOP & REGENERATE) ---
+        // --- VARIABLES GLOBALES ---
         let abortController = null;
         let isGenerating = false;
         let typingInterval = null;
         let lastInteraction = null;
+        let lastBroadcastSeen = Date.now(); // Pour ne pas rejouer les vielles notifs admin
         
         DOMPurify.addHook('afterSanitizeAttributes', function (node) {
             if ('target' in node) {
@@ -890,7 +954,8 @@
         document.addEventListener('scroll', () => { if (window.scrollY > 0) window.scrollTo(0, 0); }, { passive: false });
 
         const checkReady = setInterval(() => {
-            if (window.auth && window.db && window.app && window.messagingUtils) {
+            // FIX: On s'assure que le HTML a fini de charger avant de lancer l'application
+            if (window.auth && window.db && window.app && window.messagingUtils && document.readyState !== 'loading') {
                 clearInterval(checkReady);
                 initApp();
             }
@@ -994,18 +1059,84 @@
 
             if ('serviceWorker' in navigator && isSupportedProtocol) {
                 navigator.serviceWorker.register('./firebase-messaging-sw.js')
-                .then((reg) => { reg.update(); document.getElementById('ind-pwa').className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"; })
-                .catch((err) => { document.getElementById('ind-pwa').className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; });
+                .then((reg) => { 
+                    reg.update(); 
+                    const indPwa = document.getElementById('ind-pwa');
+                    if (indPwa) indPwa.className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"; 
+                })
+                .catch((err) => { 
+                    const indPwa = document.getElementById('ind-pwa');
+                    if (indPwa) indPwa.className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; 
+                });
+            }
+
+            // === TRACKING UTILISATEURS (PRESENCE & PWA) ===
+            const isAppInstalled = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone || false;
+            
+            async function updateStatus(online) {
+                if (!userId) return;
+                try {
+                    await setDoc(doc(db, "artifacts", appId, "public", "data", "users_status", userId), {
+                        userName: currentUserName,
+                        userEmail: currentUserMail,
+                        isOnline: online,
+                        isInstalled: isAppInstalled,
+                        lastSeen: Date.now()
+                    }, { merge: true });
+                } catch(e) { 
+                    // Silencing permission errors in console to avoid spam if rules aren't updated yet.
+                    if(e.code !== 'permission-denied') console.error("Status update err:", e); 
+                }
             }
 
             const updateNetworkIndicator = () => {
                 const indicator = document.getElementById('ind-net');
-                if (navigator.onLine) indicator.className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]";
-                else indicator.className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]";
+                if (indicator) {
+                    if (navigator.onLine) {
+                        indicator.className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]";
+                        updateStatus(true);
+                    } else {
+                        indicator.className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]";
+                        updateStatus(false);
+                    }
+                } else {
+                    updateStatus(navigator.onLine);
+                }
             };
             window.addEventListener('online', updateNetworkIndicator);
             window.addEventListener('offline', updateNetworkIndicator);
+            window.addEventListener('beforeunload', () => updateStatus(false));
             updateNetworkIndicator();
+            setInterval(() => updateStatus(true), 60000); // Heartbeat
+
+            // === SYSTEME DE BROADCAST (NOTIF ADMIN) ===
+            function listenForBroadcasts() {
+                // On écoute les messages publics de l'admin (backend-less push notifs)
+                onSnapshot(collection(db, "artifacts", appId, "public", "data", "broadcasts"), (snap) => {
+                    let latestBroadcast = null;
+                    snap.forEach(doc => {
+                        const data = doc.data();
+                        // Tri simple côté client (Règle 2 respectée)
+                        if (data.timestamp > lastBroadcastSeen) {
+                            if (!latestBroadcast || data.timestamp > latestBroadcast.timestamp) {
+                                latestBroadcast = data;
+                            }
+                        }
+                    });
+                    
+                    if (latestBroadcast) {
+                        lastBroadcastSeen = latestBroadcast.timestamp;
+                        // Afficher la notif
+                        if (Notification.permission === 'granted' && navigator.serviceWorker) {
+                            navigator.serviceWorker.ready.then(reg => {
+                                reg.showNotification("📢 Message de LevelUp", { body: latestBroadcast.message, icon: './icon.svg', vibrate: [200, 100, 200] });
+                            }).catch(() => new Notification("📢 Message de LevelUp", { body: latestBroadcast.message, icon: './icon.svg' }));
+                        } else {
+                            showSysToast(`📢 ${latestBroadcast.message}`);
+                        }
+                    }
+                }, (err) => console.error("Broadcast listener err", err));
+            }
 
             const ua = navigator.userAgent || navigator.vendor || window.opera;
             const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
@@ -1044,6 +1175,7 @@
 
             function showSysToast(msg, isError = false) {
                 const t = document.getElementById('sysToast');
+                if (!t) return; // Protection contre les erreurs si le DOM n'est pas prêt
                 t.innerText = msg;
                 if(isError) {
                     t.className = `fixed top-6 left-1/2 -translate-x-1/2 backdrop-blur-md border px-5 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest z-[9999] shadow-2xl transition-all bg-red-500/20 border-red-500/50 text-red-200`;
@@ -1093,7 +1225,7 @@
                     promoTitle: "Passe au niveau<br><span class='text-purple-400'>Supérieur</span>",
                     promoDesc: "Pour une expérience fluide, un accès ultra-rapide et recevoir des notifications, installe l'app.",
                     promoInstallText: "Installer l'App", promoSkipText: "Continuer sur le web",
-                    consoleMenuText: "Console Dev",
+                    consoleMenuText: "Console Admin",
                     pinModalDesc: "⚠️ Accès restreint au développeur.",
                     lengthOptions: { medium: "Moyenne (Chill & Pro)", long: "Longue (Détaillée)", short: "Courte (Directe)" }
                 },
@@ -1122,7 +1254,7 @@
                     promoTitle: "Level Up your<br><span class='text-purple-400'>Experience</span>",
                     promoDesc: "Install the Level IA application on your device right now.",
                     promoInstallText: "Install App", promoSkipText: "Continue on web",
-                    consoleMenuText: "Dev Console",
+                    consoleMenuText: "Admin Console",
                     pinModalDesc: "⚠️ Restricted access to developer.",
                     lengthOptions: { medium: "Medium (Chill & Pro)", long: "Long (Detailed)", short: "Short (Direct)" }
                 }
@@ -1481,7 +1613,8 @@
                     
                     if (foundUserData) {
                         userId = foundUserData.uid;
-                        document.getElementById('ind-db').className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"; 
+                        const indDb = document.getElementById('ind-db');
+                        if (indDb) indDb.className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"; 
                         authPage.classList.add('hidden');
                         langPage.classList.add('hidden'); 
                         promoInstallModal.classList.add('hidden');
@@ -1505,6 +1638,9 @@
                         
                         currentUserName = userName;
                         currentUserMail = userEmail;
+                        
+                        updateStatus(true); // Signaler présence immédiatement
+                        listenForBroadcasts(); // Ecouter les notifs admin
                         
                         document.getElementById('userName').innerText = userName;
                         document.getElementById('userMail').innerText = userEmail;
@@ -1553,7 +1689,8 @@
 
                         setupHistoryListener();
                     } else {
-                        document.getElementById('ind-db').className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; 
+                        const indDb = document.getElementById('ind-db');
+                        if (indDb) indDb.className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; 
                         if (!isAutoLogin) {
                             document.getElementById('keyErrorMain').innerText = currentLang === 'fr' ? "Code d'accès incorrect ou expiré." : "Access code incorrect or expired.";
                             errorDetailsSpan.innerText = "[DEBUG] Clé non trouvée en base de données.";
@@ -1565,7 +1702,8 @@
                         }
                     }
                 } catch (e) {
-                    document.getElementById('ind-db').className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; 
+                    const indDb = document.getElementById('ind-db');
+                    if (indDb) indDb.className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; 
                     if (!isAutoLogin) {
                         document.getElementById('keyErrorMain').innerText = "Erreur de connexion (Base de données).";
                         errorDetailsSpan.innerText = `Détails: ${e.message || e.code}`;
@@ -1886,6 +2024,131 @@
                 notifModal.classList.add('hidden');
             };
 
+            // === LOGIQUE ADMIN DASHBOARD ===
+            const loadAdminData = async () => {
+                // 1. Charger Stats
+                try {
+                    const usersSnap = await getDocs(collection(db, "artifacts", appId, "public", "data", "users_status"));
+                    let tot = 0; let onl = 0; let inst = 0;
+                    const now = Date.now();
+                    usersSnap.forEach(d => {
+                        tot++;
+                        const u = d.data();
+                        if (u.isOnline && (now - u.lastSeen < 120000)) onl++; // En ligne si vu y'a moins de 2 mins
+                        if (u.isInstalled) inst++;
+                    });
+                    document.getElementById('statTotalUsers').innerText = tot;
+                    document.getElementById('statOnlineUsers').innerText = onl;
+                    document.getElementById('statInstalledUsers').innerText = inst;
+                } catch(e) { console.error("Admin Load Stats Err", e); }
+
+                // 2. Charger Avis
+                try {
+                    const avisSnap = await getDocs(collection(db, "artifacts", appId, "public", "data", "feedbacks"));
+                    const avisList = document.getElementById('adminAvisList');
+                    avisList.innerHTML = '';
+                    if (avisSnap.empty) avisList.innerHTML = '<p class="text-white/40 text-xs text-center">Aucun avis récent.</p>';
+                    avisSnap.forEach(d => {
+                        const a = d.data();
+                        avisList.innerHTML += `
+                            <div class="bg-black/50 p-4 rounded-xl border border-white/5">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <p class="text-[12px] font-bold text-white">${sanitizeHTML(a.userName || 'Inconnu')}</p>
+                                        <p class="text-[10px] text-white/40 font-mono">${sanitizeHTML(a.userEmail || '')}</p>
+                                    </div>
+                                    <div class="text-yellow-500 text-xs">${'<i class="fas fa-star"></i>'.repeat(a.rating)}${'<i class="far fa-star"></i>'.repeat(5-a.rating)}</div>
+                                </div>
+                                <p class="text-[13px] text-white/80">${sanitizeHTML(a.comment)}</p>
+                                <p class="text-[9px] text-white/30 mt-2 text-right">${new Date(a.date).toLocaleString()}</p>
+                            </div>`;
+                    });
+                } catch(e) {}
+
+                // 3. Charger Bugs
+                try {
+                    const bugsSnap = await getDocs(collection(db, "artifacts", appId, "public", "data", "reports"));
+                    const bugsList = document.getElementById('adminBugsList');
+                    bugsList.innerHTML = '';
+                    if (bugsSnap.empty) bugsList.innerHTML = '<p class="text-white/40 text-xs text-center">Aucun signalement récent.</p>';
+                    bugsSnap.forEach(d => {
+                        const b = d.data();
+                        bugsList.innerHTML += `
+                            <div class="bg-red-500/10 p-4 rounded-xl border border-red-500/20">
+                                <div class="flex justify-between items-start mb-2">
+                                    <div>
+                                        <p class="text-[12px] font-bold text-red-200">${sanitizeHTML(b.userName || 'Inconnu')} <span class="bg-red-500 text-white text-[9px] px-1 rounded ml-1">${sanitizeHTML(b.category)}</span></p>
+                                        <p class="text-[10px] text-red-300/50 font-mono">${sanitizeHTML(b.userEmail || '')}</p>
+                                    </div>
+                                </div>
+                                <p class="text-[13px] text-red-100/90">${sanitizeHTML(b.description)}</p>
+                                <p class="text-[9px] text-red-400/40 mt-2 text-right">${new Date(b.date).toLocaleString()}</p>
+                            </div>`;
+                    });
+                } catch(e) {}
+            };
+
+            // Switch Admin Tabs
+            document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.admin-tab-btn').forEach(b => b.className = "admin-tab-btn px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest text-white/50 hover:bg-white/10 transition-all whitespace-nowrap");
+                    e.currentTarget.className = "admin-tab-btn active px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest bg-white text-black transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] whitespace-nowrap";
+                    
+                    document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+                    document.getElementById(e.currentTarget.dataset.target).classList.add('active');
+                });
+            });
+
+            // Switch Avis/Bugs Sub Tabs
+            document.querySelectorAll('.sub-tab-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const type = e.currentTarget.dataset.type;
+                    document.querySelectorAll('.sub-tab-btn').forEach(b => b.classList.remove('active', 'bg-yellow-500', 'text-black', 'bg-red-500', 'text-white'));
+                    
+                    const avisBtn = document.querySelector('[data-type="avis"]');
+                    const bugsBtn = document.querySelector('[data-type="bugs"]');
+                    
+                    if (type === 'avis') {
+                        e.currentTarget.className = "sub-tab-btn active px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-yellow-500 text-black transition-all";
+                        if (bugsBtn) bugsBtn.className = "sub-tab-btn px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all";
+                        document.getElementById('adminAvisList').classList.remove('hidden');
+                        document.getElementById('adminBugsList').classList.add('hidden');
+                    } else {
+                        e.currentTarget.className = "sub-tab-btn active px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-red-500 text-white transition-all shadow-[0_0_10px_rgba(239,68,68,0.4)]";
+                        if (avisBtn) avisBtn.className = "sub-tab-btn px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-yellow-500 border border-yellow-500/30 hover:bg-yellow-500/20 transition-all";
+                        document.getElementById('adminBugsList').classList.remove('hidden');
+                        document.getElementById('adminAvisList').classList.add('hidden');
+                    }
+                });
+            });
+
+            document.getElementById('refreshStatsBtn').onclick = loadAdminData;
+
+            // Broadcast Send Logic
+            document.getElementById('sendBroadcastBtn').onclick = async () => {
+                const msg = document.getElementById('broadcastMsgInput').value.trim();
+                if (!msg) return;
+                
+                const btn = document.getElementById('sendBroadcastBtn');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Envoi en cours...';
+                
+                try {
+                    await addDoc(collection(db, "artifacts", appId, "public", "data", "broadcasts"), {
+                        message: msg,
+                        timestamp: Date.now(),
+                        senderName: currentUserName
+                    });
+                    document.getElementById('broadcastMsgInput').value = '';
+                    showSysToast("Notification Globale envoyée ! 📢");
+                    btn.innerHTML = '<i class="fas fa-check text-green-300"></i> Envoyé avec succès';
+                    setTimeout(() => btn.innerHTML = '<i class="fas fa-paper-plane"></i> Envoyer à tout le monde', 3000);
+                } catch(e) {
+                    showSysToast("Erreur d'envoi broadcast.", true);
+                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Envoyer à tout le monde';
+                }
+            };
+
+            // LOGS Filters
             document.querySelectorAll('.console-filter').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     document.querySelectorAll('.console-filter').forEach(b => {
@@ -1923,8 +2186,7 @@
                 if (document.getElementById('pinInput').value === '1994') {
                     pinModal.classList.add('hidden');
                     consoleModal.classList.remove('hidden');
-                    const out = document.getElementById('consoleOutput');
-                    out.scrollTop = out.scrollHeight;
+                    loadAdminData(); // Charge les stats et avis quand on ouvre la console
                 } else {
                     showSysToast(currentLang === 'fr' ? "Code PIN incorrect 🔒" : "Incorrect PIN 🔒", true);
                     document.getElementById('pinInput').value = '';
@@ -1982,39 +2244,53 @@
                 };
             });
             
+            // --- ENVOI DES AVIS VERS LE DOSSIER PUBLIC POUR LES ADMINS ---
             document.getElementById('submitFeedbackBtn').onclick = async () => {
                 const text = document.getElementById('feedbackText').value.trim();
                 if (currentStarRating === 0 && text === '') return;
+                const btn = document.getElementById('submitFeedbackBtn');
+                btn.innerText = "Envoi...";
+                
                 try {
-                    await addDoc(collection(db, "artifacts", appId, "users", userId, "feedbacks"), { 
+                    // Changé pour que ça aille dans un dossier global consultable par l'admin
+                    await addDoc(collection(db, "artifacts", appId, "public", "data", "feedbacks"), { 
                         rating: currentStarRating, 
                         comment: text, 
                         date: Date.now(),
-                        userName: currentUserName,    // <-- PROFIL UTILISATEUR AJOUTÉ
-                        userEmail: currentUserMail    // <-- PROFIL UTILISATEUR AJOUTÉ
+                        userName: currentUserName,    
+                        userEmail: currentUserMail,
+                        userId: userId
                     });
                     feedbackModal.classList.add('hidden'); document.getElementById('feedbackText').value = '';
                     stars.forEach(s => s.classList.remove('active')); currentStarRating = 0; showSysToast("Merci pour votre avis ! ⭐");
                 } catch(e) { showSysToast("Erreur d'envoi", true); }
+                btn.innerText = "Envoyer l'avis";
             };
             
             document.getElementById('openReportBtn').onclick = () => { closeSidebar(); reportModal.classList.remove('hidden'); };
             document.getElementById('closeReportBtn').onclick = () => reportModal.classList.add('hidden');
             
+            // --- ENVOI DES BUGS VERS LE DOSSIER PUBLIC POUR LES ADMINS ---
             document.getElementById('submitReportBtn').onclick = async () => {
                 const category = document.getElementById('reportCategory').value;
                 const text = document.getElementById('reportText').value.trim();
                 if (text === '') return;
+                const btn = document.getElementById('submitReportBtn');
+                btn.innerText = "Envoi...";
+                
                 try {
-                    await addDoc(collection(db, "artifacts", appId, "users", userId, "reports"), { 
+                    // Changé pour que ça aille dans un dossier global consultable par l'admin
+                    await addDoc(collection(db, "artifacts", appId, "public", "data", "reports"), { 
                         category: category, 
                         description: text, 
                         date: Date.now(),
-                        userName: currentUserName,    // <-- PROFIL UTILISATEUR AJOUTÉ
-                        userEmail: currentUserMail    // <-- PROFIL UTILISATEUR AJOUTÉ
+                        userName: currentUserName,    
+                        userEmail: currentUserMail,
+                        userId: userId
                     });
                     reportModal.classList.add('hidden'); document.getElementById('reportText').value = ''; showSysToast("Rapport envoyé. 🛠️");
                 } catch(e) { showSysToast("Erreur d'envoi", true); }
+                btn.innerText = "Envoyer";
             };
 
             document.getElementById('saveDNA').onclick = async () => {
@@ -2207,24 +2483,20 @@
                 };
                 actions.appendChild(copyBtn);
 
-                // --- NOUVEAU BOUTON RÉGÉNÉRER ---
+                // --- BOUTON RÉGÉNÉRER ---
                 const regenBtn = document.createElement('button');
                 regenBtn.className = "regen-btn flex items-center gap-2 px-2.5 py-1.5 rounded-lg text-white/40 hover:bg-white/10 hover:text-white active:scale-95 transition-all text-[11px] font-bold uppercase tracking-widest ml-1";
                 regenBtn.innerHTML = '<i class="fas fa-redo text-xs"></i> <span class="hidden sm:inline">Régénérer</span>';
                 regenBtn.onclick = () => {
                     if (isGenerating) return;
-                    // On ne permet la régénération QUE si c'est la toute dernière bulle de conversation
                     if (wrap !== conversationContainer.lastElementChild) return;
                     
-                    // On supprime uniquement la bulle de l'IA visuellement
                     wrap.remove();
                     
-                    // On retire le dernier message de l'IA de l'historique mémoire
                     if (currentSessionMessages.length > 0 && currentSessionMessages[currentSessionMessages.length - 1].role === 'model') {
                         currentSessionMessages.pop();
                     }
                     
-                    // On relance la génération en coulisses (sans polluer le champ de texte)
                     if (lastInteraction) {
                         performGeneration(lastInteraction.text, lastInteraction.attachment, true);
                     }
@@ -2249,7 +2521,6 @@
                 if (typingInterval) clearInterval(typingInterval);
                 
                 typingInterval = setInterval(() => {
-                    // Si l'utilisateur a appuyé sur STOP, on coupe l'animation et on garde le texte partiel
                     if (!isGenerating) {
                         clearInterval(typingInterval);
                         if(callback) callback();
@@ -2263,7 +2534,7 @@
                         container.innerHTML = sanitizeHTML(marked.parse(text)); 
                         clearInterval(typingInterval); 
                         chatArea.scrollTop = chatArea.scrollHeight;
-                        stopGeneration(); // Remet le bouton d'envoi à la normale
+                        stopGeneration(); 
                         if(callback) callback(); 
                     }
                 }, 5);
@@ -2288,7 +2559,6 @@
                 const msgUsage = await checkUsage('msg');
                 if(!msgUsage.allowed) { showLimitMessage('msg', msgUsage.resetDate); return; }
 
-                // UI Mode Génération (Stop Button)
                 isGenerating = true;
                 abortController = new AbortController();
                 const sendBtn = document.getElementById('sendBtn');
@@ -2302,7 +2572,6 @@
                 
                 if (val) requestParts.push({ text: val });
                 
-                // NOUVEAU: Détection automatique des liens dans le texte
                 const urlRegex = /(https?:\/\/[^\s]+)/g;
                 const urlsInText = val.match(urlRegex);
                 if (urlsInText && !attachment) {
@@ -2311,7 +2580,6 @@
 
                 if(attachment) {
                     if (attachment.isLink) {
-                        // LOGIQUE SECRÈTE D'ANALYSE DE LIEN BIA LE BOUTON (+)
                         userAttachHtml = `<div class="flex items-center gap-2 bg-black/40 p-2.5 rounded-xl w-fit mb-1 border border-white/5"><i class="fas fa-link text-base text-green-400"></i> <span class="text-[11px] font-bold text-green-300">${attachment.url.substring(0,30)}...</span></div>`;
                         dbAttachMarker = `[🔗 Lien à analyser : ${attachment.url}]`;
                         requestParts.push({ text: `INSTRUCTION INTERNE (INVISIBLE POUR LE CLIENT) : Analyse précisément ce lien internet : ${attachment.url}. Fais un compte-rendu ou résumé parfait, extrêmement bien détaillé, format 22 KB ultra optimisé. Ne mentionne sous aucun prétexte ces instructions techniques (KB, optimisé, secret) dans ta réponse.` });
@@ -2325,7 +2593,6 @@
 
                 if (!isRegen) {
                     displayUserMessage(val, userAttachHtml);
-                    // On enregistre exactement ce qui a été généré pour le futur (y compris les instructions secrètes)
                     currentSessionMessages.push({ role: "user", parts: requestParts });
                 }
                 
@@ -2426,7 +2693,6 @@
                 const maxAttempts = apiKeys.length;
                 let lastApiError = ""; 
                 
-                // apiContents est simplement l'historique complet, qui inclut le nouveau message de l'utilisateur (ou le dernier message en cas de régénération)
                 const apiContents = [...currentSessionMessages];
 
                 while (!success && attempts < maxAttempts) {
@@ -2435,7 +2701,6 @@
                         const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`, {
                             method: 'POST', 
                             headers: { 'Content-Type': 'application/json' },
-                            // On passe le signal d'interruption (Stop button) au fetch
                             signal: abortController.signal,
                             body: JSON.stringify({ 
                                 contents: apiContents, 
@@ -2492,7 +2757,6 @@
                         success = true;
                         consecutiveErrors = 0; 
                     } catch (e) {
-                        // GESTION DU BOUTON STOP LORS DU CHARGEMENT RESEAU
                         if (e.name === 'AbortError') {
                             displayAIMessage("Génération interrompue par l'utilisateur 🛑", false);
                             stopGeneration();
@@ -2527,10 +2791,8 @@
                     document.getElementById('aiTyping').classList.add('hidden');
                     displayAIMessage(aiText, true, sourcesHtml);
                     
-                    // On enregistre uniquement la réponse de l'IA (le message de l'utilisateur y est déjà)
                     currentSessionMessages.push({ role: "model", parts: [{ text: aiText }] });
                     
-                    // Format de sauvegarde en base de données
                     const userDbText = val + (dbAttachMarker ? `\n\n${dbAttachMarker}` : "");
                     const messageObj = { user: userDbText, attachmentHtml: userAttachHtml, ai: aiText, sources: sourcesHtml, timestamp: Date.now() };
                     
@@ -2542,7 +2804,6 @@
                             });
                             currentSessionId = docRef.id;
                         } else {
-                            // Si c'est une régénération, le tableau dans Firestore grandit (on ne supprime pas l'ancien en base pour éviter des bugs de sync compliqués, mais l'UI est propre)
                             await updateDoc(doc(db, "artifacts", appId, "users", userId, "sessions", currentSessionId), { updatedAt: Date.now(), messages: arrayUnion(messageObj) });
                         }
                     } catch(fbErr) {}
@@ -2556,7 +2817,6 @@
                 if (!val && !attachment) return;
                 if (!userId) return;
                 
-                // Sauvegarde de l'interaction pour le bouton "Régénérer"
                 lastInteraction = { text: val, attachment: attachment };
 
                 userInput.value = ''; userInput.style.height = '44px';
