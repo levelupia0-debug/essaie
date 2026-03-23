@@ -755,11 +755,12 @@
                                     <p class="text-[11px] font-bold text-white uppercase tracking-widest" id="lblImportDoc">Document (PDF)</p>
                                 </div>
                             </button>
-                            <!-- NOUVEAU: BOUTON LIEN INTERNET -->
+                            <!-- NOUVEAU: BOUTON LIEN INTERNET AVEC BADGE "NEW" -->
                             <button id="importLinkBtn" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 active:scale-95 transition-all text-left group">
                                 <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center text-green-400 group-hover:bg-green-500 group-hover:text-white transition-all"><i class="fas fa-link text-sm"></i></div>
-                                <div>
+                                <div class="flex-1 flex items-center justify-between">
                                     <p class="text-[11px] font-bold text-white uppercase tracking-widest" id="lblImportLink">Lien Web</p>
+                                    <span class="bg-gradient-to-r from-red-500 to-pink-500 text-white text-[8px] font-black px-1.5 py-0.5 rounded shadow-[0_0_10px_rgba(239,68,68,0.5)] animate-pulse">NEW</span>
                                 </div>
                             </button>
                         </div>
@@ -1819,7 +1820,7 @@
                         if (navigator.serviceWorker) {
                             navigator.serviceWorker.ready.then(reg => {
                                 reg.showNotification("🌟 Level IA Premium", {
-                                    body: currentLang === 'fr' ? "Ceci est une notification système de test." : "This is a test system notification.",
+                                    body: currentLang === 'fr' ? "Ceci est une notification système de test." : "This is a test notification.",
                                     icon: './icon.svg',
                                     badge: './icon.svg',
                                     vibrate: [300, 100, 400, 100, 400, 100, 300]
@@ -1985,7 +1986,13 @@
                 const text = document.getElementById('feedbackText').value.trim();
                 if (currentStarRating === 0 && text === '') return;
                 try {
-                    await addDoc(collection(db, "artifacts", appId, "users", userId, "feedbacks"), { rating: currentStarRating, comment: text, date: Date.now() });
+                    await addDoc(collection(db, "artifacts", appId, "users", userId, "feedbacks"), { 
+                        rating: currentStarRating, 
+                        comment: text, 
+                        date: Date.now(),
+                        userName: currentUserName,    // <-- PROFIL UTILISATEUR AJOUTÉ
+                        userEmail: currentUserMail    // <-- PROFIL UTILISATEUR AJOUTÉ
+                    });
                     feedbackModal.classList.add('hidden'); document.getElementById('feedbackText').value = '';
                     stars.forEach(s => s.classList.remove('active')); currentStarRating = 0; showSysToast("Merci pour votre avis ! ⭐");
                 } catch(e) { showSysToast("Erreur d'envoi", true); }
@@ -1999,7 +2006,13 @@
                 const text = document.getElementById('reportText').value.trim();
                 if (text === '') return;
                 try {
-                    await addDoc(collection(db, "artifacts", appId, "users", userId, "reports"), { category: category, description: text, date: Date.now() });
+                    await addDoc(collection(db, "artifacts", appId, "users", userId, "reports"), { 
+                        category: category, 
+                        description: text, 
+                        date: Date.now(),
+                        userName: currentUserName,    // <-- PROFIL UTILISATEUR AJOUTÉ
+                        userEmail: currentUserMail    // <-- PROFIL UTILISATEUR AJOUTÉ
+                    });
                     reportModal.classList.add('hidden'); document.getElementById('reportText').value = ''; showSysToast("Rapport envoyé. 🛠️");
                 } catch(e) { showSysToast("Erreur d'envoi", true); }
             };
