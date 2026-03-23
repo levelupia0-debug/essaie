@@ -197,6 +197,10 @@
             margin-bottom: 0.5em !important;
         }
         
+        /* ADMIN DASHBOARD TABS */
+        .admin-tab-content { display: none; }
+        .admin-tab-content.active { display: block; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-main">
@@ -215,10 +219,6 @@
     <div id="inAppBroadcastModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md transition-opacity">
         <div class="bg-gradient-to-b from-[#1a0b2e] to-black p-1 rounded-2xl max-w-sm w-full shadow-[0_0_40px_rgba(168,85,247,0.3)] animate-in zoom-in duration-300">
             <div class="bg-black/80 rounded-xl overflow-hidden flex flex-col">
-                <div id="broadcastImageContainer" class="w-full h-40 bg-white/5 hidden relative">
-                    <img id="broadcastImage" src="" class="w-full h-full object-cover">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
-                </div>
                 <div class="p-6 text-center relative">
                     <div class="mx-auto w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center mb-3 border border-purple-500/50 absolute -top-6 left-1/2 -translate-x-1/2 shadow-lg backdrop-blur-md">
                         <i class="fas fa-bell text-lg text-purple-400 animate-pulse"></i>
@@ -228,7 +228,6 @@
                     
                     <div class="flex gap-3 pt-6 mt-2">
                         <button id="closeBroadcastBtn" class="flex-1 bg-white/10 text-white py-3 rounded-xl font-semibold text-[11px] uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all">Fermer</button>
-                        <a id="broadcastActionLink" href="#" target="_blank" class="hidden flex-1 bg-purple-600 text-white py-3 rounded-xl font-semibold text-[11px] uppercase tracking-widest hover:bg-purple-500 active:scale-95 transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center justify-center">Voir plus</a>
                     </div>
                 </div>
             </div>
@@ -471,33 +470,48 @@
         </div>
     </div>
 
-    <!-- NOTIF MODAL -->
-    <div id="notifModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
-        <div class="glass p-6 rounded-2xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
-            <div class="flex justify-between items-center mb-2">
+    <!-- NOTIF MODAL (ROUTINE THIAB'S) -->
+    <div id="notifModal" class="hidden fixed inset-0 z-[6000] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
+        <div class="glass p-5 rounded-2xl max-w-sm w-full text-center space-y-5 animate-in fade-in zoom-in duration-300 shadow-2xl border-white/10">
+            <div class="flex justify-between items-center mb-1">
                 <h2 id="notifModalTitle" class="text-lg font-bold text-white uppercase tracking-widest">Notifications</h2>
                 <button id="closeNotifBtn" class="text-white/40 hover:text-white"><i class="fas fa-times text-lg"></i></button>
             </div>
             
-            <div class="space-y-6 text-left">
+            <div class="space-y-4 text-left">
                 <div class="flex items-center justify-between bg-white/5 border border-white/10 p-4 rounded-xl">
-                    <label id="lblNotifEnable" class="text-[12px] font-bold text-white uppercase tracking-widest">Activer les alertes</label>
+                    <label id="lblNotifEnable" class="text-[12px] font-bold text-white uppercase tracking-widest">Activer la Routine</label>
                     <label class="relative inline-flex items-center cursor-pointer">
                         <input type="checkbox" id="notifToggle" class="sr-only peer">
                         <div class="w-10 h-5 bg-black/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/50 after:border-white/10 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500 peer-checked:after:bg-white shadow-inner"></div>
                     </label>
                 </div>
+
+                <div class="space-y-2">
+                    <label class="text-[10px] font-bold text-white/60 uppercase tracking-widest">Mode de la routine</label>
+                    <select id="routineModeSelect" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-[12px] text-white outline-none focus:border-blue-500 transition-all cursor-pointer appearance-none">
+                        <option value="motivation">Motivation (Inspiration)</option>
+                        <option value="coach">Coach (Développement)</option>
+                        <option value="procrastination">Anti-Procrastination</option>
+                    </select>
+                </div>
                 
-                <div class="space-y-3">
-                    <label id="lblNotifTime" class="text-[11px] font-bold text-white/60 uppercase tracking-widest">Heure de l'exercice (Thiab's)</label>
-                    <input type="time" id="exerciseTimeInput" class="w-full bg-black/40 border border-white/10 rounded-xl p-4 text-white outline-none focus:border-blue-500 transition-all font-bold text-lg text-center cursor-pointer">
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-white/60 uppercase tracking-widest">Heure</label>
+                        <input type="time" id="exerciseTimeInput" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-white outline-none focus:border-blue-500 transition-all font-bold text-center cursor-pointer">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="text-[10px] font-bold text-white/60 uppercase tracking-widest">Fréquence</label>
+                        <select id="routineFreqSelect" class="w-full bg-black/40 border border-white/10 rounded-xl p-3 text-[12px] text-white outline-none focus:border-blue-500 transition-all cursor-pointer appearance-none text-center font-bold">
+                            <option value="1">1x / jour</option>
+                            <option value="2">2x / jour</option>
+                        </select>
+                    </div>
                 </div>
             </div>
             
-            <div class="flex gap-3 pt-2">
-                <button id="testNotifBtn" class="hidden w-1/3 bg-white/10 text-white py-3.5 rounded-xl font-bold text-[11px] uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all border border-white/10">Tester</button>
-                <button id="saveNotifBtn" class="flex-1 bg-blue-500 text-white py-3.5 rounded-xl font-bold text-[12px] uppercase tracking-widest hover:bg-blue-400 active:scale-95 transition-all shadow-[0_0_15px_rgba(59,130,246,0.4)]">Enregistrer</button>
-            </div>
+            <button id="saveNotifBtn" class="w-full bg-blue-500 text-white py-3.5 rounded-xl font-bold text-[12px] uppercase tracking-widest hover:bg-blue-400 active:scale-95 transition-all shadow-[0_0_15px_rgba(59,130,246,0.4)] mt-2">Enregistrer</button>
         </div>
     </div>
 
@@ -526,7 +540,7 @@
         </div>
     </div>
 
-    <!-- NOUVEAU: ADMIN DASHBOARD (ANCIENNE CONSOLE) -->
+    <!-- ADMIN DASHBOARD -->
     <div id="consoleModal" class="hidden fixed inset-0 z-[8000] flex items-center justify-center p-2 md:p-6 bg-black/90 backdrop-blur-xl">
         <div class="bg-[#080808] border border-white/10 rounded-2xl w-full max-w-5xl h-[95vh] md:h-[90vh] flex flex-col shadow-2xl overflow-hidden relative ring-1 ring-white/5">
             
@@ -548,7 +562,7 @@
 
             <!-- TABS NAVIGATION -->
             <div class="px-5 py-2 border-b border-white/5 bg-white/5 flex overflow-x-auto no-scrollbar gap-2 shrink-0">
-                <button class="admin-tab-btn px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest bg-white text-black transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] whitespace-nowrap" data-target="adminTabStats"><i class="fas fa-chart-line mr-2"></i> Stats & Users</button>
+                <button class="admin-tab-btn active px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest bg-white text-black transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] whitespace-nowrap" data-target="adminTabStats"><i class="fas fa-chart-line mr-2"></i> Stats & Users</button>
                 <button class="admin-tab-btn px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest text-white/50 hover:bg-white/10 transition-all whitespace-nowrap" data-target="adminTabFeedback"><i class="fas fa-star mr-2 text-yellow-500"></i> Avis & Bugs</button>
                 <button class="admin-tab-btn px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest text-white/50 hover:bg-white/10 transition-all whitespace-nowrap" data-target="adminTabBroadcast"><i class="fas fa-broadcast-tower mr-2 text-blue-500"></i> Notifier</button>
                 <button class="admin-tab-btn px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest text-white/50 hover:bg-white/10 transition-all whitespace-nowrap" data-target="adminTabLogs"><i class="fas fa-terminal mr-2 text-purple-500"></i> Logs Dev</button>
@@ -557,7 +571,7 @@
             <div class="flex-1 overflow-y-auto bg-[#030303] custom-scrollbar p-5 relative">
                 
                 <!-- TAB 1: STATS & USERS -->
-                <div id="adminTabStats" class="admin-tab-content space-y-6 block">
+                <div id="adminTabStats" class="admin-tab-content active space-y-6 block">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         
                         <!-- Colonne 1: Inscrits Totaux -->
@@ -614,30 +628,19 @@
                     <div id="adminBugsList" class="space-y-3 hidden"></div>
                 </div>
 
-                <!-- TAB 3: BROADCAST NOTIFICATIONS -->
+                <!-- TAB 3: BROADCAST NOTIFICATIONS (SIMPLIFIÉ TEXTE SEUL SELON DEMANDE) -->
                 <div id="adminTabBroadcast" class="admin-tab-content" style="display: none;">
                     <div class="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-6 max-w-2xl mx-auto space-y-6">
                         <div class="text-center">
                             <i class="fas fa-bullhorn text-4xl text-blue-400 mb-4"></i>
                             <h3 class="text-lg font-bold text-white uppercase tracking-widest">Notification Globale</h3>
-                            <p class="text-[11px] text-white/50 font-medium mt-2">Envoyez une alerte instantanée avec image et lien à tous les utilisateurs actuellement connectés.</p>
+                            <p class="text-[11px] text-white/50 font-medium mt-2">Envoyez une alerte propre et professionnelle à tous les utilisateurs (texte uniquement).</p>
                         </div>
                         
-                        <textarea id="broadcastMsgInput" placeholder="Message de la notification..." class="w-full h-24 bg-black/50 border border-white/10 rounded-xl p-4 text-[13px] text-white outline-none focus:border-blue-500 transition-all resize-none"></textarea>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="space-y-2">
-                                <label class="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">URL de l'image (Optionnel)</label>
-                                <input type="url" id="broadcastImgInput" placeholder="https://..." class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-[12px] text-white outline-none focus:border-blue-500 transition-all">
-                            </div>
-                            <div class="space-y-2">
-                                <label class="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Lien de redirection (Optionnel)</label>
-                                <input type="url" id="broadcastLinkInput" placeholder="https://..." class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-[12px] text-white outline-none focus:border-blue-500 transition-all">
-                            </div>
-                        </div>
+                        <textarea id="broadcastMsgInput" placeholder="Tapez votre annonce officielle ici..." class="w-full h-32 bg-black/50 border border-white/10 rounded-xl p-4 text-[13px] text-white outline-none focus:border-blue-500 transition-all resize-none"></textarea>
                         
                         <button id="sendBroadcastBtn" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-[12px] uppercase tracking-widest hover:bg-blue-500 active:scale-95 transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center justify-center gap-2">
-                            <i class="fas fa-paper-plane"></i> Envoyer à tout le monde
+                            <i class="fas fa-paper-plane"></i> Diffuser la notification
                         </button>
                     </div>
                 </div>
@@ -873,7 +876,7 @@
                                     <p class="text-[11px] font-bold text-white uppercase tracking-widest" id="lblImportDoc">Document (PDF)</p>
                                 </div>
                             </button>
-                            <!-- NOUVEAU: BOUTON LIEN INTERNET AVEC BADGE "NEW" -->
+                            <!-- BOUTON LIEN INTERNET AVEC BADGE "NEW" -->
                             <button id="importLinkBtn" class="flex items-center gap-3 w-full p-3 rounded-xl hover:bg-white/10 active:scale-95 transition-all text-left group">
                                 <div class="w-8 h-8 rounded-lg bg-green-500/20 flex items-center justify-center text-green-400 group-hover:bg-green-500 group-hover:text-white transition-all"><i class="fas fa-link text-sm"></i></div>
                                 <div class="flex-1 flex items-center justify-between">
@@ -917,7 +920,7 @@
         let isGenerating = false;
         let typingInterval = null;
         let lastInteraction = null;
-        let lastBroadcastSeen = Date.now(); // Pour ne pas rejouer les vielles notifs admin
+        let lastBroadcastSeen = Date.now(); 
         
         DOMPurify.addHook('afterSanitizeAttributes', function (node) {
             if ('target' in node) {
@@ -1009,7 +1012,6 @@
         document.addEventListener('scroll', () => { if (window.scrollY > 0) window.scrollTo(0, 0); }, { passive: false });
 
         const checkReady = setInterval(() => {
-            // FIX: On s'assure que le HTML a fini de charger avant de lancer l'application
             if (window.auth && window.db && window.app && window.messagingUtils && document.readyState !== 'loading') {
                 clearInterval(checkReady);
                 initApp();
@@ -1081,7 +1083,7 @@
             const MAX_UPLOADS = 10;
             let userUsage = { msgCount: 0, msgReset: 0, uploadCount: 0, uploadReset: 0 };
             
-            let userNotifs = { enabled: false, exerciseTime: "08:00", lastQuotaNotif: "", lastExerciseNotif: "", fcmToken: "" };
+            let userNotifs = { enabled: false, exerciseTime: "08:00", frequency: "1", routineMode: "motivation", lastExerciseNotif: "", fcmToken: "" };
 
             const isSupportedProtocol = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
             
@@ -1139,7 +1141,6 @@
                         lastSeen: Date.now()
                     }, { merge: true });
                 } catch(e) { 
-                    // Silencing permission errors in console to avoid spam if rules aren't updated yet.
                     if(e.code !== 'permission-denied') console.error("Status update err:", e); 
                 }
             }
@@ -1162,9 +1163,9 @@
             window.addEventListener('offline', updateNetworkIndicator);
             window.addEventListener('beforeunload', () => updateStatus(false));
             updateNetworkIndicator();
-            setInterval(() => updateStatus(true), 60000); // Heartbeat
+            setInterval(() => updateStatus(true), 60000); 
 
-            // === SYSTEME DE BROADCAST (NOTIF ADMIN) ===
+            // === SYSTEME DE BROADCAST ===
             function listenForBroadcasts() {
                 onSnapshot(collection(db, "artifacts", appId, "public", "data", "broadcasts"), (snap) => {
                     let latestBroadcast = null;
@@ -1179,45 +1180,101 @@
                     
                     if (latestBroadcast) {
                         lastBroadcastSeen = latestBroadcast.timestamp;
-                        
-                        // Afficher la notif riche IN-APP
-                        const modal = document.getElementById('inAppBroadcastModal');
-                        const imgContainer = document.getElementById('broadcastImageContainer');
-                        const imgEl = document.getElementById('broadcastImage');
-                        const textEl = document.getElementById('broadcastText');
-                        const actionLink = document.getElementById('broadcastActionLink');
-                        
-                        textEl.innerText = latestBroadcast.message;
-                        
-                        if (latestBroadcast.imageUrl) {
-                            imgEl.src = sanitizeHTML(latestBroadcast.imageUrl);
-                            imgContainer.classList.remove('hidden');
-                        } else {
-                            imgContainer.classList.add('hidden');
-                        }
-                        
-                        if (latestBroadcast.linkUrl) {
-                            actionLink.href = sanitizeHTML(latestBroadcast.linkUrl);
-                            actionLink.classList.remove('hidden');
-                            actionLink.classList.add('flex');
-                        } else {
-                            actionLink.classList.add('hidden');
-                            actionLink.classList.remove('flex');
-                        }
-                        
-                        modal.classList.remove('hidden');
-                        
-                        document.getElementById('closeBroadcastBtn').onclick = () => modal.classList.add('hidden');
-                        
-                        // Et aussi via le systeme natif si en arrière plan
-                        if (Notification.permission === 'granted' && navigator.serviceWorker) {
-                            navigator.serviceWorker.ready.then(reg => {
-                                reg.showNotification("📢 Message de LevelUp", { body: latestBroadcast.message, icon: './icon.svg', vibrate: [200, 100, 200] });
-                            }).catch(() => {});
-                        }
+                        showSysToast(`📢 ${latestBroadcast.message}`);
                     }
                 }, (err) => console.error("Broadcast listener err", err));
             }
+
+            // === FONCTION MAGIQUE DE GREETING AI POUR LES ROUTINES ===
+            async function triggerAIGreeting(instruction) {
+                document.getElementById('aiTyping').classList.remove('hidden');
+                const sysLang = currentLang === 'fr' ? 'français' : 'english';
+                const category = isThiabsMode ? 'thiabs' : 'level';
+                const modelPrompt = currentLang === 'fr' ? aiModels[category][currentModel].promptFR : aiModels[category][currentModel].promptEN;
+                
+                const prompt = `Tu es l'IA ${isThiabsMode ? "Thiab's (Développement Personnel)" : "Level IA"}. 
+                ${modelPrompt} 
+                L'utilisateur parle ${sysLang}.
+                INSTRUCTION SPÉCIALE: ${instruction}`;
+
+                try {
+                    const apiKey = apiKeys[0]; // On prend la première clé pour le greeting automatique
+                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${apiKey}`, {
+                        method: 'POST', 
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ 
+                            contents: [{ role: "user", parts: [{ text: "Bonjour" }] }], 
+                            systemInstruction: { parts: [{ text: prompt }] }
+                        })
+                    });
+                    if (res.ok) {
+                        const data = await res.json();
+                        const aiText = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+                        if (aiText) {
+                            document.getElementById('aiTyping').classList.add('hidden');
+                            displayAIMessage(aiText, true);
+                            currentSessionMessages.push({ role: "model", parts: [{ text: aiText }] });
+                        }
+                    }
+                } catch(e) {
+                    document.getElementById('aiTyping').classList.add('hidden');
+                }
+            }
+
+            // === ROUTINE CHECKER (LANCÉ QUAND L'APP EST OUVERTE) ===
+            function checkRoutineOnStartup() {
+                if (!userNotifs.enabled || !userNotifs.exerciseTime) return;
+                
+                const now = new Date();
+                const todayStr = now.toDateString();
+                
+                // Si la routine a déjà été déclenchée aujourd'hui, on annule
+                if (userNotifs.lastExerciseNotif === todayStr) return;
+
+                const currentMins = now.getHours() * 60 + now.getMinutes();
+                const [exH, exM] = userNotifs.exerciseTime.split(':').map(Number);
+                const exTotalMins = exH * 60 + exM;
+                
+                // Différence entre l'heure actuelle et l'heure prévue (en minutes)
+                const diff = currentMins - exTotalMins;
+                
+                // Si on est dans l'heure qui suit l'horaire prévu (ex: prévu 08h00, il est entre 08h00 et 09h00)
+                if (diff >= 0 && diff <= 60) {
+                    // 1. Mettre à jour Firebase pour dire qu'on l'a fait
+                    userNotifs.lastExerciseNotif = todayStr;
+                    if(userId) setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "notifications"), userNotifs, { merge: true });
+                    
+                    // 2. Basculer en Mode Thiab's (ou le mode choisi)
+                    isThiabsMode = true;
+                    currentModel = userNotifs.routineMode || 'motivation';
+                    
+                    document.getElementById('thiabsModeToggle').checked = true;
+                    populateModels();
+                    document.getElementById('modelSelect').value = currentModel;
+                    updateBranding();
+                    
+                    // 3. Lancer une nouvelle session vide
+                    currentSessionId = null;
+                    currentSessionMessages = []; 
+                    conversationContainer.innerHTML = '';
+                    hasSeenWelcomeMsg = true; // On bloque le "Salut bro" classique
+                    
+                    // 4. Lancer le message généré par l'IA
+                    const instruction = currentLang === 'fr' 
+                        ? `L'utilisateur vient d'ouvrir l'application pour sa routine quotidienne d'exercice. Accueille-le chaleureusement et propose-lui le premier exercice/réflexion de la journée pour l'aider à avancer.` 
+                        : `The user just opened the app for their daily routine exercise. Greet them warmly and offer the first exercise/thought of the day to help them progress.`;
+                    
+                    triggerAIGreeting(instruction);
+                }
+            }
+
+            // GESTION CHANGEMENT VISIBILITE (QUAND L'APP REVIENT AU PREMIER PLAN)
+            document.addEventListener("visibilitychange", () => {
+                if (document.visibilityState === 'visible' && userId) {
+                    updateStatus(true);
+                    checkRoutineOnStartup(); // On vérifie si c'est l'heure de la routine quand il revient
+                }
+            });
 
             const ua = navigator.userAgent || navigator.vendor || window.opera;
             const isIOS = /iPad|iPhone|iPod/.test(ua) && !window.MSStream;
@@ -1256,7 +1313,7 @@
 
             function showSysToast(msg, isError = false) {
                 const t = document.getElementById('sysToast');
-                if (!t) return; // Protection contre les erreurs si le DOM n'est pas prêt
+                if (!t) return; 
                 t.innerText = msg;
                 if(isError) {
                     t.className = `fixed top-6 left-1/2 -translate-x-1/2 backdrop-blur-md border px-5 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest z-[9999] shadow-2xl transition-all bg-red-500/20 border-red-500/50 text-red-200`;
@@ -1493,20 +1550,7 @@
                     await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { isThiabsMode: false, model: 'normal' }, { merge: true });
                 }
                 
-                currentSessionId = null;
-                currentSessionMessages = [];
-                const conversationContainer = document.getElementById('conversationContainer');
-                if (conversationContainer) conversationContainer.innerHTML = '';
-                document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
-
-                const transitionMsg = currentLang === 'fr'
-                    ? "🔄 **Bascule effectuée.** Je suis de retour en mode **Level IA (Normal)**. La discussion précédente a été mise de côté pour qu'on reparte sur de bonnes bases ! Que souhaites-tu savoir ?"
-                    : "🔄 **Switch complete.** I am back in **Level IA (Normal)** mode. The previous history has been set aside so we can start fresh! What would you like to know?";
-
-                displayAIMessage(transitionMsg, true);
-                
-                const chatArea = document.getElementById('chatArea');
-                if(chatArea) chatArea.scrollTop = chatArea.scrollHeight;
+                startNewChat();
             };
 
             const convContainer = document.getElementById('conversationContainer');
@@ -1594,41 +1638,23 @@
             }
 
             setInterval(() => {
-                if (!userNotifs.enabled || !("Notification" in window) || Notification.permission !== "granted") return;
-                
+                // Notifs de limite (Quota)
                 const now = new Date();
                 const todayStr = now.toDateString();
-
-                const fireNotification = (title, body) => {
-                    if (navigator.serviceWorker) {
-                        navigator.serviceWorker.ready.then(reg => {
-                            reg.showNotification(title, { body: body, icon: './icon.svg', badge: './icon.svg', vibrate: [200, 100, 200, 100, 200] });
-                        }).catch(() => {
-                            new Notification(title, { body: body, icon: './icon.svg' });
-                        });
-                    } else {
-                        new Notification(title, { body: body, icon: './icon.svg' });
-                    }
-                };
-
+                
                 if (userUsage.msgCount >= MAX_MSGS && now.getTime() > userUsage.msgReset && userNotifs.lastQuotaNotif !== todayStr) {
-                    fireNotification("Level IA", currentLang === 'fr' ? "Tes quotas sont réinitialisés ! Tu peux de nouveau discuter." : "Your quotas are reset! You can chat again.");
+                    if (Notification.permission === 'granted' && navigator.serviceWorker) {
+                        navigator.serviceWorker.ready.then(reg => {
+                            reg.showNotification("Level IA", { body: currentLang === 'fr' ? "Tes quotas sont réinitialisés ! Tu peux de nouveau discuter." : "Your quotas are reset!", icon: './icon.svg' });
+                        }).catch(()=>{});
+                    } else {
+                        showSysToast("Level IA : Tes quotas sont réinitialisés !");
+                    }
                     userNotifs.lastQuotaNotif = todayStr;
                     if(userId) setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "notifications"), userNotifs, { merge: true });
                 }
-
-                if (userNotifs.exerciseTime) {
-                    const currentMins = now.getHours() * 60 + now.getMinutes();
-                    const [exH, exM] = userNotifs.exerciseTime.split(':').map(Number);
-                    const exTotalMins = exH * 60 + exM;
-                    const diff = currentMins - exTotalMins;
-                    
-                    if (diff >= 0 && diff <= 60 && userNotifs.lastExerciseNotif !== todayStr) {
-                        fireNotification("Thiab's Mode 🌟", currentLang === 'fr' ? "C'est l'heure de ton exercice ! Ne remets pas à plus tard, ouvre Level IA." : "It's time for your exercise! Don't procrastinate, open Level IA.");
-                        userNotifs.lastExerciseNotif = todayStr;
-                        if(userId) setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "notifications"), userNotifs, { merge: true });
-                    }
-                }
+                
+                // On délègue l'exécution de la routine à la fonction checkRoutineOnStartup
             }, 30000);
 
             document.getElementById('promoSkipBtn').onclick = () => {
@@ -1766,7 +1792,9 @@
                             if(notifDoc.exists()) {
                                 userNotifs = { ...userNotifs, ...notifDoc.data() };
                                 document.getElementById('notifToggle').checked = userNotifs.enabled;
-                                document.getElementById('exerciseTimeInput').value = userNotifs.exerciseTime;
+                                document.getElementById('exerciseTimeInput').value = userNotifs.exerciseTime || "08:00";
+                                document.getElementById('routineModeSelect').value = userNotifs.routineMode || "motivation";
+                                document.getElementById('routineFreqSelect').value = userNotifs.frequency || "1";
                             }
                             
                         } catch(e) {}
@@ -1778,6 +1806,10 @@
                         localStorage.setItem('thiabs_saved_lang', currentLang);
 
                         setupHistoryListener();
+                        
+                        // Lancer la vérification de la routine une fois connecté
+                        checkRoutineOnStartup();
+
                     } else {
                         const indDb = document.getElementById('ind-db');
                         if (indDb) indDb.className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; 
@@ -1942,19 +1974,21 @@
                 });
             }
 
+            // FIX: GREETING GARANTI A CHAQUE NOUVELLE SESSION
             function startNewChat() {
                 currentSessionId = null;
                 currentSessionMessages = []; 
                 conversationContainer.innerHTML = '';
                 
-                if (!hasSeenWelcomeMsg && hasSeenGrandIntro) {
-                    const welcomeMsg = currentLang === 'fr' 
-                        ? "Salut bro ! Que puis-je faire pour toi aujourd'hui ?" 
-                        : "Hey bro! What can I do for you today?";
-                    displayAIMessage(welcomeMsg, true);
-                    hasSeenWelcomeMsg = true;
-                }
-                
+                // Si c'est un lancement automatique par routine, on ne fait pas le salut basique
+                if (!document.getElementById('aiTyping').classList.contains('hidden')) return;
+
+                const modeName = isThiabsMode ? aiModels.thiabs[currentModel][currentLang] : aiModels.level[currentModel][currentLang];
+                const welcomeMsg = currentLang === 'fr' 
+                    ? `Salut bro ! Je suis prêt en mode **${modeName}**. Que puis-je faire pour toi aujourd'hui ?` 
+                    : `Hey bro! I'm ready in **${modeName}** mode. What can I do for you today?`;
+                    
+                displayAIMessage(welcomeMsg, true);
                 document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
             }
 
@@ -2037,42 +2071,14 @@
             document.getElementById('openNotifBtn').onclick = () => { 
                 closeSidebar(); 
                 notifModal.classList.remove('hidden'); 
-                if (document.getElementById('notifToggle').checked) {
-                    document.getElementById('testNotifBtn').classList.remove('hidden');
-                }
             };
             document.getElementById('closeNotifBtn').onclick = () => notifModal.classList.add('hidden');
-            
-            document.getElementById('notifToggle').addEventListener('change', (e) => {
-                if (e.target.checked) document.getElementById('testNotifBtn').classList.remove('hidden');
-                else document.getElementById('testNotifBtn').classList.add('hidden');
-            });
-
-            document.getElementById('testNotifBtn').onclick = () => {
-                if (Notification.permission === 'granted') {
-                    showSysToast(currentLang === 'fr' ? "Ferme l'app vite ! Notif dans 3 sec..." : "Close app fast! Notif in 3 sec...");
-                    setTimeout(() => {
-                        if (navigator.serviceWorker) {
-                            navigator.serviceWorker.ready.then(reg => {
-                                reg.showNotification("🌟 Level IA Premium", {
-                                    body: currentLang === 'fr' ? "Ceci est une notification système de test." : "This is a test notification.",
-                                    icon: './icon.svg',
-                                    badge: './icon.svg',
-                                    vibrate: [300, 100, 400, 100, 400, 100, 300]
-                                });
-                            });
-                        } else {
-                            new Notification("🌟 Level IA Premium", { body: "Test de notification réussi !", icon: './icon.svg' });
-                        }
-                    }, 3000);
-                } else {
-                    showSysToast(currentLang === 'fr' ? "Active et enregistre d'abord." : "Enable and save first.", true);
-                }
-            };
             
             document.getElementById('saveNotifBtn').onclick = async () => {
                 userNotifs.enabled = document.getElementById('notifToggle').checked;
                 userNotifs.exerciseTime = document.getElementById('exerciseTimeInput').value;
+                userNotifs.routineMode = document.getElementById('routineModeSelect').value;
+                userNotifs.frequency = document.getElementById('routineFreqSelect').value;
                 
                 if (userNotifs.enabled) {
                     if (!("Notification" in window)) {
@@ -2098,7 +2104,7 @@
                                 const currentToken = await getToken(messaging, { vapidKey: vapidKey, serviceWorkerRegistration: registration });
                                 if (currentToken) {
                                     userNotifs.fcmToken = currentToken;
-                                    showSysToast(currentLang === 'fr' ? "Notifications activées !" : "Notifications enabled!");
+                                    showSysToast(currentLang === 'fr' ? "Routine activée avec succès !" : "Routine enabled successfully!");
                                 } else {
                                     showSysToast(currentLang === 'fr' ? "Erreur: Impossible d'obtenir le token FCM." : "Error: Cannot get FCM token.", true);
                                 }
@@ -2399,7 +2405,6 @@
                 btn.innerText = "Envoi...";
                 
                 try {
-                    // Changé pour que ça aille dans un dossier global consultable par l'admin
                     await addDoc(collection(db, "artifacts", appId, "public", "data", "feedbacks"), { 
                         rating: currentStarRating, 
                         comment: text, 
@@ -2423,7 +2428,6 @@
                 btn.innerText = "Envoi...";
                 
                 try {
-                    // Changé pour que ça aille dans un dossier global consultable par l'admin
                     await addDoc(collection(db, "artifacts", appId, "public", "data", "reports"), { 
                         category: category, 
                         description: text, 
