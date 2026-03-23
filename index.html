@@ -197,10 +197,6 @@
             margin-bottom: 0.5em !important;
         }
         
-        /* ADMIN DASHBOARD TABS */
-        .admin-tab-content { display: none; }
-        .admin-tab-content.active { display: block; animation: fadeIn 0.3s ease-out; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body class="bg-main">
@@ -214,6 +210,30 @@
 
     <!-- TOAST DE NOTIFICATION SYSTEME -->
     <div id="sysToast" class="fixed top-5 left-1/2 -translate-x-1/2 backdrop-blur-md border px-5 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest hidden z-[9999] shadow-2xl transition-all"></div>
+
+    <!-- MODAL DE NOTIFICATION RICHE (BROADCAST IN-APP) -->
+    <div id="inAppBroadcastModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md transition-opacity">
+        <div class="bg-gradient-to-b from-[#1a0b2e] to-black p-1 rounded-2xl max-w-sm w-full shadow-[0_0_40px_rgba(168,85,247,0.3)] animate-in zoom-in duration-300">
+            <div class="bg-black/80 rounded-xl overflow-hidden flex flex-col">
+                <div id="broadcastImageContainer" class="w-full h-40 bg-white/5 hidden relative">
+                    <img id="broadcastImage" src="" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black to-transparent"></div>
+                </div>
+                <div class="p-6 text-center relative">
+                    <div class="mx-auto w-12 h-12 rounded-full bg-purple-500/20 flex items-center justify-center mb-3 border border-purple-500/50 absolute -top-6 left-1/2 -translate-x-1/2 shadow-lg backdrop-blur-md">
+                        <i class="fas fa-bell text-lg text-purple-400 animate-pulse"></i>
+                    </div>
+                    <h2 class="text-lg font-bold text-white uppercase tracking-widest mt-4">Nouveau Message</h2>
+                    <p id="broadcastText" class="text-[13px] text-white/80 leading-relaxed font-medium mt-3 whitespace-pre-wrap"></p>
+                    
+                    <div class="flex gap-3 pt-6 mt-2">
+                        <button id="closeBroadcastBtn" class="flex-1 bg-white/10 text-white py-3 rounded-xl font-semibold text-[11px] uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all">Fermer</button>
+                        <a id="broadcastActionLink" href="#" target="_blank" class="hidden flex-1 bg-purple-600 text-white py-3 rounded-xl font-semibold text-[11px] uppercase tracking-widest hover:bg-purple-500 active:scale-95 transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center justify-center">Voir plus</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- SPLASH -->
     <div id="splashScreen">
@@ -244,7 +264,7 @@
         </div>
     </div>
 
-    <!-- PROMO INSTALL MODAL (MUR D'INSTALLATION) -->
+    <!-- PROMO INSTALL MODAL -->
     <div id="promoInstallModal" class="hidden fixed inset-0 z-[5500] flex items-end md:items-center justify-center p-4 md:p-8 bg-black/90 backdrop-blur-md">
         <div class="glass p-6 rounded-[1.5rem] max-w-sm w-full text-center space-y-6 animate-in slide-in-from-bottom-10 md:zoom-in duration-500 shadow-[0_0_40px_rgba(168,85,247,0.15)] border-purple-500/30">
             <div class="mx-auto w-16 h-16 rounded-2xl bg-purple-500/20 flex items-center justify-center mb-2 border border-purple-500/50 shadow-inner">
@@ -528,16 +548,16 @@
 
             <!-- TABS NAVIGATION -->
             <div class="px-5 py-2 border-b border-white/5 bg-white/5 flex overflow-x-auto no-scrollbar gap-2 shrink-0">
-                <button class="admin-tab-btn active px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest bg-white text-black transition-all whitespace-nowrap" data-target="adminTabStats"><i class="fas fa-chart-line mr-2"></i> Stats & Users</button>
+                <button class="admin-tab-btn px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest bg-white text-black transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] whitespace-nowrap" data-target="adminTabStats"><i class="fas fa-chart-line mr-2"></i> Stats & Users</button>
                 <button class="admin-tab-btn px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest text-white/50 hover:bg-white/10 transition-all whitespace-nowrap" data-target="adminTabFeedback"><i class="fas fa-star mr-2 text-yellow-500"></i> Avis & Bugs</button>
                 <button class="admin-tab-btn px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest text-white/50 hover:bg-white/10 transition-all whitespace-nowrap" data-target="adminTabBroadcast"><i class="fas fa-broadcast-tower mr-2 text-blue-500"></i> Notifier</button>
                 <button class="admin-tab-btn px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest text-white/50 hover:bg-white/10 transition-all whitespace-nowrap" data-target="adminTabLogs"><i class="fas fa-terminal mr-2 text-purple-500"></i> Logs Dev</button>
             </div>
 
-            <div class="flex-1 overflow-y-auto bg-[#030303] custom-scrollbar p-5">
+            <div class="flex-1 overflow-y-auto bg-[#030303] custom-scrollbar p-5 relative">
                 
-                <!-- TAB 1: STATS & USERS (Nouveau design spacieux) -->
-                <div id="adminTabStats" class="admin-tab-content active space-y-6">
+                <!-- TAB 1: STATS & USERS -->
+                <div id="adminTabStats" class="admin-tab-content space-y-6 block">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         
                         <!-- Colonne 1: Inscrits Totaux -->
@@ -545,7 +565,7 @@
                             <div class="flex flex-col items-center mb-4 shrink-0">
                                 <i class="fas fa-users text-3xl text-purple-400 mb-2"></i>
                                 <p class="text-3xl font-black text-white" id="statTotalUsers">...</p>
-                                <p class="text-[10px] uppercase tracking-widest text-white/50 font-bold mt-1">Inscrits Totaux</p>
+                                <p class="text-[10px] uppercase tracking-widest text-white/50 font-bold mt-1 text-center">Inscrits Totaux<br><span class="text-[8px] opacity-60">(Clés attribuées)</span></p>
                             </div>
                             <div class="flex-1 overflow-y-auto custom-scrollbar bg-black/40 rounded-xl p-2 space-y-2" id="listTotalUsers">
                                 <p class="text-[10px] text-center text-white/30 pt-4"><i class="fas fa-spinner fa-spin"></i></p>
@@ -558,7 +578,7 @@
                                 <div class="absolute top-0 right-10 w-2 h-2 rounded-full bg-green-500 animate-ping"></div>
                                 <i class="fas fa-wifi text-3xl text-green-400 mb-2"></i>
                                 <p class="text-3xl font-black text-white" id="statOnlineUsers">...</p>
-                                <p class="text-[10px] uppercase tracking-widest text-green-400/70 font-bold mt-1">En Ligne</p>
+                                <p class="text-[10px] uppercase tracking-widest text-green-400/70 font-bold mt-1 text-center">En Ligne<br><span class="text-[8px] opacity-60">(Moins de 2 mins)</span></p>
                             </div>
                             <div class="flex-1 overflow-y-auto custom-scrollbar bg-black/40 rounded-xl p-2 space-y-2" id="listOnlineUsers">
                                 <p class="text-[10px] text-center text-white/30 pt-4"><i class="fas fa-spinner fa-spin"></i></p>
@@ -570,7 +590,7 @@
                             <div class="flex flex-col items-center mb-4 shrink-0">
                                 <i class="fas fa-mobile-alt text-3xl text-blue-400 mb-2"></i>
                                 <p class="text-3xl font-black text-white" id="statInstalledUsers">...</p>
-                                <p class="text-[10px] uppercase tracking-widest text-blue-400/70 font-bold mt-1">Apps Installées</p>
+                                <p class="text-[10px] uppercase tracking-widest text-blue-400/70 font-bold mt-1 text-center">Apps Installées<br><span class="text-[8px] opacity-60">(Connectés récemment)</span></p>
                             </div>
                             <div class="flex-1 overflow-y-auto custom-scrollbar bg-black/40 rounded-xl p-2 space-y-2" id="listInstalledUsers">
                                 <p class="text-[10px] text-center text-white/30 pt-4"><i class="fas fa-spinner fa-spin"></i></p>
@@ -582,7 +602,7 @@
                 </div>
 
                 <!-- TAB 2: AVIS & BUGS -->
-                <div id="adminTabFeedback" class="admin-tab-content space-y-6">
+                <div id="adminTabFeedback" class="admin-tab-content space-y-6" style="display: none;">
                     <div class="flex gap-2 border-b border-white/10 pb-4">
                         <button class="sub-tab-btn active px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-yellow-500 text-black transition-all" data-type="avis">Voir les Avis</button>
                         <button class="sub-tab-btn px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all" data-type="bugs">Voir les Bugs</button>
@@ -595,15 +615,26 @@
                 </div>
 
                 <!-- TAB 3: BROADCAST NOTIFICATIONS -->
-                <div id="adminTabBroadcast" class="admin-tab-content">
+                <div id="adminTabBroadcast" class="admin-tab-content" style="display: none;">
                     <div class="bg-blue-500/5 border border-blue-500/20 rounded-2xl p-6 max-w-2xl mx-auto space-y-6">
                         <div class="text-center">
                             <i class="fas fa-bullhorn text-4xl text-blue-400 mb-4"></i>
                             <h3 class="text-lg font-bold text-white uppercase tracking-widest">Notification Globale</h3>
-                            <p class="text-[11px] text-white/50 font-medium mt-2">Envoyez une alerte instantanée à tous les utilisateurs actuellement connectés.</p>
+                            <p class="text-[11px] text-white/50 font-medium mt-2">Envoyez une alerte instantanée avec image et lien à tous les utilisateurs actuellement connectés.</p>
                         </div>
                         
-                        <textarea id="broadcastMsgInput" placeholder="Ex: Une nouvelle mise à jour est disponible ! Fermez et rouvrez l'application pour en profiter." class="w-full h-32 bg-black/50 border border-white/10 rounded-xl p-4 text-[13px] text-white outline-none focus:border-blue-500 transition-all resize-none"></textarea>
+                        <textarea id="broadcastMsgInput" placeholder="Message de la notification..." class="w-full h-24 bg-black/50 border border-white/10 rounded-xl p-4 text-[13px] text-white outline-none focus:border-blue-500 transition-all resize-none"></textarea>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="space-y-2">
+                                <label class="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">URL de l'image (Optionnel)</label>
+                                <input type="url" id="broadcastImgInput" placeholder="https://..." class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-[12px] text-white outline-none focus:border-blue-500 transition-all">
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] uppercase tracking-widest text-white/40 font-bold ml-1">Lien de redirection (Optionnel)</label>
+                                <input type="url" id="broadcastLinkInput" placeholder="https://..." class="w-full bg-black/50 border border-white/10 rounded-xl p-3 text-[12px] text-white outline-none focus:border-blue-500 transition-all">
+                            </div>
+                        </div>
                         
                         <button id="sendBroadcastBtn" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-[12px] uppercase tracking-widest hover:bg-blue-500 active:scale-95 transition-all shadow-[0_0_20px_rgba(37,99,235,0.4)] flex items-center justify-center gap-2">
                             <i class="fas fa-paper-plane"></i> Envoyer à tout le monde
@@ -612,7 +643,7 @@
                 </div>
 
                 <!-- TAB 4: LOGS SYSTEME -->
-                <div id="adminTabLogs" class="admin-tab-content h-full flex flex-col">
+                <div id="adminTabLogs" class="admin-tab-content flex-col h-full" style="display: none;">
                     <div class="flex gap-2 pb-3 shrink-0" id="consoleFilters">
                         <button class="console-filter active px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-white text-black transition-all" data-filter="all">Tout</button>
                         <button class="console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all" data-filter="error">Erreurs</button>
@@ -1135,12 +1166,10 @@
 
             // === SYSTEME DE BROADCAST (NOTIF ADMIN) ===
             function listenForBroadcasts() {
-                // On écoute les messages publics de l'admin (backend-less push notifs)
                 onSnapshot(collection(db, "artifacts", appId, "public", "data", "broadcasts"), (snap) => {
                     let latestBroadcast = null;
                     snap.forEach(doc => {
                         const data = doc.data();
-                        // Tri simple côté client (Règle 2 respectée)
                         if (data.timestamp > lastBroadcastSeen) {
                             if (!latestBroadcast || data.timestamp > latestBroadcast.timestamp) {
                                 latestBroadcast = data;
@@ -1150,13 +1179,41 @@
                     
                     if (latestBroadcast) {
                         lastBroadcastSeen = latestBroadcast.timestamp;
-                        // Afficher la notif
+                        
+                        // Afficher la notif riche IN-APP
+                        const modal = document.getElementById('inAppBroadcastModal');
+                        const imgContainer = document.getElementById('broadcastImageContainer');
+                        const imgEl = document.getElementById('broadcastImage');
+                        const textEl = document.getElementById('broadcastText');
+                        const actionLink = document.getElementById('broadcastActionLink');
+                        
+                        textEl.innerText = latestBroadcast.message;
+                        
+                        if (latestBroadcast.imageUrl) {
+                            imgEl.src = sanitizeHTML(latestBroadcast.imageUrl);
+                            imgContainer.classList.remove('hidden');
+                        } else {
+                            imgContainer.classList.add('hidden');
+                        }
+                        
+                        if (latestBroadcast.linkUrl) {
+                            actionLink.href = sanitizeHTML(latestBroadcast.linkUrl);
+                            actionLink.classList.remove('hidden');
+                            actionLink.classList.add('flex');
+                        } else {
+                            actionLink.classList.add('hidden');
+                            actionLink.classList.remove('flex');
+                        }
+                        
+                        modal.classList.remove('hidden');
+                        
+                        document.getElementById('closeBroadcastBtn').onclick = () => modal.classList.add('hidden');
+                        
+                        // Et aussi via le systeme natif si en arrière plan
                         if (Notification.permission === 'granted' && navigator.serviceWorker) {
                             navigator.serviceWorker.ready.then(reg => {
                                 reg.showNotification("📢 Message de LevelUp", { body: latestBroadcast.message, icon: './icon.svg', vibrate: [200, 100, 200] });
-                            }).catch(() => new Notification("📢 Message de LevelUp", { body: latestBroadcast.message, icon: './icon.svg' }));
-                        } else {
-                            showSysToast(`📢 ${latestBroadcast.message}`);
+                            }).catch(() => {});
                         }
                     }
                 }, (err) => console.error("Broadcast listener err", err));
@@ -1663,7 +1720,7 @@
                         currentUserName = userName;
                         currentUserMail = userEmail;
                         
-                        // VERIFICATION ADMIN
+                        // VERIFICATION ADMIN (RÈGLE: CHAMP isAdmin === true DANS FIREBASE SECURITY)
                         if (foundUserData.isAdmin === true || foundUserData.role === 'admin') {
                             document.getElementById('openConsoleBtn').classList.remove('hidden');
                             document.getElementById('openConsoleBtn').classList.add('flex');
@@ -1970,13 +2027,12 @@
             document.getElementById('infoMenuBtn').onclick = () => { closeSidebar(); infoModal.classList.remove('hidden'); };
             document.getElementById('closeInfoModalBtn').onclick = () => infoModal.classList.add('hidden');
             
-            // --- FIX DES BOUTONS FEEDBACK ET REPORT MANQUANTS ---
+            // --- BOUTONS FEEDBACK ET REPORT ---
             document.getElementById('openFeedbackBtn').onclick = () => { closeSidebar(); document.getElementById('feedbackModal').classList.remove('hidden'); };
             document.getElementById('closeFeedbackBtn').onclick = () => document.getElementById('feedbackModal').classList.add('hidden');
             
             document.getElementById('openReportBtn').onclick = () => { closeSidebar(); document.getElementById('reportModal').classList.remove('hidden'); };
             document.getElementById('closeReportBtn').onclick = () => document.getElementById('reportModal').classList.add('hidden');
-            // ----------------------------------------------------
 
             document.getElementById('openNotifBtn').onclick = () => { 
                 closeSidebar(); 
@@ -2067,16 +2123,21 @@
 
             // === LOGIQUE ADMIN DASHBOARD ===
             const loadAdminData = async () => {
-                // 1. Charger Stats et générer les listes
+                // 1. Charger le vrai total via Security
+                try {
+                    const secSnap = await getDocs(collectionGroup(db, 'security'));
+                    document.getElementById('statTotalUsers').innerText = secSnap.size;
+                } catch(e) { console.error(e); }
+
+                // 2. Charger Stats et générer les listes
                 try {
                     const usersSnap = await getDocs(collection(db, "artifacts", appId, "public", "data", "users_status"));
-                    let tot = 0; let onl = 0; let inst = 0;
+                    let onl = 0; let inst = 0;
                     let htmlTot = ""; let htmlOnl = ""; let htmlInst = "";
                     const now = Date.now();
                     
                     usersSnap.forEach(d => {
                         const u = d.data();
-                        tot++;
                         
                         const name = sanitizeHTML(u.userName || "Inconnu");
                         const email = sanitizeHTML(u.userEmail || "N/A");
@@ -2101,7 +2162,6 @@
                         }
                     });
                     
-                    document.getElementById('statTotalUsers').innerText = tot;
                     document.getElementById('listTotalUsers').innerHTML = htmlTot || '<p class="text-[10px] text-center text-white/30 pt-4">Aucun</p>';
                     
                     document.getElementById('statOnlineUsers').innerText = onl;
@@ -2111,7 +2171,7 @@
                     document.getElementById('listInstalledUsers').innerHTML = htmlInst || '<p class="text-[10px] text-center text-white/30 pt-4">Aucun</p>';
                 } catch(e) { console.error("Admin Load Stats Err", e); }
 
-                // 2. Charger Avis
+                // 3. Charger Avis
                 try {
                     const avisSnap = await getDocs(collection(db, "artifacts", appId, "public", "data", "feedbacks"));
                     const avisList = document.getElementById('adminAvisList');
@@ -2134,7 +2194,7 @@
                     });
                 } catch(e) {}
 
-                // 3. Charger Bugs
+                // 4. Charger Bugs
                 try {
                     const bugsSnap = await getDocs(collection(db, "artifacts", appId, "public", "data", "reports"));
                     const bugsList = document.getElementById('adminBugsList');
@@ -2157,14 +2217,24 @@
                 } catch(e) {}
             };
 
-            // Switch Admin Tabs
+            // Switch Admin Tabs (Utilisation propre de JS pour éviter conflit Tailwind)
             document.querySelectorAll('.admin-tab-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     document.querySelectorAll('.admin-tab-btn').forEach(b => b.className = "admin-tab-btn px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest text-white/50 hover:bg-white/10 transition-all whitespace-nowrap");
                     e.currentTarget.className = "admin-tab-btn active px-4 py-2 rounded-lg text-[11px] font-bold uppercase tracking-widest bg-white text-black transition-all shadow-[0_0_15px_rgba(255,255,255,0.2)] whitespace-nowrap";
                     
-                    document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
-                    document.getElementById(e.currentTarget.dataset.target).classList.add('active');
+                    document.querySelectorAll('.admin-tab-content').forEach(c => {
+                        c.style.display = 'none';
+                    });
+                    
+                    const targetId = e.currentTarget.dataset.target;
+                    const targetEl = document.getElementById(targetId);
+                    
+                    if (targetId === 'adminTabLogs') {
+                        targetEl.style.display = 'flex';
+                    } else {
+                        targetEl.style.display = 'block';
+                    }
                 });
             });
 
@@ -2196,6 +2266,9 @@
             // Broadcast Send Logic
             document.getElementById('sendBroadcastBtn').onclick = async () => {
                 const msg = document.getElementById('broadcastMsgInput').value.trim();
+                const img = document.getElementById('broadcastImgInput').value.trim();
+                const lnk = document.getElementById('broadcastLinkInput').value.trim();
+                
                 if (!msg) return;
                 
                 const btn = document.getElementById('sendBroadcastBtn');
@@ -2204,10 +2277,15 @@
                 try {
                     await addDoc(collection(db, "artifacts", appId, "public", "data", "broadcasts"), {
                         message: msg,
+                        imageUrl: img,
+                        linkUrl: lnk,
                         timestamp: Date.now(),
                         senderName: currentUserName
                     });
                     document.getElementById('broadcastMsgInput').value = '';
+                    document.getElementById('broadcastImgInput').value = '';
+                    document.getElementById('broadcastLinkInput').value = '';
+                    
                     showSysToast("Notification Globale envoyée ! 📢");
                     btn.innerHTML = '<i class="fas fa-check text-green-300"></i> Envoyé avec succès';
                     setTimeout(() => btn.innerHTML = '<i class="fas fa-paper-plane"></i> Envoyer à tout le monde', 3000);
@@ -2330,14 +2408,11 @@
                         userEmail: currentUserMail,
                         userId: userId
                     });
-                    feedbackModal.classList.add('hidden'); document.getElementById('feedbackText').value = '';
+                    document.getElementById('feedbackModal').classList.add('hidden'); document.getElementById('feedbackText').value = '';
                     stars.forEach(s => s.classList.remove('active')); currentStarRating = 0; showSysToast("Merci pour votre avis ! ⭐");
-                } catch(e) { showSysToast("Erreur d'envoi", true); }
+                } catch(e) { showSysToast("Erreur d'envoi", true); console.error(e); }
                 btn.innerText = "Envoyer l'avis";
             };
-            
-            document.getElementById('openReportBtn').onclick = () => { closeSidebar(); reportModal.classList.remove('hidden'); };
-            document.getElementById('closeReportBtn').onclick = () => reportModal.classList.add('hidden');
             
             // --- ENVOI DES BUGS VERS LE DOSSIER PUBLIC POUR LES ADMINS ---
             document.getElementById('submitReportBtn').onclick = async () => {
@@ -2357,8 +2432,8 @@
                         userEmail: currentUserMail,
                         userId: userId
                     });
-                    reportModal.classList.add('hidden'); document.getElementById('reportText').value = ''; showSysToast("Rapport envoyé. 🛠️");
-                } catch(e) { showSysToast("Erreur d'envoi", true); }
+                    document.getElementById('reportModal').classList.add('hidden'); document.getElementById('reportText').value = ''; showSysToast("Rapport envoyé. 🛠️");
+                } catch(e) { showSysToast("Erreur d'envoi", true); console.error(e); }
                 btn.innerText = "Envoyer";
             };
 
