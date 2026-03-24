@@ -28,6 +28,10 @@
                 else setTimeout(appendErr, 50); // Attend que le body existe
             };
             appendErr();
+
+            // Stocke l'erreur et tente de l'envoyer au serveur Admin si Firebase est prêt
+            window._earlyErrors.push({title: title, msg: msg, source: source, ua: navigator.userAgent, time: Date.now()});
+            if (window.flushRemoteLogs) window.flushRemoteLogs();
         }
 
         // Capture les erreurs JavaScript classiques (ex: syntaxe non supportée par le téléphone)
@@ -739,17 +743,21 @@
                 </div>
 
                 <div id="adminTabLogs" class="admin-tab-content flex-col h-full" style="display: none;">
-                    <div class="flex gap-2 pb-3 shrink-0" id="consoleFilters">
+                    <div class="flex gap-2 pb-3 shrink-0 overflow-x-auto no-scrollbar" id="consoleFilters">
                         <button class="console-filter active px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-white text-black transition-all" data-filter="all">Tout</button>
                         <button class="console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all" data-filter="error">Erreurs</button>
                         <button class="console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/20 transition-all" data-filter="warn">Alertes</button>
                         <button class="console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition-all" data-filter="log">Infos</button>
+                        <button class="console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-orange-400 border border-orange-500/30 hover:bg-orange-500/20 transition-all shrink-0" data-filter="remote"><i class="fas fa-satellite-dish"></i> Distants</button>
                         <div class="flex-1"></div>
                         <button id="copyTokenBtn" class="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-400 border border-blue-500/30 text-[10px] uppercase font-bold hover:bg-blue-500/40 transition-all hidden md:flex items-center gap-2"><i class="fas fa-key"></i> Token FCM</button>
                         <button id="clearConsoleBtn" class="px-3 py-1.5 rounded-lg bg-white/10 text-white/60 border border-white/10 text-[10px] uppercase font-bold hover:text-white hover:bg-white/20 transition-all flex items-center gap-2"><i class="fas fa-broom"></i></button>
                     </div>
                     <div id="consoleOutput" class="flex-1 overflow-y-auto space-y-3 bg-black/40 rounded-xl p-3 border border-white/5">
-                        <div class="text-white/30 text-center py-2 text-[10px] uppercase tracking-widest font-bold">--- Logs ---</div>
+                        <div class="text-white/30 text-center py-2 text-[10px] uppercase tracking-widest font-bold">--- Logs Locaux ---</div>
+                    </div>
+                    <div id="remoteLogsOutput" class="flex-1 overflow-y-auto space-y-3 bg-black/40 rounded-xl p-3 border border-white/5 hidden">
+                        <!-- Les logs distants s'afficheront ici -->
                     </div>
                 </div>
 
@@ -1094,7 +1102,24 @@
 
         console.log = function() { originalLog.apply(console, arguments); pushToVisualConsole('log', arguments); };
         console.warn = function() { originalWarn.apply(console, arguments); pushToVisualConsole('warn', arguments); };
-        console.error = function() { originalError.apply(console, arguments); pushToVisualConsole('error', arguments); };
+        console.error = function() { 
+            originalError.apply(console, arguments); 
+            pushToVisualConsole('error', arguments); 
+            
+            // Push to Firebase for Admin Console Remote Tracking
+            if (window.db && window.firestoreUtils) {
+                const msg = Array.from(arguments).map(safeStringify).join(' ');
+                const { collection, addDoc } = window.firestoreUtils;
+                addDoc(collection(window.db, "artifacts", window.__app_id, "public", "data", "remote_logs"), {
+                    title: "ERREUR CONSOLE",
+                    message: msg,
+                    source: "console.error",
+                    userAgent: navigator.userAgent,
+                    timestamp: Date.now(),
+                    userId: window.userId || 'unknown'
+                }).catch(()=>{});
+            }
+        };
         
         window.addEventListener('error', function(event) { console.error("Global Error:", event.message, "at", event.filename, ":", event.lineno); });
         window.addEventListener('unhandledrejection', function(event) { console.error("Unhandled Promise:", event.reason); });
@@ -1154,6 +1179,27 @@
             const appOverlay = document.getElementById('appOverlay');
             const historyList = document.getElementById('historyList');
             const hardcoreContainer = document.getElementById('hardcoreContainer');
+
+            // --- GESTION DES LOGS DISTANTS (FLUSH) ---
+            window.flushRemoteLogs = async () => {
+                if (!window.db || window._earlyErrors.length === 0) return;
+                const errorsToPush = [...window._earlyErrors];
+                window._earlyErrors = [];
+                
+                for (const err of errorsToPush) {
+                    try {
+                        await addDoc(collection(db, "artifacts", appId, "public", "data", "remote_logs"), {
+                            title: err.title,
+                            message: err.msg,
+                            source: err.source,
+                            userAgent: err.ua,
+                            timestamp: err.time,
+                            userId: window.userId || 'unknown'
+                        });
+                    } catch(e) {}
+                }
+            };
+            window.flushRemoteLogs();
 
             if (window.geoDisableThiabs) {
                 const tContainer = document.getElementById('thiabsModeContainer');
@@ -2225,10 +2271,19 @@
                         const data = await res.json();
                         // Utilise data.country_code (ex: "CD", "FR") au lieu du nom complet
                         window.userGeo = { country: data.country, code: data.country_code, city: data.city };
-                    } else {
-                        window.userGeo = { country: 'Inconnu', code: '', city: '' };
+                    } else throw new Error('GeoJS failed');
+                } catch(e) { 
+                    // PLAN B: Serveur de géolocalisation alternatif si le 1er est bloqué
+                    try {
+                        const res2 = await fetch('https://ipapi.co/json/');
+                        if (res2.ok) {
+                            const data2 = await res2.json();
+                            window.userGeo = { country: data2.country_name, code: data2.country_code, city: data2.city };
+                        } else throw new Error('ipapi failed');
+                    } catch(e2) {
+                        window.userGeo = { country: 'Inconnu', code: '', city: '' }; 
                     }
-                } catch(e) { window.userGeo = { country: 'Inconnu', code: '', city: '' }; }
+                }
 
                 if (window.userGeo && window.userGeo.code) {
                     try {
@@ -2265,18 +2320,22 @@
                 setTimeout(() => s1.classList.add('active'), 200);
                 setTimeout(() => { s1.classList.remove('active'); s1.classList.add('exit'); }, 1200);
                 setTimeout(() => s2.classList.add('active'), 1500);
-                setTimeout(() => { s2.classList.remove('active'); s2.classList.add('exit'); }, 2800);
-                setTimeout(() => {
-                    splashScreen.style.opacity = '0';
-                    setTimeout(() => {
-                        splashScreen.style.display = 'none';
-                        const savedKey = localStorage.getItem('thiabs_saved_key');
-                        if (!savedKey) {
-                            langPage.classList.remove('hidden');
-                        }
-                    }, 400); 
-                }, 3000);
-            };
+        setTimeout(() => { s2.classList.remove('active'); s2.classList.add('exit'); }, 2800);
+        setTimeout(() => {
+            const splashScreen = document.getElementById('splashScreen');
+            splashScreen.style.opacity = '0';
+            setTimeout(() => {
+                splashScreen.style.display = 'none';
+                const savedKey = localStorage.getItem('thiabs_saved_key');
+                if (savedKey) {
+                    // CORRECTION ECRAN NOIR : On lance la connexion seulement quand le fond noir est détruit
+                    processLogin(savedKey, true);
+                } else {
+                    langPage.classList.remove('hidden');
+                }
+            }, 400); 
+        }, 3000);
+    };
             
 
             document.querySelectorAll('.lang-btn').forEach(btn => {
@@ -2289,9 +2348,7 @@
             const initAuth = async () => {
                 try {
                     if (!auth.currentUser) await signInAnonymously(auth);
-                    const savedKey = localStorage.getItem('thiabs_saved_key');
-                    if (savedKey) await processLogin(savedKey, true);
-                    else startIntro();
+                    startIntro(); // Lancement obligatoire de l'intro pour enlever le splash screen noir
                 } catch(e) {
                     showToast("❌ ERREUR: Connexion anonyme désactivée", true);
                     startIntro();
@@ -2790,6 +2847,29 @@
                     });
                 } catch(e) {}
 
+                // CHARGEMENT DES LOGS DISTANTS POUR LA CONSOLE
+                try {
+                    const logsSnap = await getDocs(query(collection(db, "artifacts", appId, "public", "data", "remote_logs"), orderBy("timestamp", "desc")));
+                    const remoteContainer = document.getElementById('remoteLogsOutput');
+                    remoteContainer.innerHTML = '';
+                    if (logsSnap.empty) {
+                        remoteContainer.innerHTML = '<p class="text-white/40 text-xs text-center py-4">Aucun log distant capturé.</p>';
+                    } else {
+                        logsSnap.forEach(d => {
+                            const l = d.data();
+                            const dateStr = new Date(l.timestamp).toLocaleString();
+                            remoteContainer.innerHTML += `
+                            <div class="bg-red-500/10 border border-red-500/20 p-3 rounded-xl mb-2">
+                                <p class="text-[10px] text-red-300 font-bold mb-1">${sanitizeHTML(l.title)} <span class="float-right text-white/40">${dateStr}</span></p>
+                                <p class="text-[11px] text-red-100 font-mono break-words">${sanitizeHTML(l.message)}</p>
+                                ${l.source ? `<p class="text-[9px] text-red-400 mt-1 break-words">Source: ${sanitizeHTML(l.source)}</p>` : ''}
+                                <p class="text-[8px] text-white/30 mt-1 truncate" title="${sanitizeHTML(l.userAgent)}">${sanitizeHTML(l.userAgent)}</p>
+                                <p class="text-[8px] text-orange-300 mt-1 font-bold">User: ${sanitizeHTML(l.userId)}</p>
+                            </div>`;
+                        });
+                    }
+                } catch(e) { console.error("Remote logs err", e); }
+
                 loadGeoRules();
             };
 
@@ -2877,21 +2957,30 @@
                         if (b.dataset.filter === 'error') b.className = "console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-red-400 border border-red-500/30 hover:bg-red-500/20 transition-all";
                         if (b.dataset.filter === 'warn') b.className = "console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-yellow-400 border border-yellow-500/30 hover:bg-yellow-500/20 transition-all";
                         if (b.dataset.filter === 'log') b.className = "console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-blue-400 border border-blue-500/30 hover:bg-blue-500/20 transition-all";
+                        if (b.dataset.filter === 'remote') b.className = "console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-orange-400 border border-orange-500/30 hover:bg-orange-500/20 transition-all shrink-0";
                         if (b.dataset.filter === 'all') b.className = "console-filter px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest text-white/50 border border-white/20 hover:bg-white/10 transition-all";
                     });
 
-                    const target = e.target;
-                    target.className = "console-filter active px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all";
+                    const target = e.currentTarget;
+                    target.className = "console-filter active px-4 py-1.5 rounded-lg text-[10px] font-bold uppercase tracking-widest bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.3)] transition-all shrink-0";
                     
                     currentConsoleFilter = target.dataset.filter;
                     
-                    document.querySelectorAll('.log-entry').forEach(log => {
-                        if (currentConsoleFilter === 'all' || log.classList.contains(`log-${currentConsoleFilter}`)) {
-                            log.classList.remove('hidden');
-                        } else {
-                            log.classList.add('hidden');
-                        }
-                    });
+                    if (currentConsoleFilter === 'remote') {
+                        document.getElementById('consoleOutput').classList.add('hidden');
+                        document.getElementById('remoteLogsOutput').classList.remove('hidden');
+                    } else {
+                        document.getElementById('remoteLogsOutput').classList.add('hidden');
+                        document.getElementById('consoleOutput').classList.remove('hidden');
+                        
+                        document.querySelectorAll('.log-entry').forEach(log => {
+                            if (currentConsoleFilter === 'all' || log.classList.contains(`log-${currentConsoleFilter}`)) {
+                                log.classList.remove('hidden');
+                            } else {
+                                log.classList.add('hidden');
+                            }
+                        });
+                    }
                 });
             });
 
