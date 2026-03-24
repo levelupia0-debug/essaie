@@ -9,6 +9,43 @@
     <meta name="theme-color" content="#020202">
     
     <title>Level IA</title>
+
+    <!-- SYSTÈME D'URGENCE POUR DEBUG MOBILE : Capture les erreurs critiques dès la première seconde -->
+    <script>
+        window._earlyErrors = [];
+        function forceShowError(title, msg, source) {
+            const errDiv = document.createElement('div');
+            // Style d'un gros bandeau rouge d'urgence par-dessus tout
+            errDiv.style.cssText = 'position:fixed;top:0;left:0;width:100%;background:rgba(220,38,38,0.95);backdrop-filter:blur(10px);color:white;z-index:2147483647;padding:20px;font-family:monospace;font-size:12px;word-break:break-all;max-height:60vh;overflow-y:auto;border-bottom:2px solid #fff;box-shadow:0 10px 25px rgba(0,0,0,0.5);';
+            errDiv.innerHTML = '<strong style="font-size:16px;display:block;margin-bottom:10px;">🚨 ' + title + '</strong>' + 
+                               '<b style="color:#fca5a5;">Message:</b> ' + msg + '<br><br>' + 
+                               (source ? '<b style="color:#fca5a5;">Source:</b> ' + source + '<br><br>' : '') + 
+                               '<b style="color:#fca5a5;">UserAgent:</b> ' + navigator.userAgent + '<br>' +
+                               '<button onclick="this.parentElement.remove()" style="margin-top:15px;padding:10px;background:black;color:white;border:1px solid white;border-radius:8px;font-weight:bold;width:100%;">Fermer l\'alerte</button>';
+            
+            const appendErr = () => {
+                if(document.body) document.body.appendChild(errDiv);
+                else setTimeout(appendErr, 50); // Attend que le body existe
+            };
+            appendErr();
+        }
+
+        // Capture les erreurs JavaScript classiques (ex: syntaxe non supportée par le téléphone)
+        window.onerror = function(msg, url, line, col, error) {
+            const errMsg = error && error.stack ? error.stack : msg;
+            const errSrc = url ? (url + ' (Ligne: ' + line + ', Col: ' + col + ')') : 'Inconnu';
+            window._earlyErrors.push({msg: errMsg, url, line});
+            forceShowError('ERREUR GLOBALE (CRASH)', errMsg, errSrc);
+            return false; 
+        };
+
+        // Capture les erreurs de Promesses (ex: Firebase bloqué, échec réseau, async/await)
+        window.addEventListener('unhandledrejection', function(event) {
+            const msg = event.reason ? (event.reason.stack || event.reason.message || event.reason) : 'Rejet de promesse inconnu';
+            window._earlyErrors.push({msg: msg});
+            forceShowError('ERREUR PROMESSE (ASYNC)', msg, null);
+        });
+    </script>
     
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
