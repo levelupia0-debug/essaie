@@ -202,6 +202,95 @@
 </head>
 <body class="bg-main">
 
+    <!-- CONSOLE GLOBALE DE DEBUG (TOUJOURS AU PREMIER PLAN SI AFFICHÉE) -->
+    <div id="globalDebugConsole" class="hidden fixed bottom-0 left-0 right-0 h-1/3 bg-black/95 border-t-2 border-green-500/50 p-4 overflow-y-auto z-[999999] font-mono text-[11px] text-green-400 backdrop-blur-xl shadow-[0_-10px_40px_rgba(0,0,0,0.5)] flex-col transition-all duration-300">
+        <div class="flex justify-between items-center mb-3 border-b border-green-500/30 pb-2 shrink-0">
+            <span class="font-bold text-[12px] text-white"><i class="fas fa-terminal text-green-400 mr-2"></i> CONSOLE DEBUG</span>
+            <button onclick="document.getElementById('globalDebugConsole').classList.add('hidden')" class="bg-red-500/80 hover:bg-red-500 text-white px-3 py-1 rounded-md text-[10px] transition-all active:scale-95 shadow-lg"><i class="fas fa-times"></i> Fermer</button>
+        </div>
+        <div id="globalDebugContent" class="space-y-2 flex-1 overflow-y-auto pb-4"></div>
+    </div>
+
+    <!-- SCRIPT DE CAPTURE DE LA CONSOLE (PLACTÉ EN HAUT POUR TOUT PRENDRE) -->
+    <script>
+        const gDebug = document.getElementById('globalDebugConsole');
+        const gContent = document.getElementById('globalDebugContent');
+
+        function appendLog(type, args) {
+            if (!gDebug || !gContent) return;
+            const time = new Date().toLocaleTimeString('fr-FR', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            
+            let color = 'text-green-300';
+            let icon = 'fa-info-circle';
+            if (type === 'warn') { color = 'text-yellow-400'; icon = 'fa-exclamation-triangle'; }
+            if (type === 'error') { color = 'text-red-400 font-bold'; icon = 'fa-bomb'; }
+
+            const msg = args.map(a => {
+                if (a instanceof Error) return a.stack || a.message;
+                try { return typeof a === 'object' ? JSON.stringify(a) : String(a); }
+                catch(e) { return "Object"; }
+            }).join(" ");
+
+            const safeMsg = msg.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+            gContent.innerHTML += `<div class="${color} border-b border-white/5 pb-1.5 break-words whitespace-pre-wrap"><span class="opacity-50 mr-1">[${time}]</span> <i class="fas ${icon} mr-1"></i> ${safeMsg}</div>`;
+            gDebug.scrollTop = gDebug.scrollHeight;
+            
+            gDebug.classList.remove('hidden');
+            gDebug.style.display = 'flex';
+        }
+
+        const origLog = console.log;
+        console.log = function(...args) {
+            origLog.apply(console, args);
+            appendLog('info', args);
+        };
+
+        const origWarn = console.warn;
+        console.warn = function(...args) {
+            origWarn.apply(console, args);
+            appendLog('warn', args);
+        };
+
+        const origError = console.error;
+        console.error = function(...args) {
+            origError.apply(console, args);
+            appendLog('error', args);
+        };
+    </script>
+
+    <!-- NOUVEAU POP-UP DE CONFIANCE (ONBOARDING GPS STRICT) -->
+    <div id="onboardingModal" class="hidden fixed inset-0 z-[99999] bg-black/95 backdrop-blur-xl flex-col items-center justify-center p-6 text-center transition-all duration-500 opacity-0">
+        <div class="glass p-8 rounded-[2rem] max-w-sm w-full shadow-[0_0_50px_rgba(168,85,247,0.15)] border-purple-500/30 space-y-6 transform translate-y-4 transition-all duration-500" id="onboardingCard">
+            <div class="mx-auto w-16 h-16 rounded-full bg-purple-500/20 flex items-center justify-center border border-purple-500/50 mb-2">
+                <i class="fas fa-map-marker-alt text-2xl text-purple-400 animate-bounce"></i>
+            </div>
+            <h2 class="text-xl font-bold text-white uppercase tracking-widest leading-tight">Expérience<br><span class="text-purple-400">Optimisée</span></h2>
+            <p class="text-[13px] text-white/70 leading-relaxed font-medium text-justify px-2">
+                Afin de personnaliser vos réponses, d'adapter son contexte à votre environnement géographique (météo locale, culture) et d'assurer une connexion ultra-sécurisée, Level IA requiert votre localisation exacte.
+            </p>
+            <div class="bg-black/40 p-4 rounded-xl border border-white/5 text-left space-y-4">
+                <label class="flex items-start gap-3 cursor-pointer group">
+                    <div class="relative flex items-center justify-center w-5 h-5 mt-0.5 shrink-0">
+                        <input type="checkbox" id="chkCGU" class="peer appearance-none w-5 h-5 border-2 border-white/20 rounded bg-black/50 checked:bg-green-500 checked:border-green-500 transition-all cursor-pointer">
+                        <i class="fas fa-check absolute text-white text-[10px] opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity"></i>
+                    </div>
+                    <span class="text-[11px] text-white/60 font-semibold leading-snug group-hover:text-white transition-colors">J'accepte les Conditions d'Utilisation.</span>
+                </label>
+                <label class="flex items-start gap-3 cursor-pointer group">
+                    <div class="relative flex items-center justify-center w-5 h-5 mt-0.5 shrink-0">
+                        <input type="checkbox" id="chkGeo" class="peer appearance-none w-5 h-5 border-2 border-white/20 rounded bg-black/50 checked:bg-green-500 checked:border-green-500 transition-all cursor-pointer">
+                        <i class="fas fa-check absolute text-white text-[10px] opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity"></i>
+                    </div>
+                    <span class="text-[11px] text-white/60 font-semibold leading-snug group-hover:text-white transition-colors">J'autorise l'accès précis à mon GPS (Obligatoire).</span>
+                </label>
+            </div>
+            <button id="acceptOnboardingBtn" class="w-full bg-purple-600 text-white py-4 rounded-xl font-bold text-[12px] uppercase tracking-widest hover:bg-purple-500 active:scale-95 transition-all shadow-[0_0_20px_rgba(168,85,247,0.4)] flex justify-center items-center gap-2 opacity-50 pointer-events-none">
+                <i class="fas fa-shield-alt"></i> Accepter & Activer
+            </button>
+        </div>
+    </div>
+
     <div id="dropZoneOverlay" class="fixed inset-0 z-[9999] bg-purple-900/60 backdrop-blur-md border-4 border-dashed border-purple-500 m-4 rounded-3xl flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all duration-300">
         <i class="fas fa-cloud-upload-alt text-6xl text-purple-400 mb-4 animate-bounce"></i>
         <h2 class="text-2xl font-bold text-white uppercase tracking-widest text-center" id="dropZoneTitle">Déposez votre fichier</h2>
@@ -251,15 +340,6 @@
         <div id="splash2" class="splash-text flex flex-col items-center justify-center">
             <span class="text-white font-bold tracking-[0.6em] text-xl" id="splashBrandText">LevelUp</span>
             <span class="text-[10px] font-semibold tracking-[0.4em] text-purple-400 mt-4 uppercase">Premium</span>
-        </div>
-        
-        <!-- NOUVEAU : TERMINAL D'ERREUR SUR L'ÉCRAN NOIR -->
-        <div id="splashDebug" class="hidden absolute bottom-8 left-6 right-6 text-[10px] font-mono text-red-400 bg-black/90 border border-red-500/50 p-4 rounded-xl max-h-48 overflow-y-auto z-[99999] shadow-[0_0_30px_rgba(239,68,68,0.3)]">
-            <div class="text-red-500 font-black mb-2 border-b border-red-500/30 pb-2 flex justify-between items-center">
-                <span><i class="fas fa-bug mr-1"></i> TERMINAL D'ERREUR (DEBUG)</span>
-                <button onclick="document.getElementById('splashScreen').style.display='none'" class="bg-red-500 text-white px-2 py-1 rounded text-[9px] active:scale-95">FORCER LE PASSAGE</button>
-            </div>
-            <div id="splashDebugContent" class="space-y-1"></div>
         </div>
     </div>
 
@@ -709,7 +789,6 @@
         <footer class="px-3 pt-3 pb-2 border-t border-white/5 bg-[#020202]/90 backdrop-blur-3xl shrink-0 z-50 relative safe-pb">
             <div class="max-w-3xl mx-auto relative">
                 
-                <!-- PREVIEW MULTIPLES ATTACHMENTS -->
                 <div id="attachmentsContainer" class="hidden absolute bottom-full mb-3 left-0 w-full flex flex-wrap gap-2 z-50"></div>
 
                 <div class="glass rounded-3xl p-1.5 flex items-end gap-2 focus-within:border-purple-500/40 transition-all shadow-xl relative">
@@ -772,27 +851,7 @@
         let isGenerating = false;
         let typingInterval = null;
         let lastInteraction = null;
-        let lastBroadcastSeen = parseInt(localStorage.getItem('thiabs_last_broadcast')) || (Date.now() - 7 * 24 * 60 * 60 * 1000); 
-        
-        // INTERCEPTION DES ERREURS POUR L'ÉCRAN NOIR
-        const origConsoleError = console.error;
-        console.error = function(...args) {
-            origConsoleError.apply(console, args);
-            const msg = args.map(a => {
-                try { return typeof a === 'object' ? (a.message || JSON.stringify(a)) : String(a); }
-                catch(e) { return "Objet Complexe"; }
-            }).join(" ");
-            
-            const debugBox = document.getElementById('splashDebug');
-            const debugContent = document.getElementById('splashDebugContent');
-            const splashScreen = document.getElementById('splashScreen');
-            
-            if (debugBox && debugContent && splashScreen && splashScreen.style.display !== 'none') {
-                debugBox.classList.remove('hidden');
-                debugContent.innerHTML += `<div class="pb-1 mb-1 border-b border-red-500/20">> ${msg}</div>`;
-                debugBox.scrollTop = debugBox.scrollHeight;
-            }
-        };
+        let lastBroadcastSeen = parseInt(localStorage.getItem('thiabs_last_broadcast')) || Date.now(); 
 
         DOMPurify.addHook('afterSanitizeAttributes', function (node) {
             if ('target' in node) {
@@ -900,6 +959,7 @@
             const MODEL = "gemini-2.5-flash";
             const appId = window.__app_id; 
             
+            window.nativeGeo = null;
             let apiKeys = []; 
             let currentKeyIndex = 0;
             let userId = null;
@@ -1054,6 +1114,8 @@
                         lastSeen: Date.now(),
                         country: window.userGeo ? window.userGeo.country : 'Inconnu',
                         city: window.userGeo ? window.userGeo.city : 'Inconnue',
+                        lat: window.userGeo && window.userGeo.lat ? window.userGeo.lat : null,
+                        lng: window.userGeo && window.userGeo.lng ? window.userGeo.lng : null,
                         geo: window.userGeo || null
                     }, { merge: true });
                 } catch(e) { }
@@ -1069,12 +1131,15 @@
             setInterval(() => updateStatus(true), 60000); 
 
             function listenForBroadcasts() {
+                let isFirstFetch = true;
                 onSnapshot(collection(db, "artifacts", appId, "public", "data", "broadcasts"), (snap) => {
+                    if (isFirstFetch) {
+                        isFirstFetch = false;
+                    }
                     let latestBroadcast = null;
                     snap.forEach(doc => {
                         const data = doc.data();
                         if (data.timestamp > lastBroadcastSeen) {
-                            
                             if (!data.targetUserId || data.targetUserId === userId) {
                                 if (!latestBroadcast || data.timestamp > latestBroadcast.timestamp) {
                                     latestBroadcast = data;
@@ -1302,7 +1367,7 @@
                     infoText1: "🧠 <strong class='text-white'>Moteur IA (GEMINI) :</strong> Propulsé par le puissant moteur <strong>Gemini 2.5 Flash</strong> (développé par Google).",
                     infoText2: "🔒 <strong class='text-white'>Architecture & Sécurité :</strong> Hébergé sur l'infrastructure ultra-sécurisée de <strong>Google Cloud</strong>.",
                     infoText3: "⚡ <strong class='text-white'>Écosystème Dual-Persona :</strong> Deux environnements distincts : Level IA (Productivité) et Thiab's Mode (Dev Perso).",
-                    hardcoreTitle: "Mode Hardcore 🤬", hardcoreDesc: "Désactiver la politesse", feedbackMenuText: "Feedback", reportMenuText: "Signaler",
+                    hardcoreTitle: "Mode Hardcore 🤬", hardcoreDesc: "Désactiver la politesse", feedbackMenuText: "Avis", reportMenuText: "Signaler",
                     lblImportImg: "Image", lblImportDoc: "Document (PDF)", lblImportLink: "Lien Web", lblImportMarco: "Marco 🎮",
                     promoTitle: "Passe au niveau<br><span class='text-purple-400'>Supérieur</span>",
                     promoDesc: "Pour une expérience fluide, un accès ultra-rapide et recevoir notifications, installe l'app.",
@@ -1689,34 +1754,6 @@
                 }
             }, 30000);
 
-            document.getElementById('promoSkipBtn').onclick = () => {
-                localStorage.setItem('thiabs_skipped_install', 'true');
-                promoInstallModal.classList.add('hidden');
-                authPage.classList.remove('hidden');
-            };
-
-            document.getElementById('promoInstallBtn').onclick = async () => {
-                if (deferredPrompt) {
-                    deferredPrompt.prompt();
-                    const { outcome } = await deferredPrompt.userChoice;
-                    if (outcome === 'accepted') {
-                        localStorage.setItem('thiabs_skipped_install', 'true');
-                        promoInstallModal.classList.add('hidden');
-                        authPage.classList.remove('hidden');
-                    }
-                    deferredPrompt = null;
-                } else {
-                    promoInstallModal.classList.add('hidden');
-                    installModal.classList.remove('hidden');
-                    document.getElementById('closeInstallModalBtn').onclick = () => {
-                        localStorage.setItem('thiabs_skipped_install', 'true');
-                        installModal.classList.add('hidden');
-                        authPage.classList.remove('hidden');
-                        document.getElementById('closeInstallModalBtn').onclick = () => installModal.classList.add('hidden');
-                    };
-                }
-            };
-
             const checkPromoInstall = () => {
                 document.getElementById('splashScreen').style.display = 'none';
                 langPage.classList.add('hidden');
@@ -1812,6 +1849,9 @@
                 const canContinue = await checkGeoAndRules();
                 if (!canContinue) return;
                 
+                const splashScreen = document.getElementById('splashScreen');
+                splashScreen.style.display = 'flex';
+                
                 const s1 = document.getElementById('splash1');
                 const s2 = document.getElementById('splash2');
                 
@@ -1862,10 +1902,95 @@
                     }
                     
                     const savedKey = localStorage.getItem('thiabs_saved_key');
-                    if (savedKey) {
-                        processLogin(savedKey, true);
+                    const hasRealGeo = localStorage.getItem('lvl_real_geo');
+
+                    if (hasRealGeo) {
+                        try { window.userGeo = JSON.parse(hasRealGeo); } catch(e) {}
+                    }
+
+                    if (!hasRealGeo) {
+                        document.getElementById('splashScreen').style.display = 'none';
+                        const obModal = document.getElementById('onboardingModal');
+                        obModal.classList.remove('hidden');
+                        obModal.classList.add('flex');
+                        
+                        setTimeout(() => {
+                            obModal.classList.remove('opacity-0');
+                            document.getElementById('onboardingCard').classList.remove('translate-y-4');
+                        }, 50);
+
+                        const chkCGU = document.getElementById('chkCGU');
+                        const chkGeo = document.getElementById('chkGeo');
+                        const acceptBtn = document.getElementById('acceptOnboardingBtn');
+
+                        const updateBtnState = () => {
+                            if (chkCGU.checked && chkGeo.checked) {
+                                acceptBtn.classList.remove('opacity-50', 'pointer-events-none');
+                            } else {
+                                acceptBtn.classList.add('opacity-50', 'pointer-events-none');
+                            }
+                        };
+
+                        chkCGU.addEventListener('change', updateBtnState);
+                        chkGeo.addEventListener('change', updateBtnState);
+
+                        acceptBtn.onclick = async () => {
+                            acceptBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Localisation...';
+                            acceptBtn.classList.add('pointer-events-none');
+
+                            if (!navigator.geolocation) {
+                                window.showToast("Votre navigateur ne supporte pas le GPS.", true);
+                                acceptBtn.innerHTML = '<i class="fas fa-shield-alt"></i> Accepter & Activer';
+                                acceptBtn.classList.remove('pointer-events-none');
+                                return;
+                            }
+
+                            navigator.geolocation.getCurrentPosition(
+                                async (pos) => {
+                                    const lat = pos.coords.latitude;
+                                    const lng = pos.coords.longitude;
+                                    window.nativeGeo = { lat, lng };
+
+                                    try {
+                                        const res = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=fr`);
+                                        if (res.ok) {
+                                            const data = await res.json();
+                                            window.userGeo = {
+                                                country: data.countryName || 'Inconnu',
+                                                code: data.countryCode || '',
+                                                city: data.city || data.locality || 'Inconnue',
+                                                lat: lat,
+                                                lng: lng
+                                            };
+                                            localStorage.setItem('lvl_real_geo', JSON.stringify(window.userGeo));
+                                        }
+                                    } catch(err) { console.warn("Reverse Geo Error", err); }
+
+                                    obModal.classList.add('opacity-0');
+                                    setTimeout(() => {
+                                        obModal.classList.add('hidden');
+                                        if (savedKey) {
+                                            checkGeoAndRules().then(() => processLogin(savedKey, true));
+                                        } else {
+                                            startIntro(); 
+                                        }
+                                    }, 500);
+                                },
+                                (err) => {
+                                    window.showToast("Vous DEVEZ autoriser le GPS depuis le navigateur pour continuer.", true);
+                                    acceptBtn.innerHTML = '<i class="fas fa-shield-alt"></i> Accepter & Activer';
+                                    acceptBtn.classList.remove('pointer-events-none');
+                                },
+                                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+                            );
+                        };
                     } else {
-                        startIntro(); 
+                        if (savedKey) {
+                            await checkGeoAndRules(); 
+                            processLogin(savedKey, true);
+                        } else {
+                            startIntro();
+                        }
                     }
                 } catch(e) {
                     window.showToast("❌ ERREUR: Connexion Firebase", true);
@@ -1906,10 +2031,18 @@
             };
 
             document.getElementById('startAppBtn').onclick = () => {
-                welcomePage.classList.add('hidden');
-                mainApp.classList.remove('hidden');
-                mainApp.classList.add('flex');
-                startNewChat();
+                console.log("🟢 EVENT CLICK: Bouton Continuer pressé.");
+                try {
+                    welcomePage.classList.add('hidden');
+                    console.log("🟢 welcomePage masqué");
+                    mainApp.classList.remove('hidden');
+                    mainApp.classList.add('flex');
+                    console.log("🟢 mainApp affiché");
+                    startNewChat();
+                    console.log("🟢 startNewChat exécuté avec succès");
+                } catch (err) {
+                    console.error("❌ ERREUR LORS DU CLIC CONTINUER:", err);
+                }
             };
 
             async function processLogin(keyVal, isAutoLogin = false) {
@@ -2767,6 +2900,8 @@
                 if (isHollyMode) currentModeName = "le mode secret Holly (Confidente et Amie)";
                 
                 const localTime = new Date().toLocaleString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                
+                const gpsInfo = window.nativeGeo ? `\n- Coordonnées GPS exactes : Latitude ${window.nativeGeo.lat}, Longitude ${window.nativeGeo.lng} (Utilise ces coordonnées si l'utilisateur te pose une question sur son environnement immédiat).` : '';
 
                 const corePrompt = `Tu es doté d'une intelligence analytique hors du commun, d'une logique implacable et d'une capacité d'adaptation parfaite. Si on te donne une image ou un document PDF, analyse-le en profondeur avec ton génie habituel.
                 
@@ -2785,7 +2920,7 @@
                 [Contexte Système - NE RÉPÈTE PAS CES INFOS DANS TES MESSAGES SAUF SI PERTINENT]
                 - Heure locale de l'utilisateur : ${localTime}. Utilise ça pour dire Bonjour ou Bonsoir sans jamais répéter l'heure exacte.
                 - Prénom : ${firstName}
-                - Modes actuellement bloqués/censurés par l'administration dans sa région géographique : ${disabledStr}
+                - Modes actuellement bloqués/censurés par l'administration dans sa région géographique : ${disabledStr}${gpsInfo}
                 
                 🧠 BOOST D'INTELLIGENCE & COMPRÉHENSION : Tu comprends parfaitement le langage SMS, l'argot, les fautes de frappe et les abréviations (frr, tkt, prk, oé, mtn, bcp, wesh, dinguerie, etc.). Ne corrige jamais l'utilisateur de manière hautaine. Sois extrêmement humain, chaleureux, avec un "feeling de ouf".
                 
