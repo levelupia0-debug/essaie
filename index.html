@@ -776,17 +776,28 @@
             return String.fromCodePoint(...codePoints);
         }
 
+        window.sendClientLog = async (type, msg, file = "System", line = 0) => {
+            if (window.db && window.firestoreUtils && window.__app_id) {
+                try {
+                    await window.firestoreUtils.addDoc(window.firestoreUtils.collection(window.db, "artifacts", window.__app_id, "public", "data", "client_logs"), {
+                        type: type,
+                        msg: msg,
+                        file: file,
+                        line: line,
+                        time: Date.now(),
+                        user: window._currentUserId || "Inconnu"
+                    });
+                } catch(e) {}
+            }
+        };
+
         window.addEventListener('error', function(event) { 
             console.error("Global Error:", event.message, "at", event.filename, ":", event.lineno); 
-            if(window.db && window.__app_id) {
-                try { window.firestoreUtils.addDoc(window.firestoreUtils.collection(window.db, "artifacts", window.__app_id, "public", "data", "client_logs"), { type: "error", msg: event.message, file: event.filename, line: event.lineno, time: Date.now(), user: window._currentUserId || "unknown" }); } catch(e){}
-            }
+            if(window.sendClientLog) window.sendClientLog("error", event.message, event.filename, event.lineno);
         });
         window.addEventListener('unhandledrejection', function(event) { 
             console.error("Unhandled Promise:", event.reason); 
-            if(window.db && window.__app_id) {
-                try { window.firestoreUtils.addDoc(window.firestoreUtils.collection(window.db, "artifacts", window.__app_id, "public", "data", "client_logs"), { type: "promise_error", msg: String(event.reason), time: Date.now(), user: window._currentUserId || "unknown" }); } catch(e){}
-            }
+            if(window.sendClientLog) window.sendClientLog("promise_error", String(event.reason));
         });
 
         if (window.visualViewport) {
@@ -1783,6 +1794,7 @@
                         document.getElementById('welcomeAvatar').src = avatarUrl;
                         
                         if (isAutoLogin) {
+                            document.getElementById('splashScreen').style.display = 'none';
                             welcomePage.classList.add('hidden');
                             mainApp.classList.remove('hidden');
                             mainApp.classList.add('flex');
@@ -1873,6 +1885,7 @@
             }
 
             const checkPromoInstall = () => {
+                document.getElementById('splashScreen').style.display = 'none';
                 langPage.classList.add('hidden');
                 const skipped = localStorage.getItem('thiabs_skipped_install');
                 
@@ -1885,14 +1898,34 @@
 
             const checkGeoAndRules = async () => {
                 try {
-                    const res = await fetch('https://get.geojs.io/v1/ip/geo.json');
-                    if (res.ok) {
-                        const data = await res.json();
-                        window.userGeo = { country: data.country, code: data.country_code, city: data.city };
-                    } else {
-                        window.userGeo = { country: 'Inconnu', code: '', city: '' };
+                    const res1 = await fetch('https://ipapi.co/json/');
+                    if (res1.ok) {
+                        const data1 = await res1.json();
+                        if (!data1.error && !data1.reason) {
+                            window.userGeo = { country: data1.country_name, code: data1.country_code, city: data1.city || 'Inconnue' };
+                        }
                     }
-                } catch(e) { window.userGeo = { country: 'Inconnu', code: '', city: '' }; }
+                    
+                    if (!window.userGeo) {
+                        const res2 = await fetch('https://ipwho.is/');
+                        if (res2.ok) {
+                            const data2 = await res2.json();
+                            if (data2.success) {
+                                window.userGeo = { country: data2.country, code: data2.country_code, city: data2.city || 'Inconnue' };
+                            }
+                        }
+                    }
+
+                    if (!window.userGeo) {
+                        const res3 = await fetch('https://get.geojs.io/v1/ip/geo.json');
+                        if (res3.ok) {
+                            const data3 = await res3.json();
+                            window.userGeo = { country: data3.country, code: data3.country_code, city: data3.city || 'Inconnue' };
+                        } else {
+                            window.userGeo = { country: 'Inconnu', code: '', city: 'Inconnue' };
+                        }
+                    }
+                } catch(e) { window.userGeo = { country: 'Inconnu', code: '', city: 'Inconnue' }; }
 
                 if (window.userGeo && window.userGeo.country) {
                     try {
