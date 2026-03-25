@@ -1355,6 +1355,18 @@
                         hardcoreContainer.classList.add('hidden');
                     }
                 }
+
+                const tContainer = document.getElementById('thiabsModeContainer');
+                if (tContainer) {
+                    if (window.geoDisableThiabs) tContainer.classList.add('hidden');
+                    else tContainer.classList.remove('hidden');
+                }
+
+                const hContainer = document.getElementById('hollyModeContainer');
+                if (hContainer) {
+                    if (window.geoDisableHolly) hContainer.classList.add('hidden');
+                    else hContainer.classList.remove('hidden');
+                }
                 
                 const dnaKey = `${category}_${currentModel}`;
                 const customDNA = document.getElementById('customDNA');
