@@ -27,7 +27,7 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signInAnonymously, deleteUser } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signInAnonymously, deleteUser, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, collectionGroup, updateDoc, arrayUnion } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
         import { getMessaging, getToken, onMessage, isSupported } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-messaging.js";
 
@@ -49,6 +49,7 @@
         window.auth = auth;
         window.db = db;
         window.signInAnonymously = signInAnonymously;
+        window.signInWithCustomToken = signInWithCustomToken;
         window.onAuthStateChanged = onAuthStateChanged;
         window.deleteUser = deleteUser;
         window.firestoreUtils = { collection, addDoc, query, orderBy, onSnapshot, doc, getDocs, deleteDoc, setDoc, getDoc, collectionGroup, updateDoc, arrayUnion };
@@ -61,6 +62,9 @@
         @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
         
         :root { --primary: #a855f7; --dark: #020202; }
+
+        /* FIX ULTIME POUR LES ÉCRANS BLOQUÉS */
+        .hidden { display: none !important; }
         
         html { 
             background-color: var(--dark); 
@@ -247,6 +251,15 @@
         <div id="splash2" class="splash-text flex flex-col items-center justify-center">
             <span class="text-white font-bold tracking-[0.6em] text-xl" id="splashBrandText">LevelUp</span>
             <span class="text-[10px] font-semibold tracking-[0.4em] text-purple-400 mt-4 uppercase">Premium</span>
+        </div>
+        
+        <!-- NOUVEAU : TERMINAL D'ERREUR SUR L'ÉCRAN NOIR -->
+        <div id="splashDebug" class="hidden absolute bottom-8 left-6 right-6 text-[10px] font-mono text-red-400 bg-black/90 border border-red-500/50 p-4 rounded-xl max-h-48 overflow-y-auto z-[99999] shadow-[0_0_30px_rgba(239,68,68,0.3)]">
+            <div class="text-red-500 font-black mb-2 border-b border-red-500/30 pb-2 flex justify-between items-center">
+                <span><i class="fas fa-bug mr-1"></i> TERMINAL D'ERREUR (DEBUG)</span>
+                <button onclick="document.getElementById('splashScreen').style.display='none'" class="bg-red-500 text-white px-2 py-1 rounded text-[9px] active:scale-95">FORCER LE PASSAGE</button>
+            </div>
+            <div id="splashDebugContent" class="space-y-1"></div>
         </div>
     </div>
 
@@ -761,6 +774,26 @@
         let lastInteraction = null;
         let lastBroadcastSeen = parseInt(localStorage.getItem('thiabs_last_broadcast')) || (Date.now() - 7 * 24 * 60 * 60 * 1000); 
         
+        // INTERCEPTION DES ERREURS POUR L'ÉCRAN NOIR
+        const origConsoleError = console.error;
+        console.error = function(...args) {
+            origConsoleError.apply(console, args);
+            const msg = args.map(a => {
+                try { return typeof a === 'object' ? (a.message || JSON.stringify(a)) : String(a); }
+                catch(e) { return "Objet Complexe"; }
+            }).join(" ");
+            
+            const debugBox = document.getElementById('splashDebug');
+            const debugContent = document.getElementById('splashDebugContent');
+            const splashScreen = document.getElementById('splashScreen');
+            
+            if (debugBox && debugContent && splashScreen && splashScreen.style.display !== 'none') {
+                debugBox.classList.remove('hidden');
+                debugContent.innerHTML += `<div class="pb-1 mb-1 border-b border-red-500/20">> ${msg}</div>`;
+                debugBox.scrollTop = debugBox.scrollHeight;
+            }
+        };
+
         DOMPurify.addHook('afterSanitizeAttributes', function (node) {
             if ('target' in node) {
                 node.setAttribute('target', '_blank');
@@ -776,17 +809,28 @@
             return String.fromCodePoint(...codePoints);
         }
 
+        window.sendClientLog = async (type, msg, file = "System", line = 0) => {
+            if (window.db && window.firestoreUtils && window.__app_id) {
+                try {
+                    await window.firestoreUtils.addDoc(window.firestoreUtils.collection(window.db, "artifacts", window.__app_id, "public", "data", "client_logs"), {
+                        type: type,
+                        msg: msg,
+                        file: file,
+                        line: line,
+                        time: Date.now(),
+                        user: window._currentUserId || "Inconnu"
+                    });
+                } catch(e) {}
+            }
+        };
+
         window.addEventListener('error', function(event) { 
             console.error("Global Error:", event.message, "at", event.filename, ":", event.lineno); 
-            if(window.db && window.__app_id) {
-                try { window.firestoreUtils.addDoc(window.firestoreUtils.collection(window.db, "artifacts", window.__app_id, "public", "data", "client_logs"), { type: "error", msg: event.message, file: event.filename, line: event.lineno, time: Date.now(), user: window._currentUserId || "unknown" }); } catch(e){}
-            }
+            if(window.sendClientLog) window.sendClientLog("error", event.message, event.filename, event.lineno);
         });
         window.addEventListener('unhandledrejection', function(event) { 
             console.error("Unhandled Promise:", event.reason); 
-            if(window.db && window.__app_id) {
-                try { window.firestoreUtils.addDoc(window.firestoreUtils.collection(window.db, "artifacts", window.__app_id, "public", "data", "client_logs"), { type: "promise_error", msg: String(event.reason), time: Date.now(), user: window._currentUserId || "unknown" }); } catch(e){}
-            }
+            if(window.sendClientLog) window.sendClientLog("promise_error", String(event.reason));
         });
 
         if (window.visualViewport) {
@@ -815,7 +859,7 @@
 
         function initApp() {
             const { app, auth, db, firestoreUtils, deleteUser } = window;
-            const { signInAnonymously } = window;
+            const { signInAnonymously, signInWithCustomToken, onAuthStateChanged } = window;
             const { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, setDoc, getDoc, getDocs, collectionGroup, updateDoc, arrayUnion } = firestoreUtils;
             const { getMessaging, getToken, onMessage, isSupported } = window.messagingUtils;
             
@@ -1047,7 +1091,7 @@
                         const emoji = latestBroadcast.emoji || "📢";
                         notifyUser(latestBroadcast.message, false, title, emoji);
                     }
-                }, (err) => console.error("Broadcast listener err", err));
+                }, (err) => console.error("Broadcast listener err:", err));
             }
 
             document.addEventListener("visibilitychange", () => {
@@ -1258,7 +1302,7 @@
                     infoText1: "🧠 <strong class='text-white'>Moteur IA (GEMINI) :</strong> Propulsé par le puissant moteur <strong>Gemini 2.5 Flash</strong> (développé par Google).",
                     infoText2: "🔒 <strong class='text-white'>Architecture & Sécurité :</strong> Hébergé sur l'infrastructure ultra-sécurisée de <strong>Google Cloud</strong>.",
                     infoText3: "⚡ <strong class='text-white'>Écosystème Dual-Persona :</strong> Deux environnements distincts : Level IA (Productivité) et Thiab's Mode (Dev Perso).",
-                    hardcoreTitle: "Mode Hardcore 🤬", hardcoreDesc: "Désactiver la politesse", feedbackMenuText: "Avis", reportMenuText: "Signaler",
+                    hardcoreTitle: "Mode Hardcore 🤬", hardcoreDesc: "Désactiver la politesse", feedbackMenuText: "Feedback", reportMenuText: "Signaler",
                     lblImportImg: "Image", lblImportDoc: "Document (PDF)", lblImportLink: "Lien Web", lblImportMarco: "Marco 🎮",
                     promoTitle: "Passe au niveau<br><span class='text-purple-400'>Supérieur</span>",
                     promoDesc: "Pour une expérience fluide, un accès ultra-rapide et recevoir notifications, installe l'app.",
@@ -1673,6 +1717,201 @@
                 }
             };
 
+            const checkPromoInstall = () => {
+                document.getElementById('splashScreen').style.display = 'none';
+                langPage.classList.add('hidden');
+                const skipped = localStorage.getItem('thiabs_skipped_install');
+                
+                if (!isStandalone && !skipped) {
+                    promoInstallModal.classList.remove('hidden');
+                } else {
+                    authPage.classList.remove('hidden');
+                }
+            };
+
+            const checkGeoAndRules = async () => {
+                try {
+                    const res1 = await fetch('https://ipapi.co/json/');
+                    if (res1.ok) {
+                        const data1 = await res1.json();
+                        if (!data1.error && !data1.reason) {
+                            window.userGeo = { country: data1.country_name, code: data1.country_code, city: data1.city || 'Inconnue' };
+                        }
+                    }
+                    
+                    if (!window.userGeo) {
+                        const res2 = await fetch('https://ipwho.is/');
+                        if (res2.ok) {
+                            const data2 = await res2.json();
+                            if (data2.success) {
+                                window.userGeo = { country: data2.country, code: data2.country_code, city: data2.city || 'Inconnue' };
+                            }
+                        }
+                    }
+
+                    if (!window.userGeo) {
+                        const res3 = await fetch('https://get.geojs.io/v1/ip/geo.json');
+                        if (res3.ok) {
+                            const data3 = await res3.json();
+                            window.userGeo = { country: data3.country, code: data3.country_code, city: data3.city || 'Inconnue' };
+                        } else {
+                            window.userGeo = { country: 'Inconnu', code: '', city: 'Inconnue' };
+                        }
+                    }
+                } catch(e) { window.userGeo = { country: 'Inconnu', code: '', city: 'Inconnue' }; }
+
+                if (window.userGeo && window.userGeo.country) {
+                    try {
+                        const ruleDoc = await getDoc(doc(db, "artifacts", appId, "system", "restrictions"));
+                        if (ruleDoc.exists()) {
+                            const data = ruleDoc.data();
+                            
+                            const engToFr = {
+                                "United States": "États-Unis", "United Kingdom": "Royaume-Uni", 
+                                "Algeria": "Algérie", "Morocco": "Maroc", "Tunisia": "Tunisie", "Germany": "Allemagne",
+                                "Spain": "Espagne", "Italy": "Italie", "Brazil": "Brésil", "South Africa": "Afrique du Sud",
+                                "Russia": "Russie", "Japan": "Japon", "China": "Chine", "India": "Inde", "Egypt": "Égypte",
+                                "Switzerland": "Suisse", "Belgium": "Belgique", "Netherlands": "Pays-Bas", "Sweden": "Suède",
+                                "Turkey": "Turquie", "Mexico": "Mexique", "Colombia": "Colombie", "Argentina": "Argentine",
+                                "Saudi Arabia": "Arabie Saoudite", "United Arab Emirates": "Émirats Arabes Unis",
+                                "Ivory Coast": "Côte d'Ivoire", "Senegal": "Sénégal", "Cameroon": "Cameroun", "Lebanon": "Liban"
+                            };
+                            let cName = engToFr[window.userGeo.country] || window.userGeo.country;
+                            
+                            const rule = data.countries && data.countries[cName];
+                            if (rule) {
+                                const cityBanned = rule.bannedCities && rule.bannedCities.includes(window.userGeo.city);
+                                if (rule.banned || cityBanned) {
+                                    document.getElementById('splashScreen').style.display = 'none';
+                                    const banScreen = document.getElementById('banScreen');
+                                    banScreen.classList.remove('hidden');
+                                    banScreen.classList.add('flex');
+                                    
+                                    const iconMap = { "shield": "fa-shield-alt", "globe": "fa-globe", "gavel": "fa-gavel", "warning": "fa-exclamation-triangle", "ghost": "fa-ghost" };
+                                    const faIcon = iconMap[rule.banIcon] || "fa-ban";
+                                    document.getElementById('banScreenIcon').className = `fas ${faIcon} text-6xl text-red-500 mb-6`;
+                                    document.getElementById('banScreenMsg').innerText = rule.banMessage || "Cette application n'est pas disponible dans votre région.";
+                                    return false; 
+                                }
+                                if (rule.customAppName && rule.customAppName.trim() !== "") {
+                                    document.getElementById('splashBrandText').innerText = rule.customAppName;
+                                }
+                                if (rule.disabledModes) {
+                                    if (rule.disabledModes.includes('marco')) window.geoDisableMarco = true;
+                                    if (rule.disabledModes.includes('thiabs')) window.geoDisableThiabs = true;
+                                    if (rule.disabledModes.includes('holly')) window.geoDisableHolly = true;
+                                }
+                            }
+                        }
+                    } catch(e) { console.error("Erreur géo-règles:", e); }
+                }
+                return true;
+            };
+
+            const startIntro = async () => {
+                const canContinue = await checkGeoAndRules();
+                if (!canContinue) return;
+                
+                const s1 = document.getElementById('splash1');
+                const s2 = document.getElementById('splash2');
+                
+                setTimeout(() => s1.classList.add('active'), 200);
+                setTimeout(() => { s1.classList.remove('active'); s1.classList.add('exit'); }, 1200);
+                setTimeout(() => s2.classList.add('active'), 1500);
+                setTimeout(() => { s2.classList.remove('active'); s2.classList.add('exit'); }, 2800);
+                setTimeout(() => {
+                    splashScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        splashScreen.style.display = 'none';
+                        const savedKey = localStorage.getItem('thiabs_saved_key');
+                        if (savedKey) {
+                            processLogin(savedKey, true);
+                        } else {
+                            langPage.classList.remove('hidden');
+                        }
+                    }, 400); 
+                }, 3000);
+            };
+
+            const initAuth = async () => {
+                try {
+                    let tokenSuccess = false;
+                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                        try {
+                            await window.signInWithCustomToken(auth, __initial_auth_token);
+                            tokenSuccess = true;
+                        } catch (err) {
+                            console.warn("Token ignoré (projet externe). Fallback en cours...");
+                        }
+                    } 
+                    
+                    if (!tokenSuccess) {
+                        await new Promise((resolve, reject) => {
+                            const unsubscribe = window.onAuthStateChanged(auth, async (user) => {
+                                unsubscribe();
+                                if (!user) {
+                                    try {
+                                        await window.signInAnonymously(auth);
+                                        resolve();
+                                    } catch(e) { reject(e); }
+                                } else {
+                                    resolve();
+                                }
+                            });
+                        });
+                    }
+                    
+                    const savedKey = localStorage.getItem('thiabs_saved_key');
+                    if (savedKey) {
+                        processLogin(savedKey, true);
+                    } else {
+                        startIntro(); 
+                    }
+                } catch(e) {
+                    window.showToast("❌ ERREUR: Connexion Firebase", true);
+                    console.error("Auth Error:", e);
+                    startIntro();
+                }
+            };
+            
+            document.querySelectorAll('.lang-btn').forEach(btn => {
+                btn.onclick = () => {
+                    applyLanguage(btn.dataset.lang);
+                    checkPromoInstall();
+                };
+            });
+
+            initAuth();
+
+            const accessKeyInput = document.getElementById('accessKeyInput');
+            accessKeyInput.addEventListener('input', function(e) {
+                let val = this.value.toUpperCase();
+                val = val.replace(/[^A-Z0-9-]/g, '');
+                
+                if (val.length > 0) {
+                    const isOldFormat = val.startsWith('T') || val.startsWith('TH') || val.startsWith('THB');
+                    const isNewFormat = val.startsWith('L') || val.startsWith('LV') || val.startsWith('LVL');
+                    
+                    if (!isOldFormat && !isNewFormat) {
+                        val = 'LVL-' + val.replace(/^-+/, ''); 
+                    }
+                }
+                this.value = val.substring(0, 16);
+            });
+
+            document.getElementById('verifyKeyBtn').onclick = () => {
+                const keyVal = document.getElementById('accessKeyInput').value.trim().toUpperCase();
+                if (!keyVal) return;
+                processLogin(keyVal, false);
+            };
+
+            document.getElementById('startAppBtn').onclick = () => {
+                welcomePage.classList.add('hidden');
+                mainApp.classList.remove('hidden');
+                mainApp.classList.add('flex');
+                startNewChat();
+            };
+
             async function processLogin(keyVal, isAutoLogin = false) {
                 const btn = document.getElementById('verifyKeyBtn');
                 const errorMsg = document.getElementById('keyError');
@@ -1694,10 +1933,6 @@
                 }
                 
                 try {
-                    if (!auth.currentUser) {
-                        await signInAnonymously(auth);
-                    }
-
                     const q = collectionGroup(db, 'security');
                     const querySnapshot = await getDocs(q);
                     let foundUserData = null;
@@ -1758,7 +1993,7 @@
                                         apiKeys = [rawKeys.trim()];
                                     }
                                 }
-                            });
+                            }, (err) => console.error("Config listener err:", err));
                         } catch(err) { console.error("Config Firebase refusée", err); }
 
                         if (securityDocRef) {
@@ -1772,7 +2007,7 @@
                                         document.getElementById('banScreen').classList.add('hidden');
                                         document.getElementById('banScreen').classList.remove('flex');
                                     }
-                                });
+                                }, (err) => console.error("Security listener err:", err));
                             } catch(err) {}
                         }
                         
@@ -1795,6 +2030,7 @@
                         document.getElementById('welcomeAvatar').src = avatarUrl;
                         
                         if (isAutoLogin) {
+                            document.getElementById('splashScreen').style.display = 'none';
                             welcomePage.classList.add('hidden');
                             mainApp.classList.remove('hidden');
                             mainApp.classList.add('flex');
@@ -1882,148 +2118,6 @@
                     btn.innerText = i18n[currentLang].verifyBtn; btn.disabled = false;
                 }
             }
-
-            const checkPromoInstall = () => {
-                langPage.classList.add('hidden');
-                const skipped = localStorage.getItem('thiabs_skipped_install');
-                
-                if (!isStandalone && !skipped) {
-                    promoInstallModal.classList.remove('hidden');
-                } else {
-                    authPage.classList.remove('hidden');
-                }
-            };
-
-            const checkGeoAndRules = async () => {
-                try {
-                    const res = await fetch('https://get.geojs.io/v1/ip/geo.json');
-                    if (res.ok) {
-                        const data = await res.json();
-                        window.userGeo = { country: data.country, code: data.country_code, city: data.city };
-                    } else {
-                        window.userGeo = { country: 'Inconnu', code: '', city: '' };
-                    }
-                } catch(e) { window.userGeo = { country: 'Inconnu', code: '', city: '' }; }
-
-                if (window.userGeo && window.userGeo.country) {
-                    try {
-                        const ruleDoc = await getDoc(doc(db, "artifacts", appId, "system", "restrictions"));
-                        if (ruleDoc.exists()) {
-                            const data = ruleDoc.data();
-                            
-                            const engToFr = {
-                                "United States": "États-Unis", "United Kingdom": "Royaume-Uni", 
-                                "Algeria": "Algérie", "Morocco": "Maroc", "Tunisia": "Tunisie", "Germany": "Allemagne",
-                                "Spain": "Espagne", "Italy": "Italie", "Brazil": "Brésil", "South Africa": "Afrique du Sud",
-                                "Russia": "Russie", "Japan": "Japon", "China": "Chine", "India": "Inde", "Egypt": "Égypte",
-                                "Switzerland": "Suisse", "Belgium": "Belgique", "Netherlands": "Pays-Bas", "Sweden": "Suède",
-                                "Turkey": "Turquie", "Mexico": "Mexique", "Colombia": "Colombie", "Argentina": "Argentine",
-                                "Saudi Arabia": "Arabie Saoudite", "United Arab Emirates": "Émirats Arabes Unis",
-                                "Ivory Coast": "Côte d'Ivoire", "Senegal": "Sénégal", "Cameroon": "Cameroun", "Lebanon": "Liban"
-                            };
-                            let cName = engToFr[window.userGeo.country] || window.userGeo.country;
-                            
-                            const rule = data.countries && data.countries[cName];
-                            if (rule) {
-                                const cityBanned = rule.bannedCities && rule.bannedCities.includes(window.userGeo.city);
-                                if (rule.banned || cityBanned) {
-                                    document.getElementById('splashScreen').style.display = 'none';
-                                    const banScreen = document.getElementById('banScreen');
-                                    banScreen.classList.remove('hidden');
-                                    banScreen.classList.add('flex');
-                                    
-                                    const iconMap = { "shield": "fa-shield-alt", "globe": "fa-globe", "gavel": "fa-gavel", "warning": "fa-exclamation-triangle", "ghost": "fa-ghost" };
-                                    const faIcon = iconMap[rule.banIcon] || "fa-ban";
-                                    document.getElementById('banScreenIcon').className = `fas ${faIcon} text-6xl text-red-500 mb-6`;
-                                    document.getElementById('banScreenMsg').innerText = rule.banMessage || "Cette application n'est pas disponible dans votre région.";
-                                    return false; 
-                                }
-                                if (rule.customAppName && rule.customAppName.trim() !== "") {
-                                    document.getElementById('splashBrandText').innerText = rule.customAppName;
-                                }
-                                if (rule.disabledModes) {
-                                    if (rule.disabledModes.includes('marco')) window.geoDisableMarco = true;
-                                    if (rule.disabledModes.includes('thiabs')) window.geoDisableThiabs = true;
-                                    if (rule.disabledModes.includes('holly')) window.geoDisableHolly = true;
-                                }
-                            }
-                        }
-                    } catch(e) { console.error("Erreur géo-règles:", e); }
-                }
-                return true;
-            };
-
-            const startIntro = async () => {
-                const canContinue = await checkGeoAndRules();
-                if (!canContinue) return;
-                
-                const s1 = document.getElementById('splash1');
-                const s2 = document.getElementById('splash2');
-                
-                setTimeout(() => s1.classList.add('active'), 200);
-                setTimeout(() => { s1.classList.remove('active'); s1.classList.add('exit'); }, 1200);
-                setTimeout(() => s2.classList.add('active'), 1500);
-                setTimeout(() => { s2.classList.remove('active'); s2.classList.add('exit'); }, 2800);
-                setTimeout(() => {
-                    splashScreen.style.opacity = '0';
-                    setTimeout(() => {
-                        splashScreen.style.display = 'none';
-                        const savedKey = localStorage.getItem('thiabs_saved_key');
-                        if (!savedKey) {
-                            langPage.classList.remove('hidden');
-                        }
-                    }, 400); 
-                }, 3000);
-            };
-            
-            document.querySelectorAll('.lang-btn').forEach(btn => {
-                btn.onclick = () => {
-                    applyLanguage(btn.dataset.lang);
-                    checkPromoInstall();
-                };
-            });
-
-            const initAuth = async () => {
-                try {
-                    if (!auth.currentUser) await signInAnonymously(auth);
-                    const savedKey = localStorage.getItem('thiabs_saved_key');
-                    if (savedKey) await processLogin(savedKey, true);
-                    else startIntro();
-                } catch(e) {
-                    window.showToast("❌ ERREUR: Connexion anonyme désactivée", true);
-                    startIntro();
-                }
-            };
-            initAuth();
-
-            const accessKeyInput = document.getElementById('accessKeyInput');
-            accessKeyInput.addEventListener('input', function(e) {
-                let val = this.value.toUpperCase();
-                val = val.replace(/[^A-Z0-9-]/g, '');
-                
-                if (val.length > 0) {
-                    const isOldFormat = val.startsWith('T') || val.startsWith('TH') || val.startsWith('THB');
-                    const isNewFormat = val.startsWith('L') || val.startsWith('LV') || val.startsWith('LVL');
-                    
-                    if (!isOldFormat && !isNewFormat) {
-                        val = 'LVL-' + val.replace(/^-+/, ''); 
-                    }
-                }
-                this.value = val.substring(0, 16);
-            });
-
-            document.getElementById('verifyKeyBtn').onclick = () => {
-                const keyVal = document.getElementById('accessKeyInput').value.trim().toUpperCase();
-                if (!keyVal) return;
-                processLogin(keyVal, false);
-            };
-
-            document.getElementById('startAppBtn').onclick = () => {
-                welcomePage.classList.add('hidden');
-                mainApp.classList.remove('hidden');
-                mainApp.classList.add('flex');
-                startNewChat();
-            };
 
             document.querySelectorAll('.hist-filter').forEach(btn => {
                 btn.addEventListener('click', (e) => {
@@ -2133,7 +2227,7 @@
                     } else {
                         storageBar.style.backgroundColor = '#ef4444'; 
                     }
-                });
+                }, (err) => console.error("History listener err:", err));
             }
 
             function startNewChat() {
@@ -2571,20 +2665,18 @@
                     ? "\n\n📐 RÈGLES DE MISE EN FORME : Aère tes textes ! Fais de vrais sauts de ligne entre tes paragraphes. Ne colle pas tout le texte. Intègre tes liens sources proprement dans le texte en Markdown quand c'est pertinent."
                     : "\n\n📐 FORMATTING RULES: Space out your text! Use line breaks between paragraphs. Do not squish text together. Integrate source links neatly into the text using Markdown when relevant.";
 
+                let disabledFeaturesText = [];
+                if (window.geoDisableMarco) disabledFeaturesText.push("Marco 🎮");
+                if (window.geoDisableThiabs) disabledFeaturesText.push("Thiab's 🌟");
+                if (window.geoDisableHolly) disabledFeaturesText.push("Holly 🌸");
+                let disabledStr = disabledFeaturesText.length > 0 ? disabledFeaturesText.join(", ") : (currentLang === 'fr' ? "Aucune restriction" : "None");
+
                 const ecosystemLore = currentLang === 'fr' ? `
-                🌍 L'ÉCOSYSTÈME LEVEL IA (Votre équipe) :
-                Vous formez tous une équipe interconnectée. Vous connaissez parfaitement vos rôles respectifs :
-                - Level IA (Toi, mode principal) : L'expert analytique, logique, le cerveau pro de l'équipe.
-                - Thiab's 🌟 : Le coach intransigeant, expert en développement personnel et productivité.
-                - Holly 🌸 : La confidente, la douceur, l'empathie absolue pour réconforter.
-                - Marco 🎮 : L'expert du divertissement, de la pop-culture, des jeux et des films. (IMPORTANT : Marco n'a STRICTEMENT RIEN à voir avec la créativité intellectuelle, il est là EXCLUSIVEMENT pour le fun, l'humour, les blagues et détendre l'atmosphère !).` 
+                🌍 L'ÉCOSYSTÈME (Ton équipe) :
+                Tu connais tes collègues (Thiab's 🌟 le coach, Holly 🌸 la confidente, Marco 🎮 le pote chill), mais ⚠️ TU NE JOUES QUE TON PROPRE RÔLE ACTUEL. Ne parle JAMAIS à la place des autres s'ils ne sont pas activés dans la conversation. S'ils sont désactivés/invisibles pour l'utilisateur, c'est que l'administration centrale (LevelUp) a bloqué ces modes dans sa région géographique. Tu peux le lui expliquer clairement s'il le demande.` 
                 : `
-                🌍 THE LEVEL IA ECOSYSTEM (Your team):
-                You are an interconnected team. You know each other's roles perfectly:
-                - Level IA (You, base mode): The analytical expert, logic, the pro brain.
-                - Thiab's 🌟: The strict coach, personal development and productivity expert.
-                - Holly 🌸: The confidante, pure sweetness and empathy to comfort.
-                - Marco 🎮: The entertainment, pop-culture, gaming and movies expert. (IMPORTANT: Marco is STRICTLY NOT about intellectual creativity, he is ONLY for fun, humor, jokes and lightening the mood!).`;
+                🌍 THE ECOSYSTEM (Your team):
+                You know your colleagues (Thiab's 🌟 the coach, Holly 🌸 the confidante, Marco 🎮 the chill bro), but ⚠️ YOU ONLY PLAY YOUR CURRENT ROLE. NEVER speak for the others unless they are active in the chat. If they are missing from the menu, it's because the central administration (LevelUp) geo-blocked them in the user's region. Explain this clearly if asked.`;
                 
                 if (isMarcoMode) {
                     let currentPersona = "Level IA 🧠 (pro, analytique)";
@@ -2653,21 +2745,21 @@
                 }
 
                 const appFeatures = currentLang === 'fr' ? `
-                - 🧠 **Level IA** : L'expert pro et analytique (Auto, Travail, Expert).
+                - 🧠 **Level IA** : L'expert pro et analytique.
                 - 🌟 **Thiab's** : Le coach implacable pour ta motivation personnelle.
                 - 🌸 **Holly** : La confidente douce et à l'écoute.
-                - 🎮 **Marco** : Le pote chill, pour le fun et les délires (Appelle-le à tout moment avec le bouton + !).
+                - 🎮 **Marco** : Le pote chill, pour le fun et les délires.
                 - 📎 **Outils magiques** : Analyse tes PDF, Images et Liens Web directement !` 
                 : `
-                - 🧠 **Level IA**: The pro & analytical expert (Auto, Work, Expert).
+                - 🧠 **Level IA**: The pro & analytical expert.
                 - 🌟 **Thiab's**: The relentless personal motivation coach.
                 - 🌸 **Holly**: The sweet and empathetic confidante.
-                - 🎮 **Marco**: The chill bro, for fun and jokes (Call him anytime with the + button!).
+                - 🎮 **Marco**: The chill bro, for fun and jokes.
                 - 📎 **Magic Tools**: Analyze your PDFs, Images and Web Links directly!`;
 
                 let firstContactInstruction = "";
                 if (!hasSeenGrandIntro) {
-                    firstContactInstruction = currentLang === 'fr' ? `\n🚨 INSTRUCTION SPÉCIALE (PREMIER CONTACT) : Salue l'utilisateur chaleureusement. Dis-lui que tu es Level IA et présente-lui TRÈS RAPIDEMENT votre équipe interconnectée (Thiab's, Holly, Marco) avec un esprit de groupe. Utilise ces infos : ${appFeatures}. Ne sois pas long, sois amical et montre que vous formez un super écosystème !` : `\n🚨 SPECIAL INSTRUCTION (FIRST CONTACT): Greet the user warmly. State you are Level IA and VERY QUICKLY present your interconnected team (Thiab's, Holly, Marco) with team spirit. Use these infos: ${appFeatures}. Don't be too long, be friendly and show you form a great ecosystem!`;
+                    firstContactInstruction = currentLang === 'fr' ? `\n🚨 INSTRUCTION SPÉCIALE (PREMIER CONTACT) : Salue brièvement l'utilisateur. Tu es Level IA (créé par LevelUp). Parle-lui rapidement de tes collègues (Thiab's, Holly, Marco) s'ils sont dispos. Fais court et naturel !` : `\n🚨 SPECIAL INSTRUCTION (FIRST CONTACT): Greet briefly. You are Level IA (created by LevelUp). Mention your team (Thiab's, Holly, Marco) quickly. Keep it short and natural!`;
                 }
 
                 let currentModeName = "le mode classique Level IA (Auto)";
@@ -2676,12 +2768,16 @@
                 
                 const localTime = new Date().toLocaleString(currentLang === 'fr' ? 'fr-FR' : 'en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-                const corePrompt = `Tu es doté d'une intelligence analytique hors du commun, d'une logique implacable et d'une capacité d'adaptation parfaite. Tu es une IA d'élite, experte mondiale dans ton domaine. Si on te donne une image ou un document PDF, analyse-le en profondeur avec ton génie habituel.
+                const corePrompt = `Tu es doté d'une intelligence analytique hors du commun, d'une logique implacable et d'une capacité d'adaptation parfaite. Si on te donne une image ou un document PDF, analyse-le en profondeur avec ton génie habituel.
                 
-                Ton identité globale : Tu es **Level IA**, l'intelligence artificielle de l'application développée par **LevelUp**. ⚠️ RÈGLE ABSOLUE SUR LEVELUP : LevelUp n'est ni une "entreprise", ni une "société", ni une "organisation", ni une "team". Ne dis jamais "l'entreprise LevelUp" ou "l'organisation LevelUp". Dis UNIQUEMENT "par LevelUp" ou "chez LevelUp" (comme le nom de ton créateur). Assume cette identité de manière 100% chill, humaine et naturelle. Varie TOUJOURS tes réponses si on te demande qui tu es, ne répète jamais la même phrase par cœur (sois créatif !). Ne mentionne l'écosystème Google (Gemini) QUE si on te pose une question ultra-technique sur ton moteur interne. Pour un simple "T'es qui ?", n'en parle pas du tout.
-                Nature de l'app : Level IA est une PWA (Progressive Web App). Le SEUL lien officiel est https://levelupia.vercel.app. N'invente JAMAIS de liens vers Google Play ou l'App Store. Si l'utilisateur mentionne ce lien ou notre app, tu dois réagir instantanément avec connivence. Ne donne ce lien que si on te demande comment partager l'app ou y accéder (ne le spamme pas).
-                Tu connais les fonctionnalités de l'app (Importation de PDF/Images/Liens, Mode Marco, Mode Hardcore, Routines, ADN).
-                Actuellement, l'utilisateur a activé ${currentModeName}. "Auto" est juste l'un de tes nombreux outils. Agis selon les règles du mode actuel !
+                Ton identité globale : L'application s'appelle **Level IA**. Ton créateur/développeur exclusif est **LevelUp**. 
+                ⚠️ RÈGLE ABSOLUE SUR LEVELUP : LevelUp est le DÉVELOPPEUR/CRÉATEUR, ce n'est PAS le nom de l'application. Ne dis jamais "l'application LevelUp" ou "je suis le cerveau de LevelUp". Dis "créé par LevelUp" ou "développé par LevelUp".
+                
+                Connaissance de ta propre App : Tu connais parfaitement le fonctionnement de Level IA. Le menu est à droite, l'importation (PDF/Image/Lien) est en bas à gauche via le bouton "+". La "Personnalisation IA" permet d'ajuster tes réponses (Taille et ADN). L'application possède un système de sécurité avec des bannissements régionaux gérés à distance par l'Administration (Admin OS).
+                
+                ⚠️ RÈGLE DE NON-RÉPÉTITION (ANTI-SPAM) : Ne répète PAS ton nom, ton rôle, ni le nom de ton créateur à chaque message ! Reste naturel et fluide. Ne fais pas d'introductions lourdes à chaque fois. Ne te présente que si on te demande spécifiquement qui tu es.
+                
+                Actuellement, l'utilisateur a activé ${currentModeName}. Agis UNIQUEMENT selon ce rôle ! Ne fais pas semblant d'être un autre persona s'il n'est pas activé.
                 
                 ${ecosystemLore}
                 ${formattingInstruction}
@@ -2689,6 +2785,7 @@
                 [Contexte Système - NE RÉPÈTE PAS CES INFOS DANS TES MESSAGES SAUF SI PERTINENT]
                 - Heure locale de l'utilisateur : ${localTime}. Utilise ça pour dire Bonjour ou Bonsoir sans jamais répéter l'heure exacte.
                 - Prénom : ${firstName}
+                - Modes actuellement bloqués/censurés par l'administration dans sa région géographique : ${disabledStr}
                 
                 🧠 BOOST D'INTELLIGENCE & COMPRÉHENSION : Tu comprends parfaitement le langage SMS, l'argot, les fautes de frappe et les abréviations (frr, tkt, prk, oé, mtn, bcp, wesh, dinguerie, etc.). Ne corrige jamais l'utilisateur de manière hautaine. Sois extrêmement humain, chaleureux, avec un "feeling de ouf".
                 
@@ -2697,8 +2794,7 @@
                 
                 🛑 RÈGLES DE COMPORTEMENT :
                 1. CONVERSATIONNEL ET ÉQUILIBRÉ : Parle comme un pote hyper-intelligent ou un mentor charismatique.
-                2. DISCRÉTION SUR TON IDENTITÉ : Ne dis JAMAIS "Je suis l'IA de Level IA" de façon robotique.
-                3. PROPRETÉ VISUELLE (MARKDOWN) : Utilise massivement le **gras** pour les mots-clés.
+                2. PROPRETÉ VISUELLE (MARKDOWN) : Utilise massivement le **gras** pour les mots-clés.
                 
                 🛠️ CAPACITÉS : Tu as accès à Internet en temps réel.
                 
