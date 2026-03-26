@@ -1954,11 +1954,6 @@
                                             mScreen.classList.add('hidden');
                                             mScreen.classList.remove('flex');
                                             if (maintInterval) { clearInterval(maintInterval); maintInterval = null; }
-                                            
-                                            // Notification discrète pour l'Admin
-                                            if (data.maintenance === true && isUserAdmin) {
-                                                setTimeout(() => window.showToast("🔧 Maintenance active (Bypass Admin)", false), 2000);
-                                            }
                                         }
                                     }
 
