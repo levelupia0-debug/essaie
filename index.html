@@ -68,6 +68,7 @@
         html { 
             background-color: var(--dark); 
             overscroll-behavior: none;
+            height: 100%;
         }
         body { 
             font-family: 'Plus Jakarta Sans', sans-serif; 
@@ -83,6 +84,7 @@
             left: 0;
             width: 100%;
             height: 100%;
+            min-height: 100vh;
         }
 
         .safe-pt { padding-top: max(1rem, env(safe-area-inset-top, 0px)) !important; }
@@ -212,17 +214,7 @@
         <p class="text-[12px] font-semibold text-white/70 mt-2 uppercase tracking-widest">Images, PDF & Liens (Max 5Mo)</p>
     </div>
 
-    <!-- POP-UP DE DIFFUSION (NOTIFICATIONS ADMIN IN-APP) -->
-    <div id="broadcastModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
-        <div class="glass p-6 rounded-3xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-500 shadow-[0_0_40px_rgba(168,85,247,0.4)] border-purple-500/50 modal-adapt">
-            <div class="mx-auto w-20 h-20 rounded-full bg-purple-500/20 flex items-center justify-center mb-2 border border-purple-500/50 shadow-inner shrink-0">
-                <span id="broadcastEmoji" class="text-4xl">📢</span>
-            </div>
-            <h2 id="broadcastTitle" class="text-xl font-bold text-white uppercase tracking-widest shrink-0">Message</h2>
-            <p id="broadcastMessage" class="text-[14px] text-white/90 leading-relaxed px-2 font-medium shrink-0"></p>
-            <button id="closeBroadcastBtn" class="w-full bg-purple-600 text-white py-3.5 rounded-xl font-bold text-[12px] uppercase tracking-widest hover:bg-purple-500 active:scale-95 transition-all mt-4 shrink-0 shadow-[0_0_15px_rgba(168,85,247,0.4)]">Compris</button>
-        </div>
-    </div>
+    <!-- SUPPRESSION DU broadcastModal POUR AVOIR DES NOTIFICATIONS 100% EXTERNES -->
 
     <div id="maintenanceScreen" class="hidden fixed inset-0 z-[99999] bg-[#020202] text-white flex-col items-center justify-center overflow-hidden">
         <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,_rgba(124,58,237,0.05),transparent_70%)] pointer-events-none"></div>
@@ -844,7 +836,9 @@
         if (window.visualViewport) {
             const resizeHandler = () => {
                 let vh = window.visualViewport.height;
-                document.body.style.height = vh + 'px';
+                if (vh > 0) {
+                    document.body.style.height = vh + 'px';
+                }
                 if (vh < window.screen.height - 150) document.body.classList.add('keyboard-open');
                 else document.body.classList.remove('keyboard-open');
                 window.scrollTo(0, 0); 
@@ -1142,16 +1136,7 @@
                         const title = latestBroadcast.title || (currentLang === 'fr' ? "Message de LevelUp" : "Message from LevelUp");
                         const emoji = latestBroadcast.emoji || "📢";
                         
-                        const bEmoji = document.getElementById('broadcastEmoji');
-                        const bTitle = document.getElementById('broadcastTitle');
-                        const bMessage = document.getElementById('broadcastMessage');
-                        const bModal = document.getElementById('broadcastModal');
-                        
-                        if(bEmoji) bEmoji.innerText = emoji;
-                        if(bTitle) bTitle.innerText = title;
-                        if(bMessage) bMessage.innerHTML = sanitizeHTML(latestBroadcast.message).replace(/\n/g, '<br>');
-                        if(bModal) bModal.classList.remove('hidden');
-
+                        // Déclenchement de la notification native uniquement (Pas de pop-up d'alerte)
                         notifyUser(latestBroadcast.message, false, title, emoji);
                     }
                 }, (err) => console.warn("Broadcasts ignorés."));
@@ -1370,7 +1355,7 @@
                     infoText2: "🔒 <strong class='text-white'>Architecture & Sécurité :</strong> Hébergé sur l'infrastructure ultra-sécurisée de <strong>Google Cloud</strong>.",
                     infoText3: "⚡ <strong class='text-white'>Écosystème Dual-Persona :</strong> Deux environnements distincts : Level IA (Productivité) et Thiab's Mode (Dev Perso).",
                     hardcoreTitle: "Mode Hardcore 🤬", hardcoreDesc: "Désactiver la politesse", feedbackMenuText: "Avis", reportMenuText: "Signaler",
-                    lblImportImg: "Image", lblImportDoc: "Document (PDF)", lblImportLink: "Lien Web", lblImportMarco: "Marco 🎮",
+                    lblImportImg: "Image", lblImportDoc: "Document (PDF)", lblImportLink: "Web Link", lblImportMarco: "Marco 🎮",
                     promoTitle: "Passe au niveau<br><span class='text-purple-400'>Supérieur</span>",
                     promoDesc: "Pour une expérience fluide, un accès ultra-rapide et recevoir notifications, installe l'app.",
                     promoInstallText: "Installer l'App", promoSkipText: "Continuer sur le web",
@@ -1852,12 +1837,17 @@
                             let cNameLower = rawCountry.toLowerCase();
                             let cName = rawCountry;
                             
-                            if (cNameLower.includes("congo") && (cNameLower.includes("dr") || cNameLower.includes("dem") || cNameLower.includes("kinshasa") || cNameLower.includes("republic"))) cName = "RDC";
-                            else if (cNameLower === "rdc") cName = "RDC";
-                            else if (cNameLower.includes("congo") && (cNameLower.includes("brazzaville") || cNameLower === "congo")) cName = "Congo-Brazzaville";
-                            else if (cNameLower.includes("united states") || cNameLower === "usa" || cNameLower === "us") cName = "États-Unis";
-                            else if (cNameLower.includes("united kingdom") || cNameLower === "uk") cName = "Royaume-Uni";
-                            else if (cNameLower.includes("ivory") || cNameLower.includes("ivoire")) cName = "Côte d'Ivoire";
+                            if (cNameLower === "rdc" || cNameLower.includes("kinshasa") || cNameLower.includes("democratic") || cNameLower.includes("démocratique") || cNameLower.includes("dr congo") || cNameLower === "drc") {
+                                cName = "RDC";
+                            } else if (cNameLower === "congo" || cNameLower.includes("brazzaville") || cNameLower === "republic of the congo" || cNameLower === "république du congo") {
+                                cName = "Congo-Brazzaville";
+                            } else if (cNameLower.includes("united states") || cNameLower === "usa" || cNameLower === "us") {
+                                cName = "États-Unis";
+                            } else if (cNameLower.includes("united kingdom") || cNameLower === "uk") {
+                                cName = "Royaume-Uni";
+                            } else if (cNameLower.includes("ivory") || cNameLower.includes("ivoire")) {
+                                cName = "Côte d'Ivoire";
+                            }
 
                             const engToFr = {
                                 "algeria": "Algérie", "morocco": "Maroc", "tunisia": "Tunisie", "germany": "Allemagne",
@@ -3015,7 +3005,7 @@
                         : "\n\n⚠️ IMMEDIATE ATTITUDE CHANGE (HARDCORE MODE ACTIVATED): COMPLETELY IGNORE how you spoke previously in this conversation. From NOW ON, you are an elite mentor, demanding but highly constructive. If he is lazy, complains, or makes excuses, become edgy, sarcastic, and put him in his place mercilessly. Adapt your attitude: be an expert guide if he works, be a punisher if he slacks.";
                 } else {
                     hardcoreInstruction = currentLang === 'fr' 
-                        ? "\n\n⚠️ RAPPEL DE TON : IGNORE toute agressivité ou sarcasme que tu aurais pu avoir dans les messages précédents de cet historique. Redeviens IMMÉDIATEMENT respectueux, chaleureux, pro et bienveillant."
+                        ? "\n\n⚠️ RAPPEL DE TON : IGNORE toute agressivité ou sarcasme que tu aurais pu avoir dans messages précédents de cet historique. Redeviens IMMÉDIATEMENT respectueux, chaleureux, pro et bienveillant."
                         : "\n\n⚠️ TONE REMINDER: IGNORE any aggressiveness or sarcasm you might have used in previous messages in this history. IMMEDIATELY return to being respectful, warm, pro, and kind.";
                 }
                 
@@ -3191,8 +3181,8 @@
                                 supportButtonHtml = `<br><br><a href="mailto:levelup.iao@gmail.com?subject=Urgence%20Technique%20-%20Level%20IA%20(ID:%20${userId})&body=Bonjour%20LevelUp,%0A%0AJe%20rencontre%20une%20erreur%20répétée%20de%20génération.%0A%0A[Détails%20de%20l'erreur%20:%20${encodeURIComponent(lastApiError)}]" class="support-btn"><i class="fas fa-envelope"></i> Contacter le Support Technique</a>`;
                             }
                             const errorMsg = currentLang === 'fr'
-                                ? `⚠️ **Interruption du traitement.**\nUne anomalie a été détectée lors de la génération de la réponse. Veuillez vérifier votre connexion ou réessayer.\n\n<span class="text-[10px] text-red-400 font-mono">Code d'erreur : ${lastApiError}</span>${supportButtonHtml}`
-                                : `⚠️ **Processing interrupted.**\nAn anomaly was detected while generating the response. Please check your connection or try again.\n\n<span class="text-[10px] text-red-400 font-mono">Error code: ${lastApiError}</span>${supportButtonHtml}`;
+                                ? `⚠️ **Interruption du traitement.**\nUne anomalie a été détectée lors de la génération de la réponse. Veuillez vérifier votre connexion ou réessayer.\n\n<span class="text-[10px] text-red-400 font-mono hidden">Code d'erreur : ${lastApiError}</span>${supportButtonHtml}`
+                                : `⚠️ **Processing interrupted.**\nAn anomaly was detected while generating the response. Please check your connection or try again.\n\n<span class="text-[10px] text-red-400 font-mono hidden">Error code: ${lastApiError}</span>${supportButtonHtml}`;
                             displayAIMessage(errorMsg, true);
                             return; 
                         }
@@ -3229,6 +3219,8 @@
             }
 
             async function send() {
+                const userInput = document.getElementById('userInput');
+                if(!userInput) return;
                 const val = userInput.value.trim();
                 
                 if (!val && currentAttachments.length === 0) return;
@@ -3240,10 +3232,11 @@
 
                 userInput.value = ''; userInput.style.height = '44px';
                 
-                if(!currentSessionId && conversationContainer.children.length === 1 && hasSeenWelcomeMsg) {
-                    const firstMsg = conversationContainer.querySelector('.prose');
+                const convContainer = document.getElementById('conversationContainer');
+                if(!currentSessionId && convContainer && convContainer.children.length === 1 && hasSeenWelcomeMsg) {
+                    const firstMsg = convContainer.querySelector('.prose');
                     if(firstMsg && (firstMsg.innerText.includes("Salut bro") || firstMsg.innerText.includes("Hey bro") || firstMsg.innerText.includes("Bonjour"))) {
-                        conversationContainer.innerHTML = '';
+                        convContainer.innerHTML = '';
                     }
                 }
 
@@ -3252,27 +3245,32 @@
                 renderAttachments();
             }
 
-            userInput.oninput = function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; };
-            userInput.onkeydown = (e) => { 
-                if (e.key === 'Enter' && !e.shiftKey) { 
-                    e.preventDefault(); 
-                    if (navigator.vibrate) navigator.vibrate(40); 
-                    if (isGenerating) stopGeneration();
-                    else send(); 
-                } 
-            };
+            const uInput = document.getElementById('userInput');
+            if(uInput) {
+                uInput.oninput = function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; };
+                uInput.onkeydown = (e) => { 
+                    if (e.key === 'Enter' && !e.shiftKey) { 
+                        e.preventDefault(); 
+                        if (navigator.vibrate) navigator.vibrate(40); 
+                        if (isGenerating) stopGeneration();
+                        else send(); 
+                    } 
+                };
+            }
             
             const sendBtn = document.getElementById('sendBtn');
-            sendBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (navigator.vibrate) navigator.vibrate(40); 
-                
-                if (isGenerating) {
-                    stopGeneration();
-                } else {
-                    send();
-                }
-            });
+            if(sendBtn) {
+                sendBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (navigator.vibrate) navigator.vibrate(40); 
+                    
+                    if (isGenerating) {
+                        stopGeneration();
+                    } else {
+                        send();
+                    }
+                });
+            }
         }
     </script>
 </body>
