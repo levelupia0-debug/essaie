@@ -197,6 +197,11 @@
         .btn-premium { background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 100%); transition: all 0.3s ease; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.2); }
         .btn-premium:hover { box-shadow: 0 0 25px rgba(124, 58, 237, 0.5); transform: scale(1.02); }
         .main-card { display: flex; flex-direction: column; justify-content: center; height: 100%; max-height: 90vh; }
+
+        @media (max-height: 650px) {
+            .modal-adapt { max-height: 90vh !important; overflow-y: auto !important; scrollbar-width: none; }
+            .modal-adapt::-webkit-scrollbar { display: none; }
+        }
     </style>
 </head>
 <body class="bg-main">
@@ -205,6 +210,18 @@
         <i class="fas fa-cloud-upload-alt text-6xl text-purple-400 mb-4 animate-bounce"></i>
         <h2 class="text-2xl font-bold text-white uppercase tracking-widest text-center" id="dropZoneTitle">Déposez votre fichier</h2>
         <p class="text-[12px] font-semibold text-white/70 mt-2 uppercase tracking-widest">Images, PDF & Liens (Max 5Mo)</p>
+    </div>
+
+    <!-- POP-UP DE DIFFUSION (NOTIFICATIONS ADMIN IN-APP) -->
+    <div id="broadcastModal" class="hidden fixed inset-0 z-[9999] flex items-center justify-center p-6 bg-black/80 backdrop-blur-md">
+        <div class="glass p-6 rounded-3xl max-w-sm w-full text-center space-y-6 animate-in fade-in zoom-in duration-500 shadow-[0_0_40px_rgba(168,85,247,0.4)] border-purple-500/50 modal-adapt">
+            <div class="mx-auto w-20 h-20 rounded-full bg-purple-500/20 flex items-center justify-center mb-2 border border-purple-500/50 shadow-inner shrink-0">
+                <span id="broadcastEmoji" class="text-4xl">📢</span>
+            </div>
+            <h2 id="broadcastTitle" class="text-xl font-bold text-white uppercase tracking-widest shrink-0">Message</h2>
+            <p id="broadcastMessage" class="text-[14px] text-white/90 leading-relaxed px-2 font-medium shrink-0"></p>
+            <button id="closeBroadcastBtn" class="w-full bg-purple-600 text-white py-3.5 rounded-xl font-bold text-[12px] uppercase tracking-widest hover:bg-purple-500 active:scale-95 transition-all mt-4 shrink-0 shadow-[0_0_15px_rgba(168,85,247,0.4)]">Compris</button>
+        </div>
     </div>
 
     <div id="maintenanceScreen" class="hidden fixed inset-0 z-[99999] bg-[#020202] text-white flex-col items-center justify-center overflow-hidden">
@@ -357,13 +374,27 @@
                 <i class="fas fa-mobile-alt text-xl text-purple-400"></i>
             </div>
             <h2 id="installModalTitle" class="text-lg font-bold text-white uppercase tracking-widest shrink-0">Installer l'App</h2>
-            <p id="installModalDesc" class="text-[13px] text-white/60 leading-relaxed px-2 shrink-0">Ajoutez l'application sur votre écran d'accueil :</p>
+            <p id="installModalDesc" class="text-[13px] text-white/60 leading-relaxed px-2 shrink-0">Suivez ces étapes simples pour ajouter l'application sur votre écran d'accueil :</p>
             <div class="space-y-4 text-left bg-black/40 p-4 rounded-xl border border-white/5 shrink-0">
-                <p id="installiOS" class="text-[12px] text-white/80 leading-relaxed font-medium">🍎 iOS (Safari) : Appuyez sur Partager <i class="fas fa-share-square mx-1"></i> puis 'Sur l'écran d'accueil'.</p>
+                <div id="installiOS" class="leading-relaxed">
+                    <strong class='flex items-center gap-2 mb-2 text-[12px]'><i class='fab fa-apple text-[16px] text-white'></i> iOS (Safari)</strong>
+                    <ol class='list-decimal list-inside space-y-1.5 ml-1 text-[11px] text-white/80 font-medium text-left'>
+                        <li>Ouvrez le site sur le navigateur <strong>Safari</strong>.</li>
+                        <li>Appuyez sur l'icône <strong>Partager</strong> <i class='fas fa-share-square mx-1 text-purple-400'></i> en bas.</li>
+                        <li>Sélectionnez <strong>'Sur l'écran d'accueil'</strong> <i class='fas fa-plus-square mx-1 text-purple-400'></i>.</li>
+                    </ol>
+                </div>
                 <div class="w-full h-px bg-white/10"></div>
-                <p id="installAndroid" class="text-[12px] text-white/80 leading-relaxed font-medium">🤖 Android (Chrome) : Appuyez sur Menu <i class="fas fa-ellipsis-v mx-1"></i> puis 'Ajouter à l'écran d'accueil'.</p>
+                <div id="installAndroid" class="leading-relaxed">
+                    <strong class='flex items-center gap-2 mb-2 text-[12px]'><i class='fab fa-android text-[16px] text-green-400'></i> Android (Chrome)</strong>
+                    <ol class='list-decimal list-inside space-y-1.5 ml-1 text-[11px] text-white/80 font-medium text-left'>
+                        <li>Ouvrez le site sur le navigateur <strong>Chrome</strong>.</li>
+                        <li>Appuyez sur le <strong>Menu</strong> <i class='fas fa-ellipsis-v mx-1 text-purple-400'></i> en haut à droite.</li>
+                        <li>Sélectionnez <strong>'Ajouter à l'écran d'accueil'</strong> <i class='fas fa-mobile-alt mx-1 text-purple-400'></i>.</li>
+                    </ol>
+                </div>
             </div>
-            <button id="closeInstallModalBtn" class="w-full bg-white/10 text-white py-3.5 rounded-xl font-semibold text-[11px] uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all mt-4 shrink-0 mb-2">Fermer</button>
+            <button id="closeInstallModalBtn" class="w-full bg-white/10 text-white py-3.5 rounded-xl font-semibold text-[11px] uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all mt-4 mb-2 shrink-0">Fermer</button>
         </div>
     </div>
 
@@ -584,6 +615,19 @@
                     </div>
                 </div>
 
+                <div class="space-y-2 mb-4" id="notifToggleContainer">
+                    <div class="flex items-center justify-between bg-blue-500/10 border border-blue-500/30 p-3.5 rounded-xl">
+                        <div>
+                            <label id="notifModeTitle" class="text-[12px] font-bold uppercase tracking-widest text-blue-400">Notifications 🔔</label>
+                            <p id="notifModeDesc" class="text-[9px] text-white/50 uppercase tracking-widest mt-1 font-medium">Alertes natives</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="notifToggle" class="sr-only peer" checked>
+                            <div class="w-10 h-5 bg-black/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/50 after:border-white/10 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500 peer-checked:after:bg-white shadow-inner"></div>
+                        </label>
+                    </div>
+                </div>
+
                 <div class="space-y-2">
                     <label id="langTitle" class="text-[10px] font-bold uppercase tracking-widest opacity-40">Langue</label>
                     <select id="langSelect" class="w-full bg-white/5 border border-white/10 rounded-xl p-3 text-[13px] text-white outline-none focus:border-purple-500 transition-all font-medium appearance-none cursor-pointer">
@@ -782,12 +826,7 @@
             if (window.db && window.firestoreUtils && window.__app_id) {
                 try {
                     await window.firestoreUtils.addDoc(window.firestoreUtils.collection(window.db, "artifacts", window.__app_id, "public", "data", "client_logs"), {
-                        type: type,
-                        msg: msg,
-                        file: file,
-                        line: line,
-                        time: Date.now(),
-                        user: window._currentUserId || "Inconnu"
+                        type: type, msg: msg, file: file, line: line, time: Date.now(), user: window._currentUserId || "Inconnu"
                     });
                 } catch(e) {}
             }
@@ -822,7 +861,13 @@
         const checkReady = setInterval(() => {
             if (window.auth && window.db && window.app && window.messagingUtils && document.readyState !== 'loading') {
                 clearInterval(checkReady);
-                initApp();
+                try {
+                    initApp();
+                } catch (error) {
+                    console.error("Init Error:", error);
+                    const splash = document.getElementById('splashScreen');
+                    if (splash) splash.style.display = 'none';
+                }
             }
         }, 100);
 
@@ -832,42 +877,8 @@
             const { collection, addDoc, query, orderBy, onSnapshot, deleteDoc, doc, setDoc, getDoc, getDocs, collectionGroup, updateDoc, arrayUnion } = firestoreUtils;
             const { getMessaging, getToken, onMessage, isSupported } = window.messagingUtils;
             
-            const vapidKey = "BPc3w8mDuNONg6Wl5TyU_x-l8KfUAtd_D868u3PaPpgrM7HUBMJ5qmuCCmR_U05YZlzGdYfFHPoQEzCakFaTjGM";
-
-            const splashScreen = document.getElementById('splashScreen');
-            const langPage = document.getElementById('langPage');
-            const authPage = document.getElementById('authPage');
-            const promoInstallModal = document.getElementById('promoInstallModal');
-            const welcomePage = document.getElementById('welcomePage');
-            const logoutModal = document.getElementById('logoutModal');
-            const installModal = document.getElementById('installModal');
-            const cguModal = document.getElementById('cguModal');
-            const infoModal = document.getElementById('infoModal');
-            const feedbackModal = document.getElementById('feedbackModal');
-            const reportModal = document.getElementById('reportModal');
-            const linkModal = document.getElementById('linkModal');
-            const historyModal = document.getElementById('historyModal');
-            const personalizationModal = document.getElementById('personalizationModal');
-            const mainApp = document.getElementById('mainApp');
-            const conversationContainer = document.getElementById('conversationContainer');
-            const chatArea = document.getElementById('chatArea');
-            const userInput = document.getElementById('userInput');
-            const sidebar = document.getElementById('sidebar');
-            const appOverlay = document.getElementById('appOverlay');
-            const historyList = document.getElementById('historyList');
-            const hardcoreContainer = document.getElementById('hardcoreContainer');
-
-            if (window.geoDisableThiabs) {
-                const tContainer = document.getElementById('thiabsModeContainer');
-                if (tContainer) tContainer.style.display = 'none';
-            }
-            if (window.geoDisableHolly) {
-                const hContainer = document.getElementById('hollyModeContainer');
-                if (hContainer) hContainer.style.display = 'none';
-            }
-
+            const appId = window.__app_id || "level-ia-premium"; 
             const MODEL = "gemini-2.5-flash";
-            const appId = window.__app_id; 
             
             let apiKeys = []; 
             let currentKeyIndex = 0;
@@ -905,6 +916,42 @@
             let userUsage = { msgCount: 0, msgReset: 0, uploadCount: 0, uploadReset: 0 };
             
             let currentHistFilter = 'all';
+
+            // SECURITE : LA FONCTION SAFE-CLICK POUR NE JAMAIS PLANTER L'APP MÊME SI UN BOUTON MANQUE
+            const safeSetClick = (id, fn) => { 
+                const el = document.getElementById(id); 
+                if (el) el.onclick = fn; 
+            };
+
+            const splashScreen = document.getElementById('splashScreen');
+            const langPage = document.getElementById('langPage');
+            const authPage = document.getElementById('authPage');
+            const promoInstallModal = document.getElementById('promoInstallModal');
+            const welcomePage = document.getElementById('welcomePage');
+            const logoutModal = document.getElementById('logoutModal');
+            const installModal = document.getElementById('installModal');
+            const cguModal = document.getElementById('cguModal');
+            const infoModal = document.getElementById('infoModal');
+            const feedbackModal = document.getElementById('feedbackModal');
+            const reportModal = document.getElementById('reportModal');
+            const linkModal = document.getElementById('linkModal');
+            const historyModal = document.getElementById('historyModal');
+            const personalizationModal = document.getElementById('personalizationModal');
+            const mainApp = document.getElementById('mainApp');
+            const conversationContainer = document.getElementById('conversationContainer');
+            const chatArea = document.getElementById('chatArea');
+            const userInput = document.getElementById('userInput');
+            const sidebar = document.getElementById('sidebar');
+            const appOverlay = document.getElementById('appOverlay');
+            const historyList = document.getElementById('historyList');
+            const hardcoreContainer = document.getElementById('hardcoreContainer');
+
+            if (window.geoDisableThiabs && document.getElementById('thiabsModeContainer')) {
+                document.getElementById('thiabsModeContainer').style.display = 'none';
+            }
+            if (window.geoDisableHolly && document.getElementById('hollyModeContainer')) {
+                document.getElementById('hollyModeContainer').style.display = 'none';
+            }
 
             let maintContent = [
                 { title: "Revenez plus tard", body: "Level IA est actuellement en cours de développement. Nous préparons quelque chose d'exceptionnel pour vous.", notify: "Vous serez notifié une fois que la mise à jour sera prête.", hint: "Maintenance", btn: "Obtenir votre clé maintenance" },
@@ -947,15 +994,6 @@
             }
 
             const isSupportedProtocol = window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-            
-            if (userInput) {
-                userInput.addEventListener('focus', () => {
-                    setTimeout(() => {
-                        window.scrollTo(0,0);
-                        if(chatArea) chatArea.scrollTop = chatArea.scrollHeight;
-                    }, 100);
-                });
-            }
 
             window.showToast = function(msg, isError = false) {
                 const t = document.getElementById('sysToast');
@@ -970,14 +1008,60 @@
                 setTimeout(() => t.classList.add('hidden'), 3500);
             };
 
+            // GESTION DU POP-UP DE NOTIFICATION ET DE L'ÉCOUTEUR
+            let notifsEnabled = localStorage.getItem('lvl_notifs_enabled') !== 'false';
+            const notifToggle = document.getElementById('notifToggle');
+            
+            if (notifToggle) {
+                notifToggle.checked = notifsEnabled;
+                notifToggle.addEventListener('change', (e) => {
+                    notifsEnabled = e.target.checked;
+                    localStorage.setItem('lvl_notifs_enabled', notifsEnabled);
+                    
+                    if (notifsEnabled && "Notification" in window) {
+                        Notification.requestPermission().then(permission => {
+                            if (permission === "granted") {
+                                window.showToast(currentLang === 'fr' ? "Notifications activées avec succès !" : "Notifications successfully enabled!", false);
+                            } else {
+                                window.showToast(currentLang === 'fr' ? "Autorisation refusée par l'appareil." : "Permission denied by device.", true);
+                                e.target.checked = false;
+                                notifsEnabled = false;
+                                localStorage.setItem('lvl_notifs_enabled', false);
+                            }
+                        });
+                    }
+                });
+            }
+
+            const autoRequestNotifs = () => {
+                if (notifsEnabled && "Notification" in window && Notification.permission === "default") {
+                    Notification.requestPermission();
+                }
+                document.removeEventListener('click', autoRequestNotifs);
+                document.removeEventListener('touchstart', autoRequestNotifs);
+            };
+            document.addEventListener('click', autoRequestNotifs);
+            document.addEventListener('touchstart', autoRequestNotifs, { passive: true });
+
+
             function notifyUser(msg, isError = false, nativeTitle = "Level IA", nativeEmoji = "📢") {
                 if (isError) {
                     window.showToast(msg, true);
                 } else {
-                    if ("Notification" in window && Notification.permission === 'granted' && navigator.serviceWorker) {
-                        navigator.serviceWorker.ready.then(reg => {
-                            reg.showNotification(`${nativeEmoji} ${nativeTitle}`, { body: msg, icon: './icon.svg', vibrate: [200, 100, 200] });
-                        }).catch(() => {});
+                    if (localStorage.getItem('lvl_notifs_enabled') === 'false') return;
+                    
+                    if ("Notification" in window && Notification.permission === 'granted') {
+                        try {
+                            if (navigator.serviceWorker && navigator.serviceWorker.controller) {
+                                navigator.serviceWorker.ready.then(reg => {
+                                    reg.showNotification(`${nativeEmoji} ${nativeTitle}`, { body: msg, icon: './icon.svg', vibrate: [200, 100, 200] });
+                                }).catch(() => { new Notification(`${nativeEmoji} ${nativeTitle}`, { body: msg, icon: './icon.svg' }); });
+                            } else {
+                                new Notification(`${nativeEmoji} ${nativeTitle}`, { body: msg, icon: './icon.svg' });
+                            }
+                        } catch(e) { window.showToast(`${nativeEmoji} ${nativeTitle} : ${msg}`, false); }
+                    } else {
+                        window.showToast(`${nativeEmoji} ${nativeTitle} : ${msg}`, false);
                     }
                 }
             }
@@ -1057,6 +1141,17 @@
                         
                         const title = latestBroadcast.title || (currentLang === 'fr' ? "Message de LevelUp" : "Message from LevelUp");
                         const emoji = latestBroadcast.emoji || "📢";
+                        
+                        const bEmoji = document.getElementById('broadcastEmoji');
+                        const bTitle = document.getElementById('broadcastTitle');
+                        const bMessage = document.getElementById('broadcastMessage');
+                        const bModal = document.getElementById('broadcastModal');
+                        
+                        if(bEmoji) bEmoji.innerText = emoji;
+                        if(bTitle) bTitle.innerText = title;
+                        if(bMessage) bMessage.innerHTML = sanitizeHTML(latestBroadcast.message).replace(/\n/g, '<br>');
+                        if(bModal) bModal.classList.remove('hidden');
+
                         notifyUser(latestBroadcast.message, false, title, emoji);
                     }
                 }, (err) => console.warn("Broadcasts ignorés."));
@@ -1124,7 +1219,8 @@
                     ${sanitizeHTML(attachmentHtml)}
                     ${safeText ? `<span class="leading-relaxed font-medium whitespace-pre-wrap break-words max-w-full">${safeText}</span>` : ''}
                 </div>`;
-                conversationContainer.appendChild(div); chatArea.scrollTop = chatArea.scrollHeight;
+                if(conversationContainer) conversationContainer.appendChild(div);
+                if(chatArea) chatArea.scrollTop = chatArea.scrollHeight;
             }
 
             function displayAIMessage(text, animate, sourcesHtml = "") {
@@ -1183,7 +1279,7 @@
                 wrap.appendChild(content); 
                 if (sourcesHtml) wrap.appendChild(sourcesContainer); 
                 wrap.appendChild(actions); 
-                conversationContainer.appendChild(wrap);
+                if(conversationContainer) conversationContainer.appendChild(wrap);
                 
                 if (animate) {
                     streamText(content, text, () => { if (sourcesHtml) sourcesContainer.style.opacity = "1"; });
@@ -1212,11 +1308,11 @@
                     if (i < text.length) {
                         container.innerHTML = sanitizeHTML(marked.parse(formatSpeakerBadges(text.substring(0, i + 1)))); 
                         i += 4; 
-                        chatArea.scrollTop = chatArea.scrollHeight;
+                        if(chatArea) chatArea.scrollTop = chatArea.scrollHeight;
                     } else {
                         container.innerHTML = sanitizeHTML(marked.parse(formatSpeakerBadges(text))); 
                         clearInterval(typingInterval); 
-                        chatArea.scrollTop = chatArea.scrollHeight;
+                        if(chatArea) chatArea.scrollTop = chatArea.scrollHeight;
                         stopGeneration(); 
                         if(callback) callback(); 
                     }
@@ -1229,8 +1325,9 @@
                 if (typingInterval) clearInterval(typingInterval);
                 
                 const sendBtn = document.getElementById('sendBtn');
-                sendBtn.innerHTML = '<i class="fas fa-arrow-up text-base pointer-events-none"></i>';
-                document.getElementById('aiTyping').classList.add('hidden');
+                if (sendBtn) sendBtn.innerHTML = '<i class="fas fa-arrow-up text-base pointer-events-none"></i>';
+                const aiTyping = document.getElementById('aiTyping');
+                if(aiTyping) aiTyping.classList.add('hidden');
             }
 
             const aiModels = {
@@ -1254,13 +1351,14 @@
                     authTitle: "Entrez votre Clé d'Accès", verifyBtn: "Vérifier la clé", getKeyText: "Obtenir ma clé", menuTitle: "Menu",
                     thiabsModeTitle: "Mode Thiab's 🌟", thiabsModeDesc: "Activer le développement personnel",
                     hollyModeTitle: "Mode Holly 🌸", hollyModeDesc: "Confidente & Amie",
+                    notifModeTitle: "Notifications 🔔", notifModeDesc: "Alertes natives",
                     langTitle: "Langue", modelTitle: "Modèle IA", lengthTitle: "Taille des réponses", cloudSpace: "Espace Cloud", historyTitle: "Historique des sessions", newChatText: "Nouvelle session",
                     dnaTitle: "DNA de <strong id='dnaAppBrand'>{app}</strong>", saveDNA: "Mettre à jour", supportTitle: "Support & Compte", logoutBtn: "Déconnexion", placeholder: "Message...", dnaPlaceholder: "Ex: Parle-moi comme à un ami...",
                     invalidFormat: "Format invalide. Exemple: LVL-XXXXX-XXXXX", keyNotFound: "Clé introuvable ou incorrecte.", welcomeGreeting: "Bienvenue", welcomeDesc: "Prêt à vous assister. Découvrez une intelligence conçu pour vous accompagner au quotidien.", continueBtn: "Continuer", footerBranding: "Propulsé par <strong>LevelUp</strong>",
                     logoutModalTitle: "Déconnexion", logoutModalDesc: "Voulez-vous vraiment quitter votre session actuelle ?", cancelBtn: "Annuler", confirmLogout: "Quitter", verifiedStatus: "Vérifié via clé",
                     installAppMenuText: "Installer l'App", installModalTitle: "Installer l'App", installModalDesc: "Suivez ces étapes simples pour ajouter l'application sur votre écran d'accueil :",
-                    installiOS: "<strong class='flex items-center gap-2 mb-2 text-[12px]'><i class='fab fa-apple text-[16px] text-white'></i> iOS (Safari)</strong><ol class='list-decimal list-inside space-y-1.5 ml-1 text-[11px] text-white/80 font-medium'><li>Ouvrez le site sur le navigateur <strong>Safari</strong>.</li><li>Appuyez sur l'icône <strong>Partager</strong> <i class='fas fa-share-square mx-1 text-purple-400'></i> en bas.</li><li>Sélectionnez <strong>'Sur l'écran d'accueil'</strong> <i class='fas fa-plus-square mx-1 text-purple-400'></i>.</li></ol>",
-                    installAndroid: "<strong class='flex items-center gap-2 mb-2 text-[12px]'><i class='fab fa-android text-[16px] text-green-400'></i> Android (Chrome)</strong><ol class='list-decimal list-inside space-y-1.5 ml-1 text-[11px] text-white/80 font-medium'><li>Ouvrez le site sur le navigateur <strong>Chrome</strong>.</li><li>Appuyez sur le <strong>Menu</strong> <i class='fas fa-ellipsis-v mx-1 text-purple-400'></i> en haut à droite.</li><li>Sélectionnez <strong>'Ajouter à l'écran d'accueil'</strong> <i class='fas fa-mobile-alt mx-1 text-purple-400'></i>.</li></ol>",
+                    installiOS: "<strong class='flex items-center gap-2 mb-2 text-[12px]'><i class='fab fa-apple text-[16px] text-white'></i> iOS (Safari)</strong><ol class='list-decimal list-inside space-y-1.5 ml-1 text-[11px] text-white/80 font-medium text-left'><li>Ouvrez le site sur le navigateur <strong>Safari</strong>.</li><li>Appuyez sur l'icône <strong>Partager</strong> <i class='fas fa-share-square mx-1 text-purple-400'></i> en bas.</li><li>Sélectionnez <strong>'Sur l'écran d'accueil'</strong> <i class='fas fa-plus-square mx-1 text-purple-400'></i>.</li></ol>",
+                    installAndroid: "<strong class='flex items-center gap-2 mb-2 text-[12px]'><i class='fab fa-android text-[16px] text-green-400'></i> Android (Chrome)</strong><ol class='list-decimal list-inside space-y-1.5 ml-1 text-[11px] text-white/80 font-medium text-left'><li>Ouvrez le site sur le navigateur <strong>Chrome</strong>.</li><li>Appuyez sur le <strong>Menu</strong> <i class='fas fa-ellipsis-v mx-1 text-purple-400'></i> en haut à droite.</li><li>Sélectionnez <strong>'Ajouter à l'écran d'accueil'</strong> <i class='fas fa-mobile-alt mx-1 text-purple-400'></i>.</li></ol>",
                     cguMenuText: "Règles & Sécurité", cguModalTitle: "Conditions (CGU)",
                     cguText1: "🔞 <strong class='text-white'>Âge requis :</strong> Vous devez avoir 16 ans ou plus pour utiliser cette application.",
                     cguText2: "⚖️ <strong class='text-white'>Responsabilité :</strong> En utilisant Level IA, vous prenez l'entière responsabilité.",
@@ -1284,13 +1382,14 @@
                     authTitle: "Enter your Access Key", verifyBtn: "Verify Key", getKeyText: "Get my Key", menuTitle: "Menu",
                     thiabsModeTitle: "Thiab's Mode 🌟", thiabsModeDesc: "Activate personal development",
                     hollyModeTitle: "Holly Mode 🌸", hollyModeDesc: "Confidant & Friend",
+                    notifModeTitle: "Notifications 🔔", notifModeDesc: "Native alerts",
                     langTitle: "Language", modelTitle: "AI Model", lengthTitle: "Response Length", cloudSpace: "Cloud Space", historyTitle: "Session History", newChatText: "New session",
                     dnaTitle: "<strong id='dnaAppBrand'>{app}</strong> DNA", saveDNA: "Update", supportTitle: "Support & Account", logoutBtn: "Log out", placeholder: "Message...", dnaPlaceholder: "Ex: Speak to me like a friend...",
                     invalidFormat: "Invalid format. Example: LVL-XXXXX-XXXXX", keyNotFound: "Key not found or incorrect.", welcomeGreeting: "Welcome", welcomeDesc: "Ready to assist you. Discover an intelligence designed to support you daily.", continueBtn: "Continue", footerBranding: "Powered by <strong>LevelUp</strong>",
                     logoutModalTitle: "Log out", logoutModalDesc: "Are you sure you want to leave your current session?", cancelBtn: "Cancel", confirmLogout: "Leave", verifiedStatus: "Key verified",
                     installAppMenuText: "Install App", installModalTitle: "Install App", installModalDesc: "Follow these simple steps to add the app to your home screen:",
-                    installiOS: "<strong class='flex items-center gap-2 mb-2 text-[12px]'><i class='fab fa-apple text-[16px] text-white'></i> iOS (Safari)</strong><ol class='list-decimal list-inside space-y-1.5 ml-1 text-[11px] text-white/80 font-medium'><li>Open the site in <strong>Safari</strong> browser.</li><li>Tap the <strong>Share</strong> icon <i class='fas fa-share-square mx-1 text-purple-400'></i> at the bottom.</li><li>Select <strong>'Add to Home Screen'</strong> <i class='fas fa-plus-square mx-1 text-purple-400'></i>.</li></ol>",
-                    installAndroid: "<strong class='flex items-center gap-2 mb-2 text-[12px]'><i class='fab fa-android text-[16px] text-green-400'></i> Android (Chrome)</strong><ol class='list-decimal list-inside space-y-1.5 ml-1 text-[11px] text-white/80 font-medium'><li>Open the site in <strong>Chrome</strong> browser.</li><li>Tap the <strong>Menu</strong> <i class='fas fa-ellipsis-v mx-1 text-purple-400'></i> at the top right.</li><li>Select <strong>'Add to Home screen'</strong> <i class='fas fa-mobile-alt mx-1 text-purple-400'></i>.</li></ol>",
+                    installiOS: "<strong class='flex items-center gap-2 mb-2 text-[12px]'><i class='fab fa-apple text-[16px] text-white'></i> iOS (Safari)</strong><ol class='list-decimal list-inside space-y-1.5 ml-1 text-[11px] text-white/80 font-medium text-left'><li>Open the site in <strong>Safari</strong> browser.</li><li>Tap the <strong>Share</strong> icon <i class='fas fa-share-square mx-1 text-purple-400'></i> at the bottom.</li><li>Select <strong>'Add to Home Screen'</strong> <i class='fas fa-plus-square mx-1 text-purple-400'></i>.</li></ol>",
+                    installAndroid: "<strong class='flex items-center gap-2 mb-2 text-[12px]'><i class='fab fa-android text-[16px] text-green-400'></i> Android (Chrome)</strong><ol class='list-decimal list-inside space-y-1.5 ml-1 text-[11px] text-white/80 font-medium text-left'><li>Open the site in <strong>Chrome</strong> browser.</li><li>Tap the <strong>Menu</strong> <i class='fas fa-ellipsis-v mx-1 text-purple-400'></i> at the top right.</li><li>Select <strong>'Add to Home screen'</strong> <i class='fas fa-mobile-alt mx-1 text-purple-400'></i>.</li></ol>",
                     cguMenuText: "Rules & Security", cguModalTitle: "Terms of Use (CGU)",
                     cguText1: "🔞 <strong class='text-white'>Age requirement:</strong> You must be 16 years or older to use this application.",
                     cguText2: "⚖️ <strong class='text-white'>Liability:</strong> By using Level IA, you take full responsibility.",
@@ -1399,6 +1498,8 @@
                 setSafeText('thiabsModeDesc', t.thiabsModeDesc);
                 setSafeText('hollyModeTitle', t.hollyModeTitle);
                 setSafeText('hollyModeDesc', t.hollyModeDesc);
+                setSafeText('notifModeTitle', t.notifModeTitle);
+                setSafeText('notifModeDesc', t.notifModeDesc);
                 setSafeText('langTitle', t.langTitle);
                 setSafeText('modelTitle', t.modelTitle);
                 setSafeText('lengthTitle', t.lengthTitle);
@@ -1517,6 +1618,7 @@
                 isThiabsMode = false;
                 isHollyMode = false;
                 currentModel = 'normal';
+                
                 const toggle = document.getElementById('thiabsModeToggle');
                 if(toggle) toggle.checked = false;
                 const toggleH = document.getElementById('hollyModeToggle');
@@ -1533,7 +1635,8 @@
                 const div = document.createElement('div');
                 div.className = "flex justify-center w-full my-4 animate-in fade-in";
                 div.innerHTML = `<span class="bg-white/10 border border-white/20 text-white/50 text-[10px] uppercase font-bold tracking-widest px-4 py-1.5 rounded-full shadow-sm"><i class="fas fa-random text-purple-400 mr-1.5"></i> Bascule vers Mode Auto</span>`;
-                document.getElementById('conversationContainer').appendChild(div);
+                const convContainer = document.getElementById('conversationContainer');
+                if (convContainer) convContainer.appendChild(div);
                 
                 currentSessionMessages.push({
                     role: "user",
@@ -1561,16 +1664,17 @@
                 applyLanguage('fr');
             }
 
-            document.getElementById('langSelect').addEventListener('change', (e) => {
+            safeSetClick('langSelect', (e) => {
                 applyLanguage(e.target.value);
                 localStorage.setItem('thiabs_saved_lang', e.target.value);
             });
 
-            document.getElementById('thiabsModeToggle').addEventListener('change', async (e) => {
+            safeSetClick('thiabsModeToggle', async (e) => {
                 isThiabsMode = e.target.checked;
                 if(isThiabsMode) {
                     isHollyMode = false;
-                    document.getElementById('hollyModeToggle').checked = false;
+                    const hToggle = document.getElementById('hollyModeToggle');
+                    if (hToggle) hToggle.checked = false;
                 }
                 currentModel = isThiabsMode ? 'motivation' : 'normal';
                 
@@ -1583,14 +1687,15 @@
                     await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { isThiabsMode: isThiabsMode, isHollyMode: isHollyMode, model: currentModel }, { merge: true });
                 }
                 startNewChat();
-                window.closeSidebar();
+                if (window.closeSidebar) window.closeSidebar();
             });
 
-            document.getElementById('hollyModeToggle').addEventListener('change', async (e) => {
+            safeSetClick('hollyModeToggle', async (e) => {
                 isHollyMode = e.target.checked;
                 if(isHollyMode) {
                     isThiabsMode = false;
-                    document.getElementById('thiabsModeToggle').checked = false;
+                    const tToggle = document.getElementById('thiabsModeToggle');
+                    if (tToggle) tToggle.checked = false;
                 }
                 currentModel = isHollyMode ? 'confidente' : 'normal';
                 
@@ -1603,10 +1708,10 @@
                     await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { isThiabsMode: isThiabsMode, isHollyMode: isHollyMode, model: currentModel }, { merge: true });
                 }
                 startNewChat();
-                window.closeSidebar();
+                if (window.closeSidebar) window.closeSidebar();
             });
 
-            document.getElementById('modelSelect').addEventListener('change', async (e) => {
+            safeSetClick('modelSelect', async (e) => {
                 currentModel = e.target.value;
                 updateMarcoUI();
                 updateBranding();
@@ -1614,10 +1719,10 @@
                     await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { model: currentModel }, { merge: true });
                 }
                 startNewChat();
-                window.closeSidebar();
+                if (window.closeSidebar) window.closeSidebar();
             });
 
-            document.getElementById('hardcoreToggle').addEventListener('change', async (e) => {
+            safeSetClick('hardcoreToggle', async (e) => {
                 isHardcoreMode = e.target.checked;
                 if (userId) {
                     await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { hardcore: isHardcoreMode }, { merge: true });
@@ -1643,7 +1748,6 @@
                 }
 
                 if (updated && userId) {
-                    // FIX : On retire le 'await' pour que la base de données ne bloque plus JAMAIS l'application
                     setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "usage"), userUsage).catch(e => {});
                 }
                 return { allowed: true };
@@ -1660,43 +1764,56 @@
                 }
             }, 30000);
 
-            document.getElementById('promoSkipBtn').onclick = () => {
+            safeSetClick('promoSkipBtn', () => {
                 localStorage.setItem('thiabs_skipped_install', 'true');
-                promoInstallModal.classList.add('hidden');
-                authPage.classList.remove('hidden');
-            };
+                const pModal = document.getElementById('promoInstallModal');
+                if(pModal) pModal.classList.add('hidden');
+                const aPage = document.getElementById('authPage');
+                if(aPage) aPage.classList.remove('hidden');
+            });
 
-            document.getElementById('promoInstallBtn').onclick = async () => {
+            safeSetClick('promoInstallBtn', async () => {
                 if (deferredPrompt) {
                     deferredPrompt.prompt();
                     const { outcome } = await deferredPrompt.userChoice;
                     if (outcome === 'accepted') {
                         localStorage.setItem('thiabs_skipped_install', 'true');
-                        promoInstallModal.classList.add('hidden');
-                        authPage.classList.remove('hidden');
+                        const pModal = document.getElementById('promoInstallModal');
+                        if(pModal) pModal.classList.add('hidden');
+                        const aPage = document.getElementById('authPage');
+                        if(aPage) aPage.classList.remove('hidden');
                     }
                     deferredPrompt = null;
                 } else {
-                    promoInstallModal.classList.add('hidden');
-                    installModal.classList.remove('hidden');
-                    document.getElementById('closeInstallModalBtn').onclick = () => {
-                        localStorage.setItem('thiabs_skipped_install', 'true');
-                        installModal.classList.add('hidden');
-                        authPage.classList.remove('hidden');
-                        document.getElementById('closeInstallModalBtn').onclick = () => installModal.classList.add('hidden');
-                    };
+                    const pModal = document.getElementById('promoInstallModal');
+                    if(pModal) pModal.classList.add('hidden');
+                    const iModal = document.getElementById('installModal');
+                    if(iModal) iModal.classList.remove('hidden');
                 }
-            };
+            });
+
+            safeSetClick('closeInstallModalBtn', () => {
+                localStorage.setItem('thiabs_skipped_install', 'true');
+                const iModal = document.getElementById('installModal');
+                if(iModal) iModal.classList.add('hidden');
+                const aPage = document.getElementById('authPage');
+                if(aPage) aPage.classList.remove('hidden');
+            });
 
             const checkPromoInstall = () => {
-                document.getElementById('splashScreen').style.display = 'none';
-                langPage.classList.add('hidden');
+                const sScreen = document.getElementById('splashScreen');
+                if(sScreen) sScreen.style.display = 'none';
+                const lPage = document.getElementById('langPage');
+                if(lPage) lPage.classList.add('hidden');
+                
                 const skipped = localStorage.getItem('thiabs_skipped_install');
                 
                 if (!isStandalone && !skipped) {
-                    promoInstallModal.classList.remove('hidden');
+                    const pModal = document.getElementById('promoInstallModal');
+                    if(pModal) pModal.classList.remove('hidden');
                 } else {
-                    authPage.classList.remove('hidden');
+                    const aPage = document.getElementById('authPage');
+                    if(aPage) aPage.classList.remove('hidden');
                 }
             };
 
@@ -1730,39 +1847,68 @@
                         if (ruleDoc.exists()) {
                             const data = ruleDoc.data();
                             
-                            const engToFr = {
-                                "United States": "États-Unis", "United Kingdom": "Royaume-Uni", 
-                                "Algeria": "Algérie", "Morocco": "Maroc", "Tunisia": "Tunisie", "Germany": "Allemagne",
-                                "Spain": "Espagne", "Italy": "Italie", "Brazil": "Brésil", "South Africa": "Afrique du Sud",
-                                "Russia": "Russie", "Japan": "Japon", "China": "Chine", "India": "Inde", "Egypt": "Égypte",
-                                "Switzerland": "Suisse", "Belgium": "Belgique", "Netherlands": "Pays-Bas", "Sweden": "Suède",
-                                "Turkey": "Turquie", "Mexico": "Mexique", "Colombia": "Colombie", "Argentina": "Argentine",
-                                "Saudi Arabia": "Arabie Saoudite", "United Arab Emirates": "Émirats Arabes Unis",
-                                "Ivory Coast": "Côte d'Ivoire", "Senegal": "Sénégal", "Cameroon": "Cameroun", "Lebanon": "Liban"
-                            };
-                            let cName = engToFr[window.userGeo.country] || window.userGeo.country;
+                            // Normalisation agressive pour attraper "RDC", "DR Congo", etc.
+                            let rawCountry = window.userGeo.country || "";
+                            let cNameLower = rawCountry.toLowerCase();
+                            let cName = rawCountry;
                             
-                            const ruleKey = Object.keys(data.countries || {}).find(k => k.toLowerCase() === cName.toLowerCase());
-                            const rule = data.countries && ruleKey ? data.countries[ruleKey] : null;
+                            if (cNameLower.includes("congo") && (cNameLower.includes("dr") || cNameLower.includes("dem") || cNameLower.includes("kinshasa") || cNameLower.includes("republic"))) cName = "RDC";
+                            else if (cNameLower === "rdc") cName = "RDC";
+                            else if (cNameLower.includes("congo") && (cNameLower.includes("brazzaville") || cNameLower === "congo")) cName = "Congo-Brazzaville";
+                            else if (cNameLower.includes("united states") || cNameLower === "usa" || cNameLower === "us") cName = "États-Unis";
+                            else if (cNameLower.includes("united kingdom") || cNameLower === "uk") cName = "Royaume-Uni";
+                            else if (cNameLower.includes("ivory") || cNameLower.includes("ivoire")) cName = "Côte d'Ivoire";
+
+                            const engToFr = {
+                                "algeria": "Algérie", "morocco": "Maroc", "tunisia": "Tunisie", "germany": "Allemagne",
+                                "spain": "Espagne", "italy": "Italie", "brazil": "Brésil", "south africa": "Afrique du Sud",
+                                "russia": "Russie", "russian federation": "Russie", "japan": "Japon", "china": "Chine", "india": "Inde",
+                                "egypt": "Égypte", "switzerland": "Suisse", "belgium": "Belgique", "netherlands": "Pays-Bas", "sweden": "Suède",
+                                "turkey": "Turquie", "mexico": "Mexique", "colombia": "Colombie", "argentina": "Argentine",
+                                "saudi arabia": "Arabie Saoudite", "united arab emirates": "Émirats Arabes Unis", "uae": "Émirats Arabes Unis",
+                                "senegal": "Sénégal", "cameroon": "Cameroun", "lebanon": "Liban"
+                            };
+                            if (engToFr[cNameLower]) cName = engToFr[cNameLower];
+
+                            // Retrait total des accents pour comparer
+                            const removeAccents = (str) => str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+                            const normalizedCName = removeAccents(cName);
+                            const normalizedRaw = removeAccents(rawCountry);
+
+                            const ruleKey = Object.keys(data.countries || {}).find(k => {
+                                const normK = removeAccents(k);
+                                return normK === normalizedCName || normK === normalizedRaw;
+                            });
+                            
+                            const rule = ruleKey ? data.countries[ruleKey] : null;
                             
                             if (rule) {
                                 const userCityLower = (window.userGeo.city || '').toLowerCase();
                                 const cityBanned = rule.bannedCities && rule.bannedCities.some(c => c.toLowerCase() === userCityLower);
                                 
                                 if (rule.banned || cityBanned) {
-                                    document.getElementById('splashScreen').style.display = 'none';
-                                    const banScreen = document.getElementById('banScreen');
-                                    banScreen.classList.remove('hidden');
-                                    banScreen.classList.add('flex');
+                                    const sScreen = document.getElementById('splashScreen');
+                                    if(sScreen) sScreen.style.display = 'none';
+                                    
+                                    const bScreen = document.getElementById('banScreen');
+                                    if(bScreen) {
+                                        bScreen.classList.remove('hidden');
+                                        bScreen.classList.add('flex');
+                                    }
                                     
                                     const iconMap = { "shield": "fa-shield-alt", "globe": "fa-globe", "gavel": "fa-gavel", "warning": "fa-exclamation-triangle", "ghost": "fa-ghost" };
                                     const faIcon = iconMap[rule.banIcon] || "fa-ban";
-                                    document.getElementById('banScreenIcon').className = `fas ${faIcon} text-6xl text-red-500 mb-6`;
-                                    document.getElementById('banScreenMsg').innerText = rule.banMessage || "Cette application n'est pas disponible dans votre région.";
+                                    const bIconEl = document.getElementById('banScreenIcon');
+                                    if(bIconEl) bIconEl.className = `fas ${faIcon} text-6xl text-red-500 mb-6`;
+                                    
+                                    const bMsgEl = document.getElementById('banScreenMsg');
+                                    if(bMsgEl) bMsgEl.innerText = rule.banMessage || "Cette application n'est pas disponible dans votre région.";
+                                    
                                     return false; 
                                 }
                                 if (rule.customAppName && rule.customAppName.trim() !== "") {
-                                    document.getElementById('splashBrandText').innerText = rule.customAppName;
+                                    const sbText = document.getElementById('splashBrandText');
+                                    if(sbText) sbText.innerText = rule.customAppName;
                                 }
                                 if (rule.disabledModes) {
                                     if (rule.disabledModes.includes('marco')) window.geoDisableMarco = true;
@@ -1778,14 +1924,20 @@
 
             const playIntroAnimation = async (savedKey) => {
                 const splashScreen = document.getElementById('splashScreen');
-                splashScreen.style.display = 'flex';
-                splashScreen.style.opacity = '1';
+                if (splashScreen) {
+                    splashScreen.style.display = 'flex';
+                    splashScreen.style.opacity = '1';
+                }
                 
                 const s1 = document.getElementById('splash1'); const s2 = document.getElementById('splash2');
-                setTimeout(() => s1.classList.add('active'), 200);
-                setTimeout(() => { s1.classList.remove('active'); s1.classList.add('exit'); }, 1200);
-                setTimeout(() => s2.classList.add('active'), 1500);
-                setTimeout(() => { s2.classList.remove('active'); s2.classList.add('exit'); }, 2800);
+                if (s1) {
+                    setTimeout(() => s1.classList.add('active'), 200);
+                    setTimeout(() => { s1.classList.remove('active'); s1.classList.add('exit'); }, 1200);
+                }
+                if (s2) {
+                    setTimeout(() => s2.classList.add('active'), 1500);
+                    setTimeout(() => { s2.classList.remove('active'); s2.classList.add('exit'); }, 2800);
+                }
 
                 const geoPromise = Promise.race([
                     checkGeoAndRules(),
@@ -1798,12 +1950,17 @@
 
                 if (!canContinue) return;
 
-                splashScreen.style.opacity = '0';
-                setTimeout(() => {
-                    splashScreen.style.display = 'none';
-                    if (savedKey) processLogin(savedKey, true);
-                    else langPage.classList.remove('hidden');
-                }, 400); 
+                if (splashScreen) {
+                    splashScreen.style.opacity = '0';
+                    setTimeout(() => {
+                        splashScreen.style.display = 'none';
+                        if (savedKey) processLogin(savedKey, true);
+                        else {
+                            const lPage = document.getElementById('langPage');
+                            if(lPage) lPage.classList.remove('hidden');
+                        }
+                    }, 400); 
+                }
             };
 
             const initAuth = async () => {
@@ -1847,37 +2004,45 @@
             initAuth();
 
             const accessKeyInput = document.getElementById('accessKeyInput');
-            accessKeyInput.addEventListener('input', function(e) {
-                let val = this.value.toUpperCase();
-                val = val.replace(/[^A-Z0-9-]/g, '');
-                
-                if (val.length > 0) {
-                    const isOldFormat = val.startsWith('T') || val.startsWith('TH') || val.startsWith('THB');
-                    const isNewFormat = val.startsWith('L') || val.startsWith('LV') || val.startsWith('LVL');
+            if (accessKeyInput) {
+                accessKeyInput.addEventListener('input', function(e) {
+                    let val = this.value.toUpperCase();
+                    val = val.replace(/[^A-Z0-9-]/g, '');
                     
-                    if (!isOldFormat && !isNewFormat) {
-                        val = 'LVL-' + val.replace(/^-+/, ''); 
+                    if (val.length > 0) {
+                        const isOldFormat = val.startsWith('T') || val.startsWith('TH') || val.startsWith('THB');
+                        const isNewFormat = val.startsWith('L') || val.startsWith('LV') || val.startsWith('LVL');
+                        
+                        if (!isOldFormat && !isNewFormat) {
+                            val = 'LVL-' + val.replace(/^-+/, ''); 
+                        }
                     }
-                }
-                this.value = val.substring(0, 16);
-            });
+                    this.value = val.substring(0, 16);
+                });
+            }
 
-            document.getElementById('verifyKeyBtn').onclick = () => {
-                const keyVal = document.getElementById('accessKeyInput').value.trim().toUpperCase();
+            safeSetClick('verifyKeyBtn', () => {
+                const akInput = document.getElementById('accessKeyInput');
+                if(!akInput) return;
+                const keyVal = akInput.value.trim().toUpperCase();
                 if (!keyVal) return;
                 processLogin(keyVal, false);
-            };
+            });
 
-            document.getElementById('startAppBtn').onclick = () => {
+            safeSetClick('startAppBtn', () => {
                 try {
-                    welcomePage.classList.add('hidden');
-                    mainApp.classList.remove('hidden');
-                    mainApp.classList.add('flex');
+                    const wPage = document.getElementById('welcomePage');
+                    const mApp = document.getElementById('mainApp');
+                    if(wPage) wPage.classList.add('hidden');
+                    if(mApp) {
+                        mApp.classList.remove('hidden');
+                        mApp.classList.add('flex');
+                    }
                     startNewChat();
                 } catch (err) {
                     console.warn("Erreur UI ignorée:", err);
                 }
-            };
+            });
 
             async function processLogin(keyVal, isAutoLogin = false) {
                 const btn = document.getElementById('verifyKeyBtn');
@@ -1887,16 +2052,20 @@
                 const keyFormatRegex = /^(LVL|THB)-[A-Z0-9]{3,6}-[A-Z0-9]{3,6}$/;
                 if (!keyFormatRegex.test(keyVal)) {
                     if (!isAutoLogin) {
-                        document.getElementById('keyErrorMain').innerText = currentLang === 'fr' ? "Format de code invalide." : "Invalid code format.";
-                        errorDetailsSpan.innerText = "Attendu: LVL-XXXXX-XXXXX";
-                        errorDetailsSpan.classList.remove('hidden');
-                        errorMsg.classList.remove('hidden');
+                        const errMain = document.getElementById('keyErrorMain');
+                        if(errMain) errMain.innerText = currentLang === 'fr' ? "Format de code invalide." : "Invalid code format.";
+                        if(errorDetailsSpan) {
+                            errorDetailsSpan.innerText = "Attendu: LVL-XXXXX-XXXXX";
+                            errorDetailsSpan.classList.remove('hidden');
+                        }
+                        if(errorMsg) errorMsg.classList.remove('hidden');
                     }
                     return;
                 }
                 
-                if (!isAutoLogin) {
-                    btn.innerText = "Recherche..."; btn.disabled = true; errorMsg.classList.add('hidden');
+                if (!isAutoLogin && btn) {
+                    btn.innerText = "Recherche..."; btn.disabled = true; 
+                    if(errorMsg) errorMsg.classList.add('hidden');
                 }
                 
                 try {
@@ -1916,9 +2085,13 @@
                         userId = foundUserData.uid;
                         const indDb = document.getElementById('ind-db');
                         if (indDb) indDb.className = "w-2.5 h-2.5 rounded-full bg-green-500 shadow-[0_0_8px_#22c55e]"; 
-                        authPage.classList.add('hidden');
-                        langPage.classList.add('hidden'); 
-                        promoInstallModal.classList.add('hidden');
+                        
+                        const authPage = document.getElementById('authPage');
+                        const langPage = document.getElementById('langPage');
+                        const promoInstallModal = document.getElementById('promoInstallModal');
+                        if(authPage) authPage.classList.add('hidden');
+                        if(langPage) langPage.classList.add('hidden'); 
+                        if(promoInstallModal) promoInstallModal.classList.add('hidden');
                         
                         window._currentUserId = userId;
                         
@@ -1942,10 +2115,12 @@
                                                 maintContent[0].body = data.maintenanceMessage;
                                                 if(maintIdx === 0) {
                                                     const bodyEl = document.getElementById('ui-body');
-                                                    if (data.maintenanceMessage.includes('Level IA')) {
-                                                        bodyEl.innerHTML = `<p><span class="text-violet-500 font-bold">Level IA</span> ${sanitizeHTML(data.maintenanceMessage.split('Level IA')[1] || '')}</p>`;
-                                                    } else {
-                                                        bodyEl.innerHTML = `<p>${sanitizeHTML(data.maintenanceMessage)}</p>`;
+                                                    if (bodyEl) {
+                                                        if (data.maintenanceMessage.includes('Level IA')) {
+                                                            bodyEl.innerHTML = `<p><span class="text-violet-500 font-bold">Level IA</span> ${sanitizeHTML(data.maintenanceMessage.split('Level IA')[1] || '')}</p>`;
+                                                        } else {
+                                                            bodyEl.innerHTML = `<p>${sanitizeHTML(data.maintenanceMessage)}</p>`;
+                                                        }
                                                     }
                                                 }
                                             }
@@ -1976,12 +2151,19 @@
                             try {
                                 onSnapshot(securityDocRef, (snap) => {
                                     if (snap.exists() && snap.data().isDisabled === true) {
-                                        document.getElementById('splashScreen').style.display = 'none';
-                                        document.getElementById('banScreen').classList.remove('hidden');
-                                        document.getElementById('banScreen').classList.add('flex');
+                                        const splash = document.getElementById('splashScreen');
+                                        const banS = document.getElementById('banScreen');
+                                        if(splash) splash.style.display = 'none';
+                                        if(banS) {
+                                            banS.classList.remove('hidden');
+                                            banS.classList.add('flex');
+                                        }
                                     } else {
-                                        document.getElementById('banScreen').classList.add('hidden');
-                                        document.getElementById('banScreen').classList.remove('flex');
+                                        const banS = document.getElementById('banScreen');
+                                        if(banS) {
+                                            banS.classList.add('hidden');
+                                            banS.classList.remove('flex');
+                                        }
                                     }
                                 }, (err) => console.warn("Ban listener ignoré."));
                             } catch(err) {}
@@ -1996,26 +2178,38 @@
                         updateStatus(true); 
                         listenForBroadcasts(); 
                         
-                        document.getElementById('userName').innerText = userName;
-                        document.getElementById('userMail').innerText = userEmail;
+                        const unEl = document.getElementById('userName');
+                        const umEl = document.getElementById('userMail');
+                        if(unEl) unEl.innerText = userName;
+                        if(umEl) umEl.innerText = userEmail;
                         
                         const avatarUrl = foundUserData.photoURL || foundUserData.picture || `https://ui-avatars.com/api/?name=${userName}&background=a855f7&color=fff`;
-                        document.getElementById('userAvatar').innerHTML = `<img src="${avatarUrl}" class="w-full h-full object-cover">`;
+                        const uaEl = document.getElementById('userAvatar');
+                        if(uaEl) uaEl.innerHTML = `<img src="${avatarUrl}" class="w-full h-full object-cover">`;
                         
-                        document.getElementById('welcomeName').innerText = userName;
-                        document.getElementById('welcomeAvatar').src = avatarUrl;
+                        const wnEl = document.getElementById('welcomeName');
+                        const waEl = document.getElementById('welcomeAvatar');
+                        if(wnEl) wnEl.innerText = userName;
+                        if(waEl) waEl.src = avatarUrl;
                         
                         if (isAutoLogin) {
-                            document.getElementById('splashScreen').style.display = 'none';
-                            welcomePage.classList.add('hidden');
-                            mainApp.classList.remove('hidden');
-                            mainApp.classList.add('flex');
+                            const splash = document.getElementById('splashScreen');
+                            const wPage = document.getElementById('welcomePage');
+                            const mApp = document.getElementById('mainApp');
+                            if(splash) splash.style.display = 'none';
+                            if(wPage) wPage.classList.add('hidden');
+                            if(mApp) {
+                                mApp.classList.remove('hidden');
+                                mApp.classList.add('flex');
+                            }
                             startNewChat(); 
                         } else {
-                            welcomePage.classList.remove('hidden'); 
+                            const wPage = document.getElementById('welcomePage');
+                            if(wPage) wPage.classList.remove('hidden'); 
                         }
                         
-                        document.getElementById('supportMail').href = `mailto:levelup.iao@gmail.com?subject=Support (ID: ${userId} - Nom: ${userName})`;
+                        const sMail = document.getElementById('supportMail');
+                        if(sMail) sMail.href = `mailto:levelup.iao@gmail.com?subject=Support (ID: ${userId} - Nom: ${userName})`;
 
                         try {
                             const dnaDoc = await getDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"));
@@ -2026,16 +2220,19 @@
                                 
                                 if (d.isThiabsMode !== undefined) { 
                                     isThiabsMode = d.isThiabsMode; 
-                                    if (!window.geoDisableThiabs) document.getElementById('thiabsModeToggle').checked = isThiabsMode; 
+                                    const tTog = document.getElementById('thiabsModeToggle');
+                                    if (!window.geoDisableThiabs && tTog) tTog.checked = isThiabsMode; 
                                 }
                                 if (d.isHollyMode !== undefined) { 
                                     isHollyMode = d.isHollyMode; 
-                                    if (!window.geoDisableHolly) document.getElementById('hollyModeToggle').checked = isHollyMode; 
+                                    const hTog = document.getElementById('hollyModeToggle');
+                                    if (!window.geoDisableHolly && hTog) hTog.checked = isHollyMode; 
                                 }
                                 
                                 if (isThiabsMode && isHollyMode) {
                                     isHollyMode = false;
-                                    document.getElementById('hollyModeToggle').checked = false;
+                                    const hTog = document.getElementById('hollyModeToggle');
+                                    if(hTog) hTog.checked = false;
                                 }
                                 
                                 if (window.geoDisableThiabs && isThiabsMode) isThiabsMode = false;
@@ -2047,8 +2244,16 @@
                                     if(isHollyMode) category = 'holly';
                                     currentModel = aiModels[category][d.model] ? d.model : (isThiabsMode ? 'motivation' : (isHollyMode ? 'confidente' : 'normal'));
                                 }
-                                if (d.hardcore !== undefined) { isHardcoreMode = d.hardcore; document.getElementById('hardcoreToggle').checked = isHardcoreMode; }
-                                if (d.responseLength) { currentResponseLength = d.responseLength; document.getElementById('lengthSelect').value = currentResponseLength; }
+                                if (d.hardcore !== undefined) { 
+                                    isHardcoreMode = d.hardcore; 
+                                    const hTog = document.getElementById('hardcoreToggle');
+                                    if(hTog) hTog.checked = isHardcoreMode; 
+                                }
+                                if (d.responseLength) { 
+                                    currentResponseLength = d.responseLength; 
+                                    const lSel = document.getElementById('lengthSelect');
+                                    if(lSel) lSel.value = currentResponseLength; 
+                                }
                             }
                             
                             const usageDoc = await getDoc(doc(db, "artifacts", appId, "users", userId, "settings", "usage"));
@@ -2069,9 +2274,10 @@
                         const indDb = document.getElementById('ind-db');
                         if (indDb) indDb.className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; 
                         if (!isAutoLogin) {
-                            document.getElementById('keyErrorMain').innerText = currentLang === 'fr' ? "Code d'accès incorrect ou expiré." : "Access code incorrect or expired.";
-                            errorDetailsSpan.classList.add('hidden');
-                            errorMsg.classList.remove('hidden');
+                            const errMain = document.getElementById('keyErrorMain');
+                            if(errMain) errMain.innerText = currentLang === 'fr' ? "Code d'accès incorrect ou expiré." : "Access code incorrect or expired.";
+                            if(errorDetailsSpan) errorDetailsSpan.classList.add('hidden');
+                            if(errorMsg) errorMsg.classList.remove('hidden');
                         } else {
                             localStorage.removeItem('thiabs_saved_key');
                             checkPromoInstall();
@@ -2081,16 +2287,19 @@
                     const indDb = document.getElementById('ind-db');
                     if (indDb) indDb.className = "w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_8px_#ef4444]"; 
                     if (!isAutoLogin) {
-                        document.getElementById('keyErrorMain').innerText = "Erreur de connexion (Base de données).";
-                        errorDetailsSpan.innerText = `Détails: ${e.message || e.code}`;
-                        errorDetailsSpan.classList.remove('hidden');
-                        errorMsg.classList.remove('hidden');
+                        const errMain = document.getElementById('keyErrorMain');
+                        if(errMain) errMain.innerText = "Erreur de connexion (Base de données).";
+                        if(errorDetailsSpan) {
+                            errorDetailsSpan.innerText = `Détails: ${e.message || e.code}`;
+                            errorDetailsSpan.classList.remove('hidden');
+                        }
+                        if(errorMsg) errorMsg.classList.remove('hidden');
                     } else {
                         checkPromoInstall();
                     }
                 }
                 
-                if (!isAutoLogin) {
+                if (!isAutoLogin && btn) {
                     btn.innerText = i18n[currentLang].verifyBtn; btn.disabled = false;
                 }
             }
@@ -2130,7 +2339,8 @@
                 
                 onSnapshot(q, (snap) => {
                     let totalSize = 0;
-                    historyList.innerHTML = '';
+                    const hList = document.getElementById('historyList');
+                    if(hList) hList.innerHTML = '';
 
                     snap.forEach(d => {
                         const data = d.data();
@@ -2184,24 +2394,29 @@
                                 if (currentSessionId === d.id) startNewChat();
                             } else {
                                 loadSession(d.id, data.messages, data.isThiabsMode, data.model, data.isHollyMode, data.isMarcoMode);
-                                historyModal.classList.add('hidden');
-                                window.closeSidebar();
+                                const hModal = document.getElementById('historyModal');
+                                if(hModal) hModal.classList.add('hidden');
+                                if (window.closeSidebar) window.closeSidebar();
                             }
                         };
-                        historyList.appendChild(item);
+                        if(hList) hList.appendChild(item);
                     });
 
                     let percentage = Math.min((totalSize / 300000) * 100, 100);
                     let storageBar = document.getElementById('storageBar');
-                    storageBar.style.width = percentage + '%';
-                    document.getElementById('storageLabel').innerText = Math.round(percentage) + '%';
+                    if(storageBar) storageBar.style.width = percentage + '%';
                     
-                    if (percentage < 50) {
-                        storageBar.style.backgroundColor = '#22c55e'; 
-                    } else if (percentage < 80) {
-                        storageBar.style.backgroundColor = '#eab308'; 
-                    } else {
-                        storageBar.style.backgroundColor = '#ef4444'; 
+                    const sLabel = document.getElementById('storageLabel');
+                    if(sLabel) sLabel.innerText = Math.round(percentage) + '%';
+                    
+                    if (storageBar) {
+                        if (percentage < 50) {
+                            storageBar.style.backgroundColor = '#22c55e'; 
+                        } else if (percentage < 80) {
+                            storageBar.style.backgroundColor = '#eab308'; 
+                        } else {
+                            storageBar.style.backgroundColor = '#ef4444'; 
+                        }
                     }
                 }, (err) => console.warn("History listener err:", err));
             }
@@ -2209,29 +2424,34 @@
             function startNewChat() {
                 currentSessionId = null;
                 currentSessionMessages = []; 
-                conversationContainer.innerHTML = '';
+                const cc = document.getElementById('conversationContainer');
+                if(cc) cc.innerHTML = '';
                 document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
             }
 
-            document.getElementById('newChatBtn').onclick = () => {
+            safeSetClick('newChatBtn', () => {
                 startNewChat();
-                historyModal.classList.add('hidden');
-                window.closeSidebar();
-            };
+                const hModal = document.getElementById('historyModal');
+                if(hModal) hModal.classList.add('hidden');
+                if (window.closeSidebar) window.closeSidebar();
+            });
 
-            document.getElementById('openHistoryModalBtn').onclick = () => {
-                window.closeSidebar();
-                historyModal.classList.remove('hidden');
-            };
+            safeSetClick('openHistoryModalBtn', () => {
+                if (window.closeSidebar) window.closeSidebar();
+                const hModal = document.getElementById('historyModal');
+                if(hModal) hModal.classList.remove('hidden');
+            });
             
-            document.getElementById('closeHistoryBtn').onclick = () => {
-                historyModal.classList.add('hidden');
-            };
+            safeSetClick('closeHistoryBtn', () => {
+                const hModal = document.getElementById('historyModal');
+                if(hModal) hModal.classList.add('hidden');
+            });
 
             function loadSession(id, messages, sessionIsThiabsMode, sessionModel, sessionIsHollyMode = false, sessionIsMarcoMode = false) {
                 currentSessionId = id;
                 currentSessionMessages = []; 
-                conversationContainer.innerHTML = '';
+                const cc = document.getElementById('conversationContainer');
+                if(cc) cc.innerHTML = '';
                 
                 const modeThiabsToLoad = sessionIsThiabsMode === true; 
                 const modeHollyToLoad = sessionIsHollyMode === true; 
@@ -2276,164 +2496,240 @@
                     });
                 }
                 document.querySelectorAll('.chat-item').forEach(el => el.classList.remove('active'));
-                chatArea.scrollTop = chatArea.scrollHeight;
+                const chatArea = document.getElementById('chatArea');
+                if(chatArea) chatArea.scrollTop = chatArea.scrollHeight;
             }
 
-            document.getElementById('openSidebar').onclick = () => { sidebar.classList.remove('translate-x-full'); appOverlay.classList.remove('hidden', 'overlay-active'); setTimeout(() => appOverlay.classList.add('overlay-active'), 10); };
-            window.closeSidebar = () => { sidebar.classList.add('translate-x-full'); appOverlay.classList.remove('overlay-active'); setTimeout(() => appOverlay.classList.add('hidden'), 400); };
-            document.getElementById('closeSidebar').onclick = window.closeSidebar;
-            appOverlay.onclick = window.closeSidebar;
+            safeSetClick('openSidebar', () => { 
+                const sidebar = document.getElementById('sidebar');
+                const appOverlay = document.getElementById('appOverlay');
+                if(sidebar) sidebar.classList.remove('translate-x-full'); 
+                if(appOverlay) {
+                    appOverlay.classList.remove('hidden', 'overlay-active'); 
+                    setTimeout(() => appOverlay.classList.add('overlay-active'), 10); 
+                }
+            });
+
+            window.closeSidebar = () => { 
+                const sidebar = document.getElementById('sidebar');
+                const appOverlay = document.getElementById('appOverlay');
+                if(sidebar) sidebar.classList.add('translate-x-full'); 
+                if(appOverlay) {
+                    appOverlay.classList.remove('overlay-active'); 
+                    setTimeout(() => appOverlay.classList.add('hidden'), 400); 
+                }
+            };
+
+            safeSetClick('closeSidebar', window.closeSidebar);
+            safeSetClick('appOverlay', window.closeSidebar);
             
-            document.getElementById('logoutBtn').onclick = () => { window.closeSidebar(); logoutModal.classList.remove('hidden'); };
-            document.getElementById('cancelLogoutBtn').onclick = () => logoutModal.classList.add('hidden');
-            document.getElementById('confirmLogoutBtn').onclick = async () => {
-                document.getElementById('confirmLogoutBtn').innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+            safeSetClick('logoutBtn', () => { 
+                if(window.closeSidebar) window.closeSidebar(); 
+                const logoutModal = document.getElementById('logoutModal');
+                if(logoutModal) logoutModal.classList.remove('hidden'); 
+            });
+            
+            safeSetClick('cancelLogoutBtn', () => {
+                const logoutModal = document.getElementById('logoutModal');
+                if(logoutModal) logoutModal.classList.add('hidden');
+            });
+            
+            safeSetClick('confirmLogoutBtn', async () => {
+                const btn = document.getElementById('confirmLogoutBtn');
+                if(btn) btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
                 localStorage.removeItem('thiabs_saved_key');
                 localStorage.removeItem('thiabs_saved_lang');
                 if (auth.currentUser) {
                     try { await deleteUser(auth.currentUser); } catch(e) {}
                 }
                 window.location.reload();
-            };
+            });
 
-            document.getElementById('installMenuBtn').onclick = () => { window.closeSidebar(); installModal.classList.remove('hidden'); };
-            document.getElementById('closeInstallModalBtn').onclick = () => installModal.classList.add('hidden');
-            document.getElementById('cguMenuBtn').onclick = () => { window.closeSidebar(); cguModal.classList.remove('hidden'); };
-            document.getElementById('closeCguModalBtn').onclick = () => cguModal.classList.add('hidden');
-            document.getElementById('infoMenuBtn').onclick = () => { window.closeSidebar(); infoModal.classList.remove('hidden'); };
-            document.getElementById('closeInfoModalBtn').onclick = () => infoModal.classList.add('hidden');
-            
-            document.getElementById('openFeedbackBtn').onclick = () => { window.closeSidebar(); document.getElementById('feedbackModal').classList.remove('hidden'); };
-            document.getElementById('closeFeedbackBtn').onclick = () => document.getElementById('feedbackModal').classList.add('hidden');
-            
-            document.getElementById('openReportBtn').onclick = () => { window.closeSidebar(); document.getElementById('reportModal').classList.remove('hidden'); };
-            document.getElementById('closeReportBtn').onclick = () => document.getElementById('reportModal').classList.add('hidden');
-
-            document.getElementById('openPersonalizationBtn').onclick = () => { window.closeSidebar(); personalizationModal.classList.remove('hidden'); };
-            document.getElementById('closePersonalizationBtn').onclick = () => personalizationModal.classList.add('hidden');
-
-            const stars = document.querySelectorAll('.star-rating i');
-            stars.forEach(star => {
-                star.onclick = (e) => {
-                    currentStarRating = parseInt(e.target.getAttribute('data-rating'));
-                    stars.forEach(s => {
-                        if(parseInt(s.getAttribute('data-rating')) <= currentStarRating) s.classList.add('active');
-                        else s.classList.remove('active');
-                    });
-                };
+            safeSetClick('installMenuBtn', () => { 
+                if(window.closeSidebar) window.closeSidebar(); 
+                const installModal = document.getElementById('installModal');
+                if(installModal) installModal.classList.remove('hidden'); 
             });
             
-            document.getElementById('submitFeedbackBtn').onclick = async () => {
-                const text = document.getElementById('feedbackText').value.trim();
+            safeSetClick('cguMenuBtn', () => { 
+                if(window.closeSidebar) window.closeSidebar(); 
+                const cguModal = document.getElementById('cguModal');
+                if(cguModal) cguModal.classList.remove('hidden'); 
+            });
+            
+            safeSetClick('closeCguModalBtn', () => {
+                const cguModal = document.getElementById('cguModal');
+                if(cguModal) cguModal.classList.add('hidden');
+            });
+            
+            safeSetClick('infoMenuBtn', () => { 
+                if(window.closeSidebar) window.closeSidebar(); 
+                const infoModal = document.getElementById('infoModal');
+                if(infoModal) infoModal.classList.remove('hidden'); 
+            });
+            
+            safeSetClick('closeInfoModalBtn', () => {
+                const infoModal = document.getElementById('infoModal');
+                if(infoModal) infoModal.classList.add('hidden');
+            });
+            
+            safeSetClick('openFeedbackBtn', () => { 
+                if(window.closeSidebar) window.closeSidebar(); 
+                const feedbackModal = document.getElementById('feedbackModal');
+                if(feedbackModal) feedbackModal.classList.remove('hidden'); 
+            });
+            
+            safeSetClick('closeFeedbackBtn', () => {
+                const feedbackModal = document.getElementById('feedbackModal');
+                if(feedbackModal) feedbackModal.classList.add('hidden');
+            });
+            
+            safeSetClick('openReportBtn', () => { 
+                if(window.closeSidebar) window.closeSidebar(); 
+                const reportModal = document.getElementById('reportModal');
+                if(reportModal) reportModal.classList.remove('hidden'); 
+            });
+            
+            safeSetClick('closeReportBtn', () => {
+                const reportModal = document.getElementById('reportModal');
+                if(reportModal) reportModal.classList.add('hidden'); 
+            });
+
+            safeSetClick('openPersonalizationBtn', () => { 
+                if(window.closeSidebar) window.closeSidebar(); 
+                const pModal = document.getElementById('personalizationModal');
+                if(pModal) pModal.classList.remove('hidden'); 
+            });
+            
+            safeSetClick('closePersonalizationBtn', () => {
+                const pModal = document.getElementById('personalizationModal');
+                if(pModal) pModal.classList.add('hidden'); 
+            });
+
+            safeSetClick('submitFeedbackBtn', async () => {
+                const fText = document.getElementById('feedbackText');
+                if(!fText) return;
+                const text = fText.value.trim();
                 if (currentStarRating === 0 && text === '') return;
                 const btn = document.getElementById('submitFeedbackBtn');
-                btn.innerText = "Envoi...";
+                if(btn) btn.innerText = "Envoi...";
                 
                 try {
                     await addDoc(collection(db, "artifacts", appId, "public", "data", "feedbacks"), { 
-                        rating: currentStarRating, 
-                        comment: text, 
-                        date: Date.now(),
-                        userName: currentUserName,    
-                        userEmail: currentUserMail,
-                        userId: userId
+                        rating: currentStarRating, comment: text, date: Date.now(), userName: currentUserName, userEmail: currentUserMail, userId: userId
                     });
-                    document.getElementById('feedbackModal').classList.add('hidden'); document.getElementById('feedbackText').value = '';
+                    const fModal = document.getElementById('feedbackModal');
+                    if(fModal) fModal.classList.add('hidden'); 
+                    fText.value = '';
+                    const stars = document.querySelectorAll('.star-rating i');
                     stars.forEach(s => s.classList.remove('active')); currentStarRating = 0; window.showToast("Merci pour votre avis ! ⭐");
                 } catch(e) { window.showToast("Erreur d'envoi", true); console.warn(e); }
-                btn.innerText = "Envoyer l'avis";
-            };
+                if(btn) btn.innerText = "Envoyer l'avis";
+            });
             
-            document.getElementById('submitReportBtn').onclick = async () => {
-                const category = document.getElementById('reportCategory').value;
-                const text = document.getElementById('reportText').value.trim();
+            safeSetClick('submitReportBtn', async () => {
+                const rCat = document.getElementById('reportCategory');
+                const rText = document.getElementById('reportText');
+                if(!rCat || !rText) return;
                 
-                if (!category || category === '') {
-                    window.showToast(currentLang === 'fr' ? "Veuillez sélectionner un problème." : "Please select a problem.", true);
-                    return;
-                }
-                if (text === '') {
-                    window.showToast(currentLang === 'fr' ? "Veuillez décrire le problème." : "Please describe the problem.", true);
-                    return;
-                }
-
+                const category = rCat.value;
+                const text = rText.value.trim();
+                
+                if (!category || category === '') { window.showToast(currentLang === 'fr' ? "Veuillez sélectionner un problème." : "Please select a problem.", true); return; }
+                if (text === '') { window.showToast(currentLang === 'fr' ? "Veuillez décrire le problème." : "Please describe the problem.", true); return; }
+                
                 const btn = document.getElementById('submitReportBtn');
-                btn.innerText = "Envoi...";
+                if(btn) btn.innerText = "Envoi...";
                 
                 try {
                     await addDoc(collection(db, "artifacts", appId, "public", "data", "reports"), { 
-                        category: category, 
-                        description: text, 
-                        date: Date.now(),
-                        userName: currentUserName,    
-                        userEmail: currentUserMail,
-                        userId: userId
+                        category: category, description: text, date: Date.now(), userName: currentUserName, userEmail: currentUserMail, userId: userId
                     });
-                    document.getElementById('reportModal').classList.add('hidden'); document.getElementById('reportText').value = ''; document.getElementById('reportCategory').value = ''; window.showToast("Rapport envoyé. 🛠️");
+                    const rModal = document.getElementById('reportModal');
+                    if(rModal) rModal.classList.add('hidden'); 
+                    rText.value = ''; rCat.value = ''; window.showToast("Rapport envoyé. 🛠️");
                 } catch(e) { window.showToast("Erreur d'envoi", true); console.warn(e); }
-                btn.innerText = "Envoyer";
-            };
+                if(btn) btn.innerText = "Envoyer";
+            });
 
-            document.getElementById('savePersonalizationBtn').onclick = async () => {
+            safeSetClick('savePersonalizationBtn', async () => {
                 const btn = document.getElementById('savePersonalizationBtn');
+                if(!btn) return;
                 const originalText = btn.innerText;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
                 
-                currentResponseLength = document.getElementById('lengthSelect').value;
+                const lSelect = document.getElementById('lengthSelect');
+                if(lSelect) currentResponseLength = lSelect.value;
                 
                 const category = isThiabsMode ? 'thiabs' : 'level';
                 const dnaKey = `${category}_${currentModel}`;
-                dnaPrompts[dnaKey] = document.getElementById('customDNA').value;
+                const cDna = document.getElementById('customDNA');
+                if(cDna) dnaPrompts[dnaKey] = cDna.value;
                 
                 if (userId) {
-                    await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { 
-                        responseLength: currentResponseLength,
-                        prompts: dnaPrompts 
-                    }, { merge: true });
+                    await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { responseLength: currentResponseLength, prompts: dnaPrompts }, { merge: true });
                 }
                 
                 window.showToast(currentLang === 'fr' ? "Préférences enregistrées." : "Preferences saved.");
                 btn.innerHTML = '<i class="fas fa-check text-sm"></i>';
-                setTimeout(() => {
-                    btn.innerText = originalText;
-                    personalizationModal.classList.add('hidden');
+                setTimeout(() => { 
+                    btn.innerText = originalText; 
+                    const pModal = document.getElementById('personalizationModal');
+                    if(pModal) pModal.classList.add('hidden'); 
                 }, 1000);
-            };
+            });
 
             const attachBtn = document.getElementById('attachBtn');
             const attachMenu = document.getElementById('attachMenu');
             const imgInput = document.getElementById('imgInput');
             const docInput = document.getElementById('docInput');
 
-            attachBtn.onclick = (e) => {
-                e.stopPropagation();
-                attachMenu.classList.toggle('hidden-menu');
-            };
+            if (attachBtn && attachMenu) {
+                attachBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    attachMenu.classList.toggle('hidden-menu');
+                };
 
-            document.addEventListener('click', (e) => {
-                if(!attachMenu.contains(e.target) && !attachBtn.contains(e.target)) {
-                    attachMenu.classList.add('hidden-menu');
-                }
+                document.addEventListener('click', (e) => {
+                    if(!attachMenu.contains(e.target) && !attachBtn.contains(e.target)) {
+                        attachMenu.classList.add('hidden-menu');
+                    }
+                });
+            }
+
+            safeSetClick('importImgBtn', () => { 
+                if(attachMenu) attachMenu.classList.add('hidden-menu'); 
+                if(imgInput) imgInput.click(); 
             });
-
-            document.getElementById('importImgBtn').onclick = () => { attachMenu.classList.add('hidden-menu'); imgInput.click(); };
-            document.getElementById('importDocBtn').onclick = () => { attachMenu.classList.add('hidden-menu'); docInput.click(); };
             
-            document.getElementById('importMarcoBtn').onclick = () => {
-                isMarcoMode = !isMarcoMode;
-                updateMarcoUI();
-                attachMenu.classList.add('hidden-menu');
-            };
+            safeSetClick('importDocBtn', () => { 
+                if(attachMenu) attachMenu.classList.add('hidden-menu'); 
+                if(docInput) docInput.click(); 
+            });
             
-            document.getElementById('importLinkBtn').onclick = () => { 
-                attachMenu.classList.add('hidden-menu'); 
-                document.getElementById('linkInputUrl').value = ''; 
-                document.getElementById('linkModal').classList.remove('hidden'); 
-            };
-            document.getElementById('closeLinkBtn').onclick = () => document.getElementById('linkModal').classList.add('hidden');
+            safeSetClick('importMarcoBtn', () => { 
+                isMarcoMode = !isMarcoMode; 
+                updateMarcoUI(); 
+                if(attachMenu) attachMenu.classList.add('hidden-menu'); 
+            });
+            
+            safeSetClick('importLinkBtn', () => { 
+                if(attachMenu) attachMenu.classList.add('hidden-menu'); 
+                const linkInput = document.getElementById('linkInputUrl');
+                if(linkInput) linkInput.value = ''; 
+                const linkModal = document.getElementById('linkModal');
+                if(linkModal) linkModal.classList.remove('hidden'); 
+            });
+            
+            safeSetClick('closeLinkBtn', () => {
+                const linkModal = document.getElementById('linkModal');
+                if(linkModal) linkModal.classList.add('hidden');
+            });
             
             function renderAttachments() {
                 const container = document.getElementById('attachmentsContainer');
+                if(!container) return;
+                
                 container.innerHTML = '';
                 if (currentAttachments.length === 0) {
                     container.classList.add('hidden');
@@ -2460,7 +2756,7 @@
                             <p class="font-bold text-white truncate text-[11px]">${sanitizeHTML(att.name)}</p>
                             <p class="text-[9px] text-white/50">${att.isLink ? 'Lien' : (att.size || 'Fichier')}</p>
                         </div>
-                        <button class="text-red-400 hover:text-red-300 p-1" onclick="window.removeAttachment(${index})"><i class="fas fa-times text-sm"></i></button>
+                        <button class="text-red-400 hover:text-red-300 p-1" onclick="window.removeAttachment(${index})"><i class="fas fa-times text-sm pointer-events-none"></i></button>
                     `;
                     container.appendChild(pill);
                 });
@@ -2471,8 +2767,11 @@
                 renderAttachments();
             };
 
-            document.getElementById('submitLinkBtn').onclick = () => {
-                const url = document.getElementById('linkInputUrl').value.trim();
+            safeSetClick('submitLinkBtn', () => {
+                const linkInputUrl = document.getElementById('linkInputUrl');
+                if(!linkInputUrl) return;
+                
+                const url = linkInputUrl.value.trim();
                 if (!/^https?:\/\//i.test(url)) {
                     window.showToast(currentLang === 'fr' ? "Format d'URL invalide. Le protocole http:// ou https:// est requis." : "Invalid URL format. http:// or https:// is required.", true);
                     return;
@@ -2484,9 +2783,10 @@
                     }
                     currentAttachments.push({ name: "Lien Web", url: url, isLink: true });
                     renderAttachments();
-                    document.getElementById('linkModal').classList.add('hidden');
+                    const linkModal = document.getElementById('linkModal');
+                    if(linkModal) linkModal.classList.add('hidden');
                 }
-            };
+            });
 
             const processFile = async (file) => {
                 if(!file) return;
@@ -2499,10 +2799,16 @@
                 const usage = await checkUsage('upload');
                 if(!usage.allowed) { 
                     window.showToast(currentLang === 'fr' ? "Limite d'envoi atteinte pour aujourd'hui." : "Upload limit reached for today.", true); 
-                    imgInput.value = ''; docInput.value = ''; 
+                    if(imgInput) imgInput.value = ''; 
+                    if(docInput) docInput.value = ''; 
                     return; 
                 }
-                if(file.size > 5 * 1024 * 1024) { window.showToast(currentLang === 'fr' ? "Volume de données dépassé (Limite : 5Mo)." : "Data volume exceeded (Limit: 5MB).", true); imgInput.value = ''; docInput.value = ''; return; }
+                if(file.size > 5 * 1024 * 1024) { 
+                    window.showToast(currentLang === 'fr' ? "Volume de données dépassé (Limite : 5Mo)." : "Data volume exceeded (Limit: 5MB).", true); 
+                    if(imgInput) imgInput.value = ''; 
+                    if(docInput) docInput.value = ''; 
+                    return; 
+                }
 
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -2519,59 +2825,66 @@
                     renderAttachments();
                 };
                 reader.readAsDataURL(file);
-                imgInput.value = ''; docInput.value = '';
+                if(imgInput) imgInput.value = ''; 
+                if(docInput) docInput.value = ''; 
             };
 
-            imgInput.onchange = (e) => processFile(e.target.files[0]);
-            docInput.onchange = (e) => processFile(e.target.files[0]);
+            if (imgInput) imgInput.onchange = (e) => processFile(e.target.files[0]);
+            if (docInput) docInput.onchange = (e) => processFile(e.target.files[0]);
 
             const dropZone = document.getElementById('dropZoneOverlay');
             let dragCounter = 0;
             
-            document.addEventListener('dragenter', (e) => {
-                e.preventDefault();
-                if (e.dataTransfer.types.includes('Files') || e.dataTransfer.types.includes('text/uri-list') || e.dataTransfer.types.includes('text/plain')) {
-                    dragCounter++;
-                    dropZone.classList.remove('opacity-0', 'pointer-events-none');
-                }
-            });
-            
-            document.addEventListener('dragover', (e) => { e.preventDefault(); });
-            
-            document.addEventListener('dragleave', (e) => {
-                e.preventDefault();
-                dragCounter--;
-                if (dragCounter <= 0) {
+            if (dropZone) {
+                document.addEventListener('dragenter', (e) => {
+                    e.preventDefault();
+                    if (e.dataTransfer.types.includes('Files') || e.dataTransfer.types.includes('text/uri-list') || e.dataTransfer.types.includes('text/plain')) {
+                        dragCounter++;
+                        dropZone.classList.remove('opacity-0', 'pointer-events-none');
+                    }
+                });
+                
+                document.addEventListener('dragover', (e) => { e.preventDefault(); });
+                
+                document.addEventListener('dragleave', (e) => {
+                    e.preventDefault();
+                    dragCounter--;
+                    if (dragCounter <= 0) {
+                        dragCounter = 0;
+                        dropZone.classList.add('opacity-0', 'pointer-events-none');
+                    }
+                });
+                
+                document.addEventListener('drop', (e) => {
+                    e.preventDefault();
                     dragCounter = 0;
                     dropZone.classList.add('opacity-0', 'pointer-events-none');
-                }
-            });
-            
-            document.addEventListener('drop', (e) => {
-                e.preventDefault();
-                dragCounter = 0;
-                dropZone.classList.add('opacity-0', 'pointer-events-none');
-                
-                if (!userId) {
-                    window.showToast(currentLang === 'fr' ? "Connectez-vous d'abord." : "Please login first.", true);
-                    return;
-                }
+                    
+                    if (!userId) {
+                        window.showToast(currentLang === 'fr' ? "Connectez-vous d'abord." : "Please login first.", true);
+                        return;
+                    }
 
-                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                    const file = e.dataTransfer.files[0];
-                    if (file.type.startsWith('image/') || file.type === 'application/pdf') {
-                        processFile(file);
+                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                        const file = e.dataTransfer.files[0];
+                        if (file.type.startsWith('image/') || file.type === 'application/pdf') {
+                            processFile(file);
+                        } else {
+                            window.showToast(currentLang === 'fr' ? "⚠️ Format non pris en charge. Veuillez utiliser des images ou des PDF." : "⚠️ Unsupported format. Please use images or PDFs.", true);
+                        }
                     } else {
-                        window.showToast(currentLang === 'fr' ? "⚠️ Format non pris en charge. Veuillez utiliser des images ou des PDF." : "⚠️ Unsupported format. Please use images or PDFs.", true);
+                        const url = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain');
+                        if (url && url.match(/^https?:\/\//)) {
+                            const linkInputUrl = document.getElementById('linkInputUrl');
+                            if(linkInputUrl) {
+                                linkInputUrl.value = url.trim();
+                                const submitLinkBtn = document.getElementById('submitLinkBtn');
+                                if(submitLinkBtn) submitLinkBtn.click();
+                            }
+                        }
                     }
-                } else {
-                    const url = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain');
-                    if (url && url.match(/^https?:\/\//)) {
-                        document.getElementById('linkInputUrl').value = url.trim();
-                        document.getElementById('submitLinkBtn').click();
-                    }
-                }
-            });
+                });
+            }
 
             async function performGeneration(val, attachmentsToProcess, isRegen = false) {
                 if (apiKeys.length === 0) {
@@ -2579,7 +2892,6 @@
                     return;
                 }
                 
-                // 1. PRÉPARATION ET AFFICHAGE IMMÉDIAT DU MESSAGE CLIENT (ZÉRO LAG)
                 let userAttachHtml = "";
                 let dbAttachMarker = "";
                 let requestParts = [];
@@ -2618,13 +2930,15 @@
                     currentSessionMessages.push({ role: "user", parts: requestParts });
                 }
                 
-                document.getElementById('aiTyping').classList.remove('hidden');
-                chatArea.scrollTop = chatArea.scrollHeight;
+                const aiTyping = document.getElementById('aiTyping');
+                if (aiTyping) aiTyping.classList.remove('hidden');
+                
+                const chatArea = document.getElementById('chatArea');
+                if (chatArea) chatArea.scrollTop = chatArea.scrollHeight;
 
-                // 2. VÉRIFICATION DES QUOTAS EN ARRIÈRE-PLAN (Après l'affichage)
                 const msgUsage = await checkUsage('msg');
                 if(!msgUsage.allowed) { 
-                    document.getElementById('aiTyping').classList.add('hidden');
+                    if (aiTyping) aiTyping.classList.add('hidden');
                     displayAIMessage(currentLang === 'fr' ? "⚠️ **Quotas épuisés.**\nVous avez atteint votre limite de messages pour aujourd'hui. Vos quotas seront réinitialisés demain." : "⚠️ **Quotas depleted.**\nYou have reached your message limit for today. Your quotas will reset tomorrow.", false);
                     return; 
                 }
@@ -2632,7 +2946,7 @@
                 isGenerating = true;
                 abortController = new AbortController();
                 const sendBtn = document.getElementById('sendBtn');
-                sendBtn.innerHTML = '<i class="fas fa-square text-base pointer-events-none text-red-500"></i>';
+                if (sendBtn) sendBtn.innerHTML = '<i class="fas fa-square text-base pointer-events-none text-red-500"></i>';
 
                 document.querySelectorAll('.regen-btn').forEach(btn => btn.classList.add('hidden'));
 
@@ -2662,13 +2976,14 @@
                 : `
                 ⚠️ STRICT ROLE RULE: Stay 100% in your current character. UNDER NO CIRCUMSTANCES play the role of or imitate the other personalities (Thiab's, Holly, Marco). NEVER mention their existence unless the user directly asks about them.`;
                 
+                let marcoPrompt = "";
                 if (isMarcoMode) {
                     let currentPersona = "Level IA 🧠 (pro, analytique)";
                     let tag = "LEVEL";
                     if (isThiabsMode) { currentPersona = "Thiab's 🌟 (coach strict, motivateur)"; tag = "THIAB'S"; }
                     else if (isHollyMode) { currentPersona = "Holly 🌸 (douce, empathique)"; tag = "HOLLY"; }
 
-                    const marcoPrompt = currentLang === 'fr' 
+                    marcoPrompt = currentLang === 'fr' 
                         ? `\n\n🎮 MODE COLLABORATION (MARCO EN ARRÈRE-PLAN) : Marco 🎮 (le pote chill, fun, culture pop) est connecté avec ${currentPersona}.
                         ⚠️ RÈGLES D'INTERVENTION DE MARCO :
                         1. PREMIER MESSAGE SEULEMENT : Marco fait une toute petite apparition ("Coucou bro je suis là si besoin 🎮") et ${tag} prévient l'utilisateur qu'ils peuvent collaborer et lui demande avec qui il veut parler.
@@ -2868,7 +3183,8 @@
                             currentKeyIndex = (currentKeyIndex + 1) % apiKeys.length;
                         } else {
                             consecutiveErrors++;
-                            document.getElementById('aiTyping').classList.add('hidden');
+                            const aiTyping = document.getElementById('aiTyping');
+                            if (aiTyping) aiTyping.classList.add('hidden');
                             stopGeneration();
                             let supportButtonHtml = "";
                             if (consecutiveErrors >= 2) {
@@ -2889,7 +3205,8 @@
                         try { await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { hasSeenGrandIntro: true }, { merge: true }); } catch(err) {}
                     }
 
-                    document.getElementById('aiTyping').classList.add('hidden');
+                    const aiTyping = document.getElementById('aiTyping');
+                    if (aiTyping) aiTyping.classList.add('hidden');
                     displayAIMessage(aiText, true, sourcesHtml);
                     
                     currentSessionMessages.push({ role: "model", parts: [{ text: aiText }] });
