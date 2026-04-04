@@ -1826,11 +1826,13 @@ const existingKey = lkFoundUserData.key || "Introuvable";
 const userName = lkFoundUserData.name || "Utilisateur";
 
 try {
-await emailjs.send("service_levelupia", "template_lostkey", {
+await emailjs.send("service_3uvgrlc", "template_mx0x5yd", {
 to_email: lkSearchEmail,
 user_name: userName,
 user_key: existingKey,
 app_name: "Level IA"
+}, {
+publicKey: "VrVe_JPrKWbUpKJ3p"
 });
 
 await addDoc(collection(db, "artifacts", appId, "public", "data", "key_recovery"), {
