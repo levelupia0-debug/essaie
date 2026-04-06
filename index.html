@@ -292,8 +292,8 @@
             <div class="mx-auto w-16 h-16 rounded-2xl bg-purple-500/20 flex items-center justify-center mb-2 border border-purple-500/50 shadow-inner shrink-0">
                 <i id="promoIcon" class="fas fa-rocket text-2xl text-purple-400"></i>
             </div>
-            <h2 id="promoTitle" class="text-xl font-bold text-white uppercase tracking-widest leading-tight shrink-0">Passe au niveau<br><span class="text-purple-400">Supérieur</span></h2>
-            <p id="promoDesc" class="text-[13px] text-white/70 leading-relaxed font-medium px-2 shrink-0">Pour une expérience fluide, rapide et des notifications intelligentes, installe l'application Level IA sur ton appareil dès maintenant.</p>
+            <h2 id="promoTitle" class="text-xl font-bold text-white uppercase tracking-widest leading-tight shrink-0">Application<br><span class="text-purple-400">Native</span></h2>
+            <p id="promoDesc" class="text-[13px] text-white/70 leading-relaxed font-medium px-2 shrink-0">Transformez ce site en véritable application mobile ! Profitez d'un accès hors-ligne, d'une interface plein écran ultra-rapide et de notifications sécurisées.</p>
             
             <div class="space-y-3 pt-4 shrink-0 pb-2">
                 <button id="promoInstallBtn" class="w-full bg-purple-600 text-white py-3.5 rounded-xl font-bold text-[12px] uppercase tracking-[0.1em] hover:bg-purple-500 active:scale-95 transition-all shadow-[0_0_15px_rgba(168,85,247,0.4)] flex items-center justify-center gap-2">
@@ -488,9 +488,13 @@
             <h2 id="installModalTitle" class="text-lg font-bold text-white uppercase tracking-widest shrink-0">Installer l'App</h2>
             <p id="installModalDesc" class="text-[13px] text-white/60 leading-relaxed px-2 shrink-0">Ajoutez l'application sur votre écran d'accueil :</p>
             <div class="space-y-4 text-left bg-black/40 p-4 rounded-xl border border-white/5 shrink-0">
-                <p id="installiOS" class="text-[12px] text-white/80 leading-relaxed font-medium">🍎 iOS (Safari) : Appuyez sur Partager <i class="fas fa-share-square mx-1"></i> puis 'Sur l'écran d'accueil'.</p>
+                <div id="installiOS" class="text-left">
+                    <div class='flex items-center gap-2 mb-2 text-white'><i class='fab fa-apple text-xl'></i><strong class='text-[13px] tracking-wide'>Apple iOS (Safari)</strong></div><div class='pl-7 space-y-2 text-[11px] text-white/70'><div><span class='bg-white/10 px-1.5 py-0.5 rounded text-white mr-1'>1</span> Appuyez sur <strong>Partager</strong> <i class='fas fa-share-square mx-1 text-purple-400'></i> dans la barre du bas.</div><div><span class='bg-white/10 px-1.5 py-0.5 rounded text-white mr-1'>2</span> Faites défiler et choisissez <strong>Sur l'écran d'accueil</strong> <i class='fas fa-plus-square mx-1 text-purple-400'></i>.</div></div>
+                </div>
                 <div class="w-full h-px bg-white/10"></div>
-                <p id="installAndroid" class="text-[12px] text-white/80 leading-relaxed font-medium">🤖 Android (Chrome) : Appuyez sur Menu <i class="fas fa-ellipsis-v mx-1"></i> puis 'Ajouter à l'écran d'accueil'.</p>
+                <div id="installAndroid" class="text-left">
+                    <div class='flex items-center gap-2 mb-2 text-white'><i class='fab fa-android text-green-400 text-xl'></i><strong class='text-[13px] tracking-wide'>Android (Chrome)</strong></div><div class='pl-7 space-y-2 text-[11px] text-white/70'><div><span class='bg-white/10 px-1.5 py-0.5 rounded text-white mr-1'>1</span> Appuyez sur le <strong>Menu</strong> <i class='fas fa-ellipsis-v mx-1 text-purple-400'></i> en haut à droite.</div><div><span class='bg-white/10 px-1.5 py-0.5 rounded text-white mr-1'>2</span> Sélectionnez <strong>Ajouter à l'écran d'accueil</strong> <i class='fas fa-mobile-alt mx-1 text-purple-400'></i>.</div></div>
+                </div>
             </div>
             <button id="closeInstallModalBtn" class="w-full bg-white/10 text-white py-3.5 rounded-xl font-semibold text-[11px] uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all mt-4 shrink-0 mb-2">Fermer</button>
         </div>
@@ -580,23 +584,23 @@
             <h2 id="cguModalTitle" class="text-lg font-bold text-white uppercase tracking-widest shrink-0">Conditions (CGU)</h2>
             <div class="space-y-4 text-left bg-black/40 p-5 rounded-xl border border-white/5 overflow-y-auto no-scrollbar flex-1">
                 <p id="cguText1" class="text-[13px] text-white/80 leading-relaxed text-justify">
-                    <strong class="text-blue-400 block mb-0.5">1. ÉTHIQUE ET BIENVEILLANCE :</strong> Notre application a été créée dans le but exclusif d'aider, de protéger, d'informer et de faire grandir ses utilisateurs. L'IA est programmée pour refuser toute requête malveillante, dangereuse ou illégale.
+                    <strong class="text-blue-400 block mb-0.5 flex items-center gap-1.5"><i class="fas fa-balance-scale"></i> 1. ÉTHIQUE ET BIENVEILLANCE :</strong> Notre application a été créée dans le but exclusif d'aider, de protéger, d'informer et de faire grandir ses utilisateurs. L'IA est programmée pour refuser toute requête malveillante, dangereuse ou illégale.
                 </p>
                 <div class="w-full h-px bg-white/10"></div>
                 <p id="cguText2" class="text-[13px] text-white/80 leading-relaxed text-justify">
-                    <strong class="text-blue-400 block mb-0.5">2. RESPONSABILITÉ DE L'UTILISATEUR :</strong> En utilisant Level IA, vous prenez l'entière responsabilité de vos actes et de la façon dont vous interprétez ou utilisez les réponses générées. Vous êtes maître de vos décisions.
+                    <strong class="text-blue-400 block mb-0.5 flex items-center gap-1.5"><i class="fas fa-user-shield"></i> 2. RESPONSABILITÉ DE L'UTILISATEUR :</strong> En utilisant Level IA, vous prenez l'entière responsabilité de vos actes et de la façon dont vous interprétez ou utilisez les réponses générées. Vous êtes maître de vos décisions.
                 </p>
                 <div class="w-full h-px bg-white/10"></div>
                 <p id="cguText3" class="text-[13px] text-white/80 leading-relaxed text-justify">
-                    <strong class="text-blue-400 block mb-0.5">3. ABSENCE DE GARANTIE :</strong> Bien que nos modèles soient très avancés, l'IA peut parfois commettre erreurs. Ses conseils ne remplacent en aucun cas l'avis d'un professionnel qualifié.
+                    <strong class="text-blue-400 block mb-0.5 flex items-center gap-1.5"><i class="fas fa-exclamation-triangle"></i> 3. ABSENCE DE GARANTIE :</strong> Bien que nos modèles soient très avancés, l'IA peut parfois commettre erreurs. Ses conseils ne remplacent en aucun cas l'avis d'un professionnel qualifié.
                 </p>
                 <div class="w-full h-px bg-white/10"></div>
                 <p id="cguText4" class="text-[13px] text-white/80 leading-relaxed text-justify">
-                    <strong class="text-blue-400 block mb-0.5">4. PROTECTION LÉGALE :</strong> Les développeurs déclinent toute responsabilité en cas de dommages directs ou indirects liés à l'utilisation de ce service.
+                    <strong class="text-blue-400 block mb-0.5 flex items-center gap-1.5"><i class="fas fa-gavel"></i> 4. PROTECTION LÉGALE :</strong> Les développeurs déclinent toute responsabilité en cas de dommages directs ou indirects liés à l'utilisation de ce service.
                 </p>
                 <div class="w-full h-px bg-white/10"></div>
                 <p id="cguText5" class="text-[13px] text-white/80 leading-relaxed text-justify">
-                    <strong class="text-blue-400 block mb-0.5">5. ÂGE REQUIS :</strong> Vous devez avoir au minimum 16 ans pour utiliser les services de cette intelligence artificielle.
+                    <strong class="text-blue-400 block mb-0.5 flex items-center gap-1.5"><i class="fas fa-user-check"></i> 5. ÂGE REQUIS :</strong> Vous devez avoir au minimum 16 ans pour utiliser les services de cette intelligence artificielle.
                 </p>
             </div>
             <button id="closeCguModalBtn" class="w-full bg-white/10 text-white py-3.5 rounded-xl font-semibold text-[12px] uppercase tracking-widest hover:bg-white/20 active:scale-95 transition-all shrink-0">Accepter & Fermer</button>
@@ -611,15 +615,15 @@
             <h2 id="infoModalTitle" class="text-lg font-bold text-white uppercase tracking-widest shrink-0">À propos de l'Application</h2>
             <div class="space-y-4 text-left bg-black/40 p-5 rounded-xl border border-white/5 overflow-y-auto no-scrollbar flex-1">
                 <p id="infoText1" class="text-[13px] text-white/80 leading-relaxed text-justify">
-                    <strong class="text-emerald-400 block mb-0.5">🧠 MOTEUR IA (GEMINI) :</strong> L'intelligence de l'application est propulsée par le puissant moteur <strong>Gemini 2.5 Flash</strong> (développé par Google). Ce moteur garantit une capacité d'analyse fulgurante et une connexion au Web en temps réel.
+                    <strong class="text-emerald-400 block mb-0.5 flex items-center gap-1.5"><i class="fas fa-brain"></i> MOTEUR IA (GEMINI) :</strong> L'intelligence de l'application est propulsée par le puissant moteur <strong>Gemini 2.5 Flash</strong> (développé par Google). Ce moteur garantit une capacité d'analyse fulgurante et une connexion au Web en temps réel.
                 </p>
                 <div class="w-full h-px bg-white/10"></div>
                 <p id="infoText2" class="text-[13px] text-white/80 leading-relaxed text-justify">
-                    <strong class="text-emerald-400 block mb-0.5">🔒 ARCHITECTURE & SÉCURITÉ :</strong> Toutes vos données sont hébergées sur l'infrastructure ultra-sécurisée de <strong>Google Cloud (Firebase Firestore)</strong>. La sécurité est au cœur de notre développement.
+                    <strong class="text-emerald-400 block mb-0.5 flex items-center gap-1.5"><i class="fas fa-shield-alt"></i> ARCHITECTURE & SÉCURITÉ :</strong> Toutes vos données sont hébergées sur l'infrastructure ultra-sécurisée de <strong>Google Cloud (Firebase Firestore)</strong>. La sécurité est au cœur de notre développement.
                 </p>
                 <div class="w-full h-px bg-white/10"></div>
                 <p id="infoText3" class="text-[13px] text-white/80 leading-relaxed text-justify">
-                    <strong class="text-emerald-400 block mb-1">⚡ ÉCOSYSTÈME IA :</strong> L'environnement unique Level IA conçu pour décupler votre productivité au quotidien.
+                    <strong class="text-emerald-400 block mb-1 flex items-center gap-1.5"><i class="fas fa-bolt"></i> ÉCOSYSTÈME IA :</strong> L'environnement unique Level IA conçu pour décupler votre productivité au quotidien.
                 </p>
                 <div class="w-full h-px bg-white/10"></div>
                 <p id="infoFooter" class="text-[11px] text-white/60 leading-relaxed font-semibold text-center mt-4">
@@ -774,6 +778,19 @@
                         <label class="relative inline-flex items-center cursor-pointer">
                             <input type="checkbox" id="hardcoreToggle" class="sr-only peer">
                             <div class="w-10 h-5 bg-black/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/50 after:border-white/10 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-red-500 peer-checked:after:bg-white shadow-inner"></div>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="space-y-2 pt-2 transition-all duration-300" id="notificationsContainer">
+                    <div class="flex items-center justify-between bg-white/5 border border-white/10 p-3.5 rounded-xl">
+                        <div>
+                            <label id="notifTitle" class="text-[12px] font-bold uppercase tracking-widest text-white">Notifications</label>
+                            <p id="notifDesc" class="text-[9px] text-white/50 uppercase tracking-widest mt-1 font-medium">Activer les alertes</p>
+                        </div>
+                        <label class="relative inline-flex items-center cursor-pointer">
+                            <input type="checkbox" id="notifToggle" class="sr-only peer" checked>
+                            <div class="w-10 h-5 bg-black/50 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white/50 after:border-white/10 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-500 peer-checked:after:bg-white shadow-inner"></div>
                         </label>
                     </div>
                 </div>
@@ -976,6 +993,8 @@
                 modelTitle: "Modèle IA",
                 hardcoreTitle: "Mode Hardcore 🤬",
                 hardcoreDesc: "Désactiver la politesse",
+                notifTitle: "Notifications",
+                notifDesc: "Activer les alertes",
                 openStorageText: "Données & Stockage",
                 cloudSpace: "Espace Cloud",
                 historyTitle: "Historique",
@@ -997,8 +1016,8 @@
                 confirmLogout: "Quitter",
                 installModalTitle: "Installer l'App",
                 installModalDesc: "Ajoutez l'application sur votre écran d'accueil :",
-                installiOS: "🍎 iOS (Safari) : Appuyez sur Partager <i class='fas fa-share-square mx-1'></i> puis 'Sur l'écran d'accueil'.",
-                installAndroid: "🤖 Android (Chrome) : Appuyez sur Menu <i class='fas fa-ellipsis-v mx-1'></i> puis 'Ajouter à l'écran d'accueil'.",
+                installiOS: "<div class='flex items-center gap-2 mb-2 text-white'><i class='fab fa-apple text-xl'></i><strong class='text-[13px] tracking-wide'>Apple iOS (Safari)</strong></div><div class='pl-7 space-y-2 text-[11px] text-white/70'><div><span class='bg-white/10 px-1.5 py-0.5 rounded text-white mr-1'>1</span> Appuyez sur <strong>Partager</strong> <i class='fas fa-share-square mx-1 text-purple-400'></i> dans la barre du bas.</div><div><span class='bg-white/10 px-1.5 py-0.5 rounded text-white mr-1'>2</span> Faites défiler et choisissez <strong>Sur l'écran d'accueil</strong> <i class='fas fa-plus-square mx-1 text-purple-400'></i>.</div></div>",
+                installAndroid: "<div class='flex items-center gap-2 mb-2 text-white'><i class='fab fa-android text-green-400 text-xl'></i><strong class='text-[13px] tracking-wide'>Android (Chrome)</strong></div><div class='pl-7 space-y-2 text-[11px] text-white/70'><div><span class='bg-white/10 px-1.5 py-0.5 rounded text-white mr-1'>1</span> Appuyez sur le <strong>Menu</strong> <i class='fas fa-ellipsis-v mx-1 text-purple-400'></i> en haut à droite.</div><div><span class='bg-white/10 px-1.5 py-0.5 rounded text-white mr-1'>2</span> Sélectionnez <strong>Ajouter à l'écran d'accueil</strong> <i class='fas fa-mobile-alt mx-1 text-purple-400'></i>.</div></div>",
                 closeBtn: "Fermer",
                 storageModalTitle: "Données & Stockage",
                 storageModalSub: "Architecture Hybride",
@@ -1012,15 +1031,15 @@
                 localStorageSub: "IndexedDB / LocalStorage",
                 storageInfoText: "Le mode automatique bascule silencieusement sur la mémoire de l'appareil si l'espace Cloud (serveurs Google) vient à saturer. Vos données privées restent protégées.",
                 cguModalTitle: "Conditions (CGU)",
-                cguText1: "<strong class='text-blue-400 block mb-0.5'>1. ÉTHIQUE ET BIENVEILLANCE :</strong> Notre application a été créée dans le but exclusif d'aider, de protéger, d'informer et de faire grandir ses utilisateurs. L'IA est programmée pour refuser toute requête malveillante, dangereuse ou illégale.",
-                cguText2: "<strong class='text-blue-400 block mb-0.5'>2. RESPONSABILITÉ DE L'UTILISATEUR :</strong> En utilisant Level IA, vous prenez l'entière responsabilité de vos actes et de la façon dont vous interprétez ou utilisez les réponses générées. Vous êtes maître de vos décisions.",
-                cguText3: "<strong class='text-blue-400 block mb-0.5'>3. ABSENCE DE GARANTIE :</strong> Bien que nos modèles soient très avancés, l'IA peut parfois commettre erreurs. Ses conseils ne remplacent en aucun cas l'avis d'un professionnel qualifié.",
-                cguText4: "<strong class='text-blue-400 block mb-0.5'>4. PROTECTION LÉGALE :</strong> Les développeurs déclinent toute responsabilité en cas de dommages directs ou indirects liés à l'utilisation de ce service.",
-                cguText5: "<strong class='text-blue-400 block mb-0.5'>5. ÂGE REQUIS :</strong> Vous devez avoir au minimum 16 ans pour utiliser les services de cette intelligence artificielle.",
+                cguText1: "<strong class='text-blue-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-balance-scale'></i> 1. ÉTHIQUE ET BIENVEILLANCE :</strong> Notre application a été créée dans le but exclusif d'aider, de protéger, d'informer et de faire grandir ses utilisateurs. L'IA est programmée pour refuser toute requête malveillante, dangereuse ou illégale.",
+                cguText2: "<strong class='text-blue-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-user-shield'></i> 2. RESPONSABILITÉ DE L'UTILISATEUR :</strong> En utilisant Level IA, vous prenez l'entière responsabilité de vos actes et de la façon dont vous interprétez ou utilisez les réponses générées. Vous êtes maître de vos décisions.",
+                cguText3: "<strong class='text-blue-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-exclamation-triangle'></i> 3. ABSENCE DE GARANTIE :</strong> Bien que nos modèles soient très avancés, l'IA peut parfois commettre erreurs. Ses conseils ne remplacent en aucun cas l'avis d'un professionnel qualifié.",
+                cguText4: "<strong class='text-blue-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-gavel'></i> 4. PROTECTION LÉGALE :</strong> Les développeurs déclinent toute responsabilité en cas de dommages directs ou indirects liés à l'utilisation de ce service.",
+                cguText5: "<strong class='text-blue-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-user-check'></i> 5. ÂGE REQUIS :</strong> Vous devez avoir au minimum 16 ans pour utiliser les services de cette intelligence artificielle.",
                 infoModalTitle: "À propos de l'Application",
-                infoText1: "<strong class='text-emerald-400 block mb-0.5'>🧠 MOTEUR IA (GEMINI) :</strong> L'intelligence de l'application est propulsée par le puissant moteur <strong>Gemini 2.5 Flash</strong> (développé par Google). Ce moteur garantit une capacité d'analyse fulgurante et une connexion au Web en temps réel.",
-                infoText2: "<strong class='text-emerald-400 block mb-0.5'>🔒 ARCHITECTURE & SÉCURITÉ :</strong> Toutes vos données sont hébergées sur l'infrastructure ultra-sécurisée de <strong>Google Cloud (Firebase Firestore)</strong>. La sécurité est au cœur de notre développement.",
-                infoText3: "<strong class='text-emerald-400 block mb-1'>⚡ ÉCOSYSTÈME IA :</strong> L'environnement unique Level IA conçu pour décupler votre productivité au quotidien.",
+                infoText1: "<strong class='text-emerald-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-brain'></i> MOTEUR IA (GEMINI) :</strong> L'intelligence de l'application est propulsée par le puissant moteur <strong>Gemini 2.5 Flash</strong> (développé par Google). Ce moteur garantit une capacité d'analyse fulgurante et une connexion au Web en temps réel.",
+                infoText2: "<strong class='text-emerald-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-shield-alt'></i> ARCHITECTURE & SÉCURITÉ :</strong> Toutes vos données sont hébergées sur l'infrastructure ultra-sécurisée de <strong>Google Cloud (Firebase Firestore)</strong>. La sécurité est au cœur de notre développement.",
+                infoText3: "<strong class='text-emerald-400 block mb-1 flex items-center gap-1.5'><i class='fas fa-bolt'></i> ÉCOSYSTÈME IA :</strong> L'environnement unique Level IA conçu pour décupler votre productivité au quotidien.",
                 infoFooter: "Développé par LevelUp • Version 2.2 Premium",
                 feedbackModalTitle: "Donner un avis",
                 feedbackPlaceholder: "Que pensez-vous de l'application ? Comment l'améliorer ?",
@@ -1080,8 +1099,8 @@
                 langPageSub: "Choisissez / Choose",
                 banScreenTitle: "Accès Restreint",
                 banScreenMsg: "Votre accès a été révoqué par l'administration.",
-                promoTitle: "Passe au niveau<br><span class='text-purple-400'>Supérieur</span>",
-                promoDesc: "Pour une expérience fluide, rapide et des notifications intelligentes, installe l'application Level IA sur ton appareil dès maintenant.",
+                promoTitle: "Application<br><span class='text-purple-400'>Native</span>",
+                promoDesc: "Transformez ce site en véritable application mobile ! Profitez d'un accès hors-ligne, d'une interface plein écran ultra-rapide et de notifications sécurisées.",
                 promoInstallText: "Installer l'App",
                 promoSkipText: "Continuer sur le web",
                 storageStatusLocal: "Prêt",
@@ -1123,6 +1142,8 @@
                 modelTitle: "AI Model",
                 hardcoreTitle: "Hardcore Mode 🤬",
                 hardcoreDesc: "Disable politeness",
+                notifTitle: "Notifications",
+                notifDesc: "Enable alerts",
                 openStorageText: "Data & Storage",
                 cloudSpace: "Cloud Space",
                 historyTitle: "History",
@@ -1144,8 +1165,8 @@
                 confirmLogout: "Leave",
                 installModalTitle: "Install App",
                 installModalDesc: "Add the application to your home screen:",
-                installiOS: "🍎 iOS (Safari): Tap Share <i class='fas fa-share-square mx-1'></i> then 'Add to Home Screen'.",
-                installAndroid: "🤖 Android (Chrome): Tap Menu <i class='fas fa-ellipsis-v mx-1'></i> then 'Add to Home screen'.",
+                installiOS: "<div class='flex items-center gap-2 mb-2 text-white'><i class='fab fa-apple text-xl'></i><strong class='text-[13px] tracking-wide'>Apple iOS (Safari)</strong></div><div class='pl-7 space-y-2 text-[11px] text-white/70'><div><span class='bg-white/10 px-1.5 py-0.5 rounded text-white mr-1'>1</span> Tap <strong>Share</strong> <i class='fas fa-share-square mx-1 text-purple-400'></i> in the bottom bar.</div><div><span class='bg-white/10 px-1.5 py-0.5 rounded text-white mr-1'>2</span> Scroll down and tap <strong>Add to Home Screen</strong> <i class='fas fa-plus-square mx-1 text-purple-400'></i>.</div></div>",
+                installAndroid: "<div class='flex items-center gap-2 mb-2 text-white'><i class='fab fa-android text-green-400 text-xl'></i><strong class='text-[13px] tracking-wide'>Android (Chrome)</strong></div><div class='pl-7 space-y-2 text-[11px] text-white/70'><div><span class='bg-white/10 px-1.5 py-0.5 rounded text-white mr-1'>1</span> Tap the <strong>Menu</strong> <i class='fas fa-ellipsis-v mx-1 text-purple-400'></i> at the top right.</div><div><span class='bg-white/10 px-1.5 py-0.5 rounded text-white mr-1'>2</span> Select <strong>Add to Home screen</strong> <i class='fas fa-mobile-alt mx-1 text-purple-400'></i>.</div></div>",
                 closeBtn: "Close",
                 storageModalTitle: "Data & Storage",
                 storageModalSub: "Hybrid Architecture",
@@ -1159,15 +1180,15 @@
                 localStorageSub: "IndexedDB / LocalStorage",
                 storageInfoText: "Automatic mode silently switches to device memory if Cloud space (Google servers) fills up. Your private data remains protected.",
                 cguModalTitle: "Terms of Use (CGU)",
-                cguText1: "<strong class='text-blue-400 block mb-0.5'>1. ETHICS AND KINDNESS:</strong> Our application was created for the exclusive purpose of helping, protecting, informing, and making its users grow. The AI is programmed to refuse any malicious, dangerous, or illegal request.",
-                cguText2: "<strong class='text-blue-400 block mb-0.5'>2. USER RESPONSIBILITY:</strong> By using Level IA, you take full responsibility for your actions and how you interpret or use the generated answers. You are the master of your decisions.",
-                cguText3: "<strong class='text-blue-400 block mb-0.5'>3. NO WARRANTY:</strong> Although our models are very advanced, AI can sometimes make errors. Its advice never replaces the advice of a qualified professional.",
-                cguText4: "<strong class='text-blue-400 block mb-0.5'>4. LEGAL PROTECTION:</strong> The developers decline all responsibility in the event of direct or indirect damage related to the use of this service.",
-                cguText5: "<strong class='text-blue-400 block mb-0.5'>5. AGE REQUIREMENT:</strong> You must be at least 16 years old to use the services of this artificial intelligence.",
+                cguText1: "<strong class='text-blue-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-balance-scale'></i> 1. ETHICS AND KINDNESS:</strong> Our application was created for the exclusive purpose of helping, protecting, informing, and making its users grow. The AI is programmed to refuse any malicious, dangerous, or illegal request.",
+                cguText2: "<strong class='text-blue-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-user-shield'></i> 2. USER RESPONSIBILITY:</strong> By using Level IA, you take full responsibility for your actions and how you interpret or use the generated answers. You are the master of your decisions.",
+                cguText3: "<strong class='text-blue-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-exclamation-triangle'></i> 3. NO WARRANTY:</strong> Although our models are very advanced, AI can sometimes make errors. Its advice never replaces the advice of a qualified professional.",
+                cguText4: "<strong class='text-blue-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-gavel'></i> 4. LEGAL PROTECTION:</strong> The developers decline all responsibility in the event of direct or indirect damage related to the use of this service.",
+                cguText5: "<strong class='text-blue-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-user-check'></i> 5. AGE REQUIREMENT:</strong> You must be at least 16 years old to use the services of this artificial intelligence.",
                 infoModalTitle: "About the Application",
-                infoText1: "<strong class='text-emerald-400 block mb-0.5'>🧠 AI ENGINE (GEMINI):</strong> The application's intelligence is powered by the powerful <strong>Gemini 2.5 Flash</strong> engine (developed by Google). This engine guarantees lightning-fast analysis capability and a real-time connection to the Web.",
-                infoText2: "<strong class='text-emerald-400 block mb-0.5'>🔒 ARCHITECTURE & SECURITY:</strong> All your data is hosted on the highly secure <strong>Google Cloud (Firebase Firestore)</strong> infrastructure. Security is at the heart of our development.",
-                infoText3: "<strong class='text-emerald-400 block mb-1'>⚡ AI ECOSYSTEM:</strong> The unique Level IA environment designed to tenfold your daily productivity.",
+                infoText1: "<strong class='text-emerald-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-brain'></i> AI ENGINE (GEMINI):</strong> The application's intelligence is powered by the powerful <strong>Gemini 2.5 Flash</strong> engine (developed by Google). This engine guarantees lightning-fast analysis capability and a real-time connection to the Web.",
+                infoText2: "<strong class='text-emerald-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-shield-alt'></i> ARCHITECTURE & SECURITY:</strong> All your data is hosted on the highly secure <strong>Google Cloud (Firebase Firestore)</strong> infrastructure. Security is at the heart of our development.",
+                infoText3: "<strong class='text-emerald-400 block mb-1 flex items-center gap-1.5'><i class='fas fa-bolt'></i> AI ECOSYSTEM:</strong> The unique Level IA environment designed to tenfold your daily productivity.",
                 infoFooter: "Developed by LevelUp • Premium Version 2.2",
                 feedbackModalTitle: "Give feedback",
                 feedbackPlaceholder: "What do you think of the app? How can we improve it?",
@@ -1227,8 +1248,8 @@
                 langPageSub: "Choisissez / Choose",
                 banScreenTitle: "Restricted Access",
                 banScreenMsg: "Your access has been revoked by administration.",
-                promoTitle: "Level Up your<br><span class='text-purple-400'>Experience</span>",
-                promoDesc: "Install the Level IA application on your device right now.",
+                promoTitle: "Native<br><span class='text-purple-400'>Application</span>",
+                promoDesc: "Turn this website into a real mobile app! Enjoy offline access, a blazing-fast full-screen interface, and secure notifications.",
                 promoInstallText: "Install App",
                 promoSkipText: "Continue on web",
                 storageStatusLocal: "Ready",
@@ -1245,7 +1266,11 @@
             }
         });
 
-        const sanitizeHTML = (html) => DOMPurify.sanitize(html, { ADD_ATTR: ['target', 'rel'] });
+        // Modification majeure : on autorise explicitement les SVG et les icônes FontAwesome
+        const sanitizeHTML = (html) => DOMPurify.sanitize(html, { 
+            ADD_ATTR: ['target', 'rel', 'viewBox', 'fill', 'd', 'xmlns', 'class', 'stroke', 'stroke-width', 'stroke-linecap', 'stroke-linejoin'],
+            ADD_TAGS: ['svg', 'path', 'g', 'circle', 'line', 'polyline', 'rect', 'polygon', 'i']
+        });
         
         function getFlagEmoji(countryCode) {
             if (!countryCode || countryCode.length !== 2) return '🌍';
@@ -1330,7 +1355,8 @@
             
             let isMarcoMode = false;
             let currentModel = 'normal'; 
-            let isHardcoreMode = false; 
+            let isHardcoreMode = false;
+            let isNotificationsEnabled = true; 
             let currentResponseLength = 'medium'; 
             
             let globalAdminPrompt = "";
@@ -1430,6 +1456,7 @@
                 if (isError) {
                     window.showToast(msg, true);
                 } else {
+                    if (!isNotificationsEnabled) return; 
                     if ("Notification" in window && Notification.permission === 'granted' && navigator.serviceWorker) {
                         navigator.serviceWorker.ready.then(reg => {
                             reg.showNotification(`${nativeEmoji} ${nativeTitle}`, { body: msg, icon: './icon.svg', vibrate: [200, 100, 200] });
@@ -1798,6 +1825,8 @@
                 setSafeText('modelTitle', t.modelTitle);
                 setSafeText('hardcoreTitle', t.hardcoreTitle);
                 setSafeText('hardcoreDesc', t.hardcoreDesc);
+                setSafeText('notifTitle', t.notifTitle);
+                setSafeText('notifDesc', t.notifDesc);
                 setSafeText('openStorageText', t.openStorageText);
                 setSafeText('cloudSpace', t.cloudSpace);
                 setSafeText('historyTitle', t.historyTitle);
@@ -1982,6 +2011,20 @@
                 isHardcoreMode = e.target.checked;
                 if (userId) {
                     await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { hardcore: isHardcoreMode }, { merge: true });
+                }
+            });
+
+            document.getElementById('notifToggle').addEventListener('change', async (e) => {
+                isNotificationsEnabled = e.target.checked;
+                
+                if (isNotificationsEnabled && "Notification" in window && Notification.permission !== "granted" && Notification.permission !== "denied") {
+                    try {
+                        await Notification.requestPermission();
+                    } catch(err) {}
+                }
+                
+                if (userId) {
+                    await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { notifications: isNotificationsEnabled }, { merge: true });
                 }
             });
 
@@ -2392,6 +2435,14 @@
                                 if (d.hardcore !== undefined) { isHardcoreMode = d.hardcore; document.getElementById('hardcoreToggle').checked = isHardcoreMode; }
                                 if (d.responseLength) { currentResponseLength = d.responseLength; document.getElementById('lengthSelect').value = currentResponseLength; }
                                 if (d.storageMode) { currentStorageMode = d.storageMode; document.getElementById('storageModeSelect').value = currentStorageMode; }
+                                
+                                if (d.notifications !== undefined) { 
+                                    isNotificationsEnabled = d.notifications; 
+                                    document.getElementById('notifToggle').checked = isNotificationsEnabled; 
+                                } else {
+                                    isNotificationsEnabled = true;
+                                    document.getElementById('notifToggle').checked = true;
+                                }
                             }
                             
                             const usageDoc = await getDoc(doc(db, "artifacts", appId, "users", userId, "settings", "usage"));
@@ -2670,7 +2721,7 @@
             const fkBackToLoginFinalBtn = document.getElementById('fkBackToLoginFinalBtn');
             if (fkBackToLoginFinalBtn) {
                 fkBackToLoginFinalBtn.onclick = () => {
-                    forgotKeyPage.classList.add('hidden');
+                    document.getElementById('forgotKeyPage').classList.add('hidden');
                     document.getElementById('authPage').classList.remove('hidden');
                 };
             }
@@ -3602,16 +3653,18 @@
             };
             
             const sendBtn = document.getElementById('sendBtn');
-            sendBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                if (navigator.vibrate) navigator.vibrate(40); 
-                
-                if (isGenerating) {
-                    stopGeneration();
-                } else {
-                    send();
-                }
-            });
+            if (sendBtn) {
+                sendBtn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    if (navigator.vibrate) navigator.vibrate(40); 
+                    
+                    if (isGenerating) {
+                        stopGeneration();
+                    } else {
+                        send();
+                    }
+                });
+            }
         }
     </script>
 </body>
