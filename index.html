@@ -217,6 +217,9 @@
 </head>
 <body class="bg-main">
 
+    <!-- SYSTÈME DE TOASTS PREMIUM (NOUVEAU) -->
+    <div id="toastContainer" class="fixed top-4 right-4 md:top-6 md:right-6 z-[9999] flex flex-col gap-3 pointer-events-none items-end"></div>
+
     <div id="dropZoneOverlay" class="fixed inset-0 z-[9999] bg-purple-900/60 backdrop-blur-md border-4 border-dashed border-purple-500 m-4 rounded-3xl flex flex-col items-center justify-center opacity-0 pointer-events-none transition-all duration-300">
         <i class="fas fa-cloud-upload-alt text-6xl text-purple-400 mb-4 animate-bounce"></i>
         <h2 class="text-2xl font-bold text-white uppercase tracking-widest text-center" id="dropZoneTitle">Déposez votre fichier</h2>
@@ -257,8 +260,6 @@
         <h1 class="text-2xl font-bold text-white mb-4 uppercase tracking-widest" id="banScreenTitle">Accès Restreint</h1>
         <p id="banScreenMsg" class="text-white/70 text-sm leading-relaxed">Votre accès a été révoqué par l'administration.</p>
     </div>
-
-    <div id="sysToast" class="fixed top-5 left-1/2 -translate-x-1/2 backdrop-blur-md border px-5 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest hidden z-[9999] shadow-2xl transition-all"></div>
 
     <div id="splashScreen">
         <div id="splash1" class="splash-text text-purple-500"><strong id="splashTitle">Level IA</strong></div>
@@ -325,6 +326,12 @@
                 <button id="openForgotKeyBtn" class="mt-4 w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-black/40 border border-white/5 text-[11px] font-bold uppercase tracking-[0.1em] text-white/60 hover:text-white hover:bg-white/10 hover:border-white/20 active:scale-95 transition-all shadow-inner">
                     <i class="fas fa-key text-purple-500/70 text-[13px]"></i> Clé perdue ?
                 </button>
+                
+                <div class="mt-6 flex justify-center">
+                    <a href="https://levelupia0-debug.github.io/Level-up-condition-d-utilisation-est-de-s-curit-/" target="_blank" class="flex items-center gap-2 px-5 py-2.5 rounded-full bg-white/5 border border-white/10 text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 hover:bg-purple-500/20 hover:text-purple-300 hover:border-purple-500/50 transition-all duration-300 shadow-inner group">
+                        <i class="fas fa-network-wired group-hover:animate-pulse"></i> <span id="nexusAccessBtn">Noyau Écosystème</span>
+                    </a>
+                </div>
 
                 <p id="keyError" class="text-[13px] text-red-400 font-medium hidden flex flex-col gap-1 mt-2">
                     <span id="keyErrorMain">Clé introuvable ou invalide.</span>
@@ -696,6 +703,11 @@
                 <button id="closeHistoryBtn" class="text-white/40 hover:text-white"><i class="fas fa-times text-lg"></i></button>
             </div>
             
+            <div class="flex gap-2 overflow-x-auto no-scrollbar pb-1 shrink-0" id="historyFilters">
+                <button id="filterAllBtn" class="hist-filter active px-3 py-1.5 rounded-lg bg-white/10 text-white text-[10px] font-bold uppercase tracking-widest transition-all" data-f="all">Tout</button>
+                <button id="filterAutoBtn" class="hist-filter px-3 py-1.5 rounded-lg bg-transparent text-white/40 hover:text-white text-[10px] font-bold uppercase tracking-widest transition-all border border-transparent hover:border-white/10" data-f="auto">Auto (Level IA)</button>
+            </div>
+
             <button id="newChatBtn" class="w-full flex items-center justify-center gap-2 py-3.5 bg-purple-500/10 border border-purple-500/30 rounded-xl text-purple-400 font-bold text-[11px] uppercase tracking-widest hover:bg-purple-600 hover:text-white hover:border-purple-500 active:scale-95 transition-all shadow-sm shrink-0">
                 <i class="fas fa-plus"></i> <span id="newChatText">Nouvelle session</span>
             </button>
@@ -742,7 +754,7 @@
                 <button id="closeSidebar" class="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-white/5 active:scale-95 transition-all"><i class="fas fa-times text-sm"></i></button>
             </div>
 
-            <div id="userCard" class="p-4 rounded-2xl bg-white/5 border border-white/5 mb-8 flex items-center gap-4">
+            <div id="userCard" class="p-4 rounded-2xl bg-white/5 border border-white/5 mb-4 flex items-center gap-4">
                 <div id="userAvatar" class="w-10 h-10 rounded-full bg-purple-500/20 flex items-center justify-center overflow-hidden border border-white/10 shadow-inner shrink-0">
                     <i class="fas fa-user text-sm"></i>
                 </div>
@@ -751,6 +763,27 @@
                     <p id="userMail" class="text-[11px] text-white/50 truncate mt-0.5">---</p>
                     <p id="userStatus" class="text-[9px] text-green-400 uppercase tracking-widest mt-1 font-semibold"><i class="fas fa-shield-alt"></i> Connecté</p>
                 </div>
+            </div>
+
+            <!-- NOUVEAU BOUTON ÉCOSYSTÈME LEVELUP ULTRA PREMIUM DÉPLACÉ SOUS LE PROFIL -->
+            <div class="mb-6">
+                <a href="https://levelupia0-debug.github.io/Level-up-condition-d-utilisation-est-de-s-curit-/" target="_blank" class="relative w-full flex items-center justify-between p-4 rounded-2xl bg-[#050505] border border-purple-500/40 hover:border-purple-400 active:scale-95 transition-all group overflow-hidden shadow-[0_0_20px_rgba(168,85,247,0.15)] hover:shadow-[0_0_30px_rgba(168,85,247,0.4)] no-underline z-10">
+                    <div class="absolute inset-0 bg-gradient-to-r from-purple-600/20 via-pink-600/20 to-purple-600/20 opacity-60 group-hover:opacity-100 transition-opacity duration-500"></div>
+                    
+                    <div class="flex items-center gap-3.5 relative z-20">
+                        <div class="flex items-center justify-center group-hover:scale-110 transition-transform duration-300 px-1">
+                            <!-- La VRAIE étoile de Level IA pure, sans bulle -->
+                            <svg class="w-7 h-7 star-logo" viewBox="0 0 576 512" fill="currentColor">
+                                <path d="M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z"/>
+                            </svg>
+                        </div>
+                        <div class="flex flex-col text-left">
+                            <span class="text-[14px] font-black text-white uppercase tracking-[0.15em] drop-shadow-md">LevelUp</span>
+                            <span id="ecosystemSub" class="text-[9px] text-purple-300 uppercase tracking-[0.2em] font-bold mt-0.5 opacity-90">Écosystème</span>
+                        </div>
+                    </div>
+                    <i class="fas fa-external-link-alt text-[12px] text-purple-400 opacity-60 group-hover:opacity-100 group-hover:translate-x-1 group-hover:-translate-y-1 transition-all relative z-20 drop-shadow-md"></i>
+                </a>
             </div>
 
             <div class="space-y-6">
@@ -1037,9 +1070,9 @@
                 cguText4: "<strong class='text-blue-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-gavel'></i> 4. PROTECTION LÉGALE :</strong> Les développeurs déclinent toute responsabilité en cas de dommages directs ou indirects liés à l'utilisation de ce service.",
                 cguText5: "<strong class='text-blue-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-user-check'></i> 5. ÂGE REQUIS :</strong> Vous devez avoir au minimum 16 ans pour utiliser les services de cette intelligence artificielle.",
                 infoModalTitle: "À propos de l'Application",
-                infoText1: "<strong class='text-emerald-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-brain'></i> MOTEUR IA (GEMINI) :</strong> L'intelligence de l'application est propulsée par le puissant moteur <strong>Gemini 2.5 Flash</strong> (développé par Google). Ce moteur garantit une capacité d'analyse fulgurante et une connexion au Web en temps réel.",
-                infoText2: "<strong class='text-emerald-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-shield-alt'></i> ARCHITECTURE & SÉCURITÉ :</strong> Toutes vos données sont hébergées sur l'infrastructure ultra-sécurisée de <strong>Google Cloud (Firebase Firestore)</strong>. La sécurité est au cœur de notre développement.",
-                infoText3: "<strong class='text-emerald-400 block mb-1 flex items-center gap-1.5'><i class='fas fa-bolt'></i> ÉCOSYSTÈME IA :</strong> L'environnement unique Level IA conçu pour décupler votre productivité au quotidien.",
+                infoText1: "<strong class='text-white flex items-center gap-1.5 mb-0.5'><svg class='w-3.5 h-3.5 text-[#4285F4]' viewBox='0 0 24 24' fill='currentColor'><path d='M12 0c0 6.627 5.373 12 12 12-6.627 0-12 5.373-12 12-0-6.627-5.373-12-12-12 6.627 0 12-5.373 12-12z'/></svg> MOTEUR IA (GEMINI) :</strong> L'intelligence de l'application est propulsée par le puissant moteur <strong>Gemini 2.5 Flash</strong> (développé par Google). Ce moteur garantit une capacité d'analyse fulgurante et une connexion au Web en temps réel.",
+                infoText2: "<strong class='text-white flex items-center gap-1.5 mb-0.5'><svg class='w-3.5 h-3.5 text-[#FFCA28]' viewBox='0 0 24 24' fill='currentColor'><path d='M3.48 15.65L1.57 12.35C1.19 11.69 1.54 10.84 2.28 10.74L11.59 9.38C12.18 9.3 12.63 9.85 12.44 10.41L10.37 18.77C10.15 19.46 9.4 19.8 8.74 19.49L3.48 15.65Z'/><path d='M14.54 4.55L11.59 9.38C11.39 9.71 11.45 10.14 11.75 10.39L17.27 15.05L16.29 2.65C16.22 1.95 15.39 1.63 14.88 2.11L14.54 4.55Z'/><path d='M22.75 14.5L17.27 15.05L14.49 20.35C14.16 20.97 13.25 20.89 13.01 20.21L10.37 18.77L21.46 12.27C22.06 11.92 22.84 12.29 22.95 12.98L22.75 14.5Z'/></svg> ARCHITECTURE & SÉCURITÉ :</strong> Toutes vos données sont hébergées sur l'infrastructure ultra-sécurisée de <strong>Google Cloud (Firebase Firestore)</strong>. La sécurité est au cœur de notre développement.",
+                infoText3: "<strong class='text-white flex items-center gap-1.5 mb-1'><svg class='w-3.5 h-3.5 text-purple-500' viewBox='0 0 576 512' fill='currentColor'><path d='M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z'/></svg> ÉCOSYSTÈME IA :</strong> L'environnement unique Level IA conçu pour décupler votre productivité au quotidien.",
                 infoFooter: "Développé par LevelUp • Version 2.2 Premium",
                 feedbackModalTitle: "Donner un avis",
                 feedbackPlaceholder: "Que pensez-vous de l'application ? Comment l'améliorer ?",
@@ -1106,7 +1139,12 @@
                 storageStatusLocal: "Prêt",
                 storageStatusCloud: "Actif",
                 storageStatusFull: "Plein",
-                statusOnline: "Connecté"
+                statusOnline: "Connecté",
+                nexusAccessBtn: "Noyau Écosystème",
+                toastSuccess: "Succès",
+                toastError: "Erreur",
+                toastInfo: "Information",
+                ecosystemSub: "Écosystème"
             },
             en: {
                 dropZoneTitle: "Drop your file",
@@ -1186,9 +1224,9 @@
                 cguText4: "<strong class='text-blue-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-gavel'></i> 4. LEGAL PROTECTION:</strong> The developers decline all responsibility in the event of direct or indirect damage related to the use of this service.",
                 cguText5: "<strong class='text-blue-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-user-check'></i> 5. AGE REQUIREMENT:</strong> You must be at least 16 years old to use the services of this artificial intelligence.",
                 infoModalTitle: "About the Application",
-                infoText1: "<strong class='text-emerald-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-brain'></i> AI ENGINE (GEMINI):</strong> The application's intelligence is powered by the powerful <strong>Gemini 2.5 Flash</strong> engine (developed by Google). This engine guarantees lightning-fast analysis capability and a real-time connection to the Web.",
-                infoText2: "<strong class='text-emerald-400 block mb-0.5 flex items-center gap-1.5'><i class='fas fa-shield-alt'></i> ARCHITECTURE & SECURITY:</strong> All your data is hosted on the highly secure <strong>Google Cloud (Firebase Firestore)</strong> infrastructure. Security is at the heart of our development.",
-                infoText3: "<strong class='text-emerald-400 block mb-1 flex items-center gap-1.5'><i class='fas fa-bolt'></i> AI ECOSYSTEM:</strong> The unique Level IA environment designed to tenfold your daily productivity.",
+                infoText1: "<strong class='text-white flex items-center gap-1.5 mb-0.5'><svg class='w-3.5 h-3.5 text-[#4285F4]' viewBox='0 0 24 24' fill='currentColor'><path d='M12 0c0 6.627 5.373 12 12 12-6.627 0-12 5.373-12 12-0-6.627-5.373-12-12-12 6.627 0 12-5.373 12-12z'/></svg> AI ENGINE (GEMINI):</strong> The application's intelligence is powered by the powerful <strong>Gemini 2.5 Flash</strong> engine (developed by Google). This engine guarantees lightning-fast analysis capability and a real-time connection to the Web.",
+                infoText2: "<strong class='text-white flex items-center gap-1.5 mb-0.5'><svg class='w-3.5 h-3.5 text-[#FFCA28]' viewBox='0 0 24 24' fill='currentColor'><path d='M3.48 15.65L1.57 12.35C1.19 11.69 1.54 10.84 2.28 10.74L11.59 9.38C12.18 9.3 12.63 9.85 12.44 10.41L10.37 18.77C10.15 19.46 9.4 19.8 8.74 19.49L3.48 15.65Z'/><path d='M14.54 4.55L11.59 9.38C11.39 9.71 11.45 10.14 11.75 10.39L17.27 15.05L16.29 2.65C16.22 1.95 15.39 1.63 14.88 2.11L14.54 4.55Z'/><path d='M22.75 14.5L17.27 15.05L14.49 20.35C14.16 20.97 13.25 20.89 13.01 20.21L10.37 18.77L21.46 12.27C22.06 11.92 22.84 12.29 22.95 12.98L22.75 14.5Z'/></svg> ARCHITECTURE & SECURITY:</strong> All your data is hosted on the highly secure <strong>Google Cloud (Firebase Firestore)</strong> infrastructure. Security is at the heart of our development.",
+                infoText3: "<strong class='text-white flex items-center gap-1.5 mb-1'><svg class='w-3.5 h-3.5 text-purple-500' viewBox='0 0 576 512' fill='currentColor'><path d='M316.9 18C311.6 7 300.4 0 288.1 0s-23.4 7-28.8 18L195 150.3 51.4 171.5c-12 1.8-22 10.2-25.7 21.7s-.7 24.2 7.9 32.7L137.8 329 113.2 474.7c-2 12 3 24.2 12.9 31.3s23 8 33.8 2.3l128.3-68.5 128.3 68.5c10.8 5.7 23.9 4.9 33.8-2.3s14.9-19.3 12.9-31.3L438.5 329 542.7 225.9c8.6-8.5 11.7-21.2 7.9-32.7s-13.7-19.9-25.7-21.7L381.2 150.3 316.9 18z'/></svg> AI ECOSYSTEM:</strong> The unique Level IA environment designed to tenfold your daily productivity.",
                 infoFooter: "Developed by LevelUp • Premium Version 2.2",
                 feedbackModalTitle: "Give feedback",
                 feedbackPlaceholder: "What do you think of the app? How can we improve it?",
@@ -1255,7 +1293,12 @@
                 storageStatusLocal: "Ready",
                 storageStatusCloud: "Active",
                 storageStatusFull: "Full",
-                statusOnline: "Connected"
+                statusOnline: "Connected",
+                nexusAccessBtn: "Ecosystem Hub",
+                toastSuccess: "Success",
+                toastError: "Error",
+                toastInfo: "Information",
+                ecosystemSub: "Ecosystem"
             }
         };
 
@@ -1439,28 +1482,83 @@
                 });
             }
 
-            window.showToast = function(msg, isError = false) {
-                const t = document.getElementById('sysToast');
-                if (!t) return;
-                t.innerText = msg;
-                if (isError) {
-                    t.className = `fixed top-6 left-1/2 -translate-x-1/2 backdrop-blur-md border px-5 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest z-[9999] shadow-2xl transition-all bg-red-500/20 border-red-500/50 text-red-200`;
-                } else {
-                    t.className = `fixed top-6 left-1/2 -translate-x-1/2 backdrop-blur-md border px-5 py-2.5 rounded-full font-bold text-[11px] uppercase tracking-widest z-[9999] shadow-2xl transition-all bg-white/10 border-white/20 text-white`;
+            // NOUVEAU SYSTÈME DE TOASTS IN-APP ULTRA PREMIUM
+            window.showToast = function(msg, type = 'info', customTitle = null) {
+                const container = document.getElementById('toastContainer');
+                if (!container) return;
+
+                const toast = document.createElement('div');
+                let icon = 'fa-info-circle';
+                let colorClass = 'border-white/20 bg-[#0a0a0a]/90 text-white';
+                let iconColor = 'text-purple-400';
+                let title = customTitle || i18n[currentLang].toastInfo;
+
+                if (type === 'error') {
+                    icon = 'fa-exclamation-triangle';
+                    colorClass = 'border-red-500/30 bg-[#0a0a0a]/90 text-red-50';
+                    iconColor = 'text-red-400';
+                    title = customTitle || i18n[currentLang].toastError;
+                } else if (type === 'success') {
+                    icon = 'fa-check-circle';
+                    colorClass = 'border-green-500/30 bg-[#0a0a0a]/90 text-green-50';
+                    iconColor = 'text-green-400';
+                    title = customTitle || i18n[currentLang].toastSuccess;
                 }
-                t.classList.remove('hidden');
-                setTimeout(() => t.classList.add('hidden'), 3500);
+
+                toast.className = `flex items-start gap-3.5 p-4 rounded-[1.25rem] backdrop-blur-2xl border shadow-2xl transition-all duration-500 translate-x-full opacity-0 ${colorClass} max-w-[90vw] sm:max-w-sm pointer-events-auto`;
+                
+                toast.innerHTML = `
+                    <div class="mt-0.5 shrink-0 bg-white/5 w-8 h-8 rounded-full flex items-center justify-center border border-white/5 shadow-inner">
+                        <i class="fas ${icon} ${iconColor} text-sm drop-shadow-md"></i>
+                    </div>
+                    <div class="flex flex-col min-w-0 pr-2">
+                        <span class="text-[10px] font-black uppercase tracking-[0.15em] opacity-60 mb-0.5">${title}</span>
+                        <span class="text-[12px] leading-relaxed font-medium break-words">${msg}</span>
+                    </div>
+                `;
+
+                container.appendChild(toast);
+
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        toast.classList.remove('translate-x-full', 'opacity-0');
+                    });
+                });
+
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'translate-x-10');
+                    setTimeout(() => toast.remove(), 500);
+                }, 4000);
             };
 
-            function notifyUser(msg, isError = false, nativeTitle = "Level IA", nativeEmoji = "📢") {
-                if (isError) {
-                    window.showToast(msg, true);
-                } else {
-                    if (!isNotificationsEnabled) return; 
-                    if ("Notification" in window && Notification.permission === 'granted' && navigator.serviceWorker) {
+            // SYSTÈME DE NOTIFICATION (IN-APP + NATIVE EXTERNE)
+            function notifyUser(msg, type = 'info', nativeTitle = "Level IA", nativeEmoji = "📢") {
+                // 1. Toujours afficher le Toast dans l'application
+                if (type === 'error' || type === 'success') {
+                    window.showToast(msg, type);
+                } else if (type === 'broadcast') {
+                    window.showToast(msg, 'info', nativeTitle);
+                }
+                
+                // 2. Notifications natives en dehors de l'application
+                if (!isNotificationsEnabled) return; 
+
+                if ("Notification" in window && Notification.permission === 'granted') {
+                    const options = {
+                        body: msg,
+                        icon: './icon.svg',
+                        badge: './icon.svg',
+                        vibrate: [200, 100, 200]
+                    };
+                    
+                    if (navigator.serviceWorker) {
                         navigator.serviceWorker.ready.then(reg => {
-                            reg.showNotification(`${nativeEmoji} ${nativeTitle}`, { body: msg, icon: './icon.svg', vibrate: [200, 100, 200] });
-                        }).catch(() => {});
+                            reg.showNotification(`${nativeEmoji} ${nativeTitle}`, options);
+                        }).catch(() => {
+                            new Notification(`${nativeEmoji} ${nativeTitle}`, options);
+                        });
+                    } else {
+                        new Notification(`${nativeEmoji} ${nativeTitle}`, options);
                     }
                 }
             }
@@ -1472,7 +1570,7 @@
                     onMessage(messaging, (payload) => {
                         const title = payload.notification?.title || (currentLang === 'fr' ? "Level IA Premium" : "Level IA Premium");
                         const body = payload.notification?.body || (currentLang === 'fr' ? "Nouvelle information disponible." : "New information available.");
-                        notifyUser(body, false, title, "📩");
+                        notifyUser(body, 'broadcast', title, "📩");
                     });
                 }
             }).catch(err => console.warn("FCM ignoré."));
@@ -1571,7 +1669,7 @@
                         
                         const title = latestBroadcast.title || (currentLang === 'fr' ? "Message de LevelUp" : "Message from LevelUp");
                         const emoji = latestBroadcast.emoji || "📢";
-                        notifyUser(latestBroadcast.message, false, title, emoji);
+                        notifyUser(latestBroadcast.message, 'broadcast', title, emoji);
                     }
                 }, (err) => console.warn("Broadcasts ignorés."));
             }
@@ -1667,7 +1765,7 @@
                         document.execCommand('copy');
                         copyBtn.innerHTML = `<i class="fas fa-check text-green-400 text-xs"></i> <span class="text-green-400">${i18n[currentLang].copied}</span>`;
                         setTimeout(() => copyBtn.innerHTML = `<i class="fas fa-copy text-xs"></i> ${i18n[currentLang].copy}`, 2000);
-                        window.showToast(i18n[currentLang].msgCopied);
+                        window.showToast(i18n[currentLang].msgCopied, 'success');
                     } catch (e) {} document.body.removeChild(textArea);
                 };
                 actions.appendChild(copyBtn);
@@ -1912,6 +2010,8 @@
                 setSafeText('promoDesc', t.promoDesc);
                 setSafeText('promoInstallText', t.promoInstallText);
                 setSafeText('promoSkipText', t.promoSkipText);
+                setSafeText('nexusAccessBtn', t.nexusAccessBtn);
+                setSafeText('ecosystemSub', t.ecosystemSub);
                 
                 const lSelect = document.getElementById('langSelect'); if(lSelect) lSelect.value = lang;
                 
@@ -2086,7 +2186,7 @@
                 if (userId) {
                     await setDoc(doc(db, "artifacts", appId, "users", userId, "settings", "dna"), { storageMode: currentStorageMode }, { merge: true });
                 }
-                window.showToast((currentLang === 'fr' ? "Mode de sauvegarde : " : "Backup mode: ") + e.target.options[e.target.selectedIndex].text);
+                window.showToast((currentLang === 'fr' ? "Mode de sauvegarde : " : "Backup mode: ") + e.target.options[e.target.selectedIndex].text, 'success');
             });
 
             async function checkUsage(type) {
@@ -2119,7 +2219,7 @@
                 const todayStr = now.toDateString();
                 
                 if (userUsage.msgCount >= MAX_MSGS && now.getTime() > userUsage.msgReset && lastQuotaNotif !== todayStr) {
-                    notifyUser(currentLang === 'fr' ? "Tes quotas sont réinitialisés ! Tu peux de nouveau discuter." : "Your quotas are reset!", false, "Level IA", "✨");
+                    notifyUser(currentLang === 'fr' ? "Tes quotas sont réinitialisés ! Tu peux de nouveau discuter." : "Your quotas are reset!", 'success', "Level IA", "✨");
                     lastQuotaNotif = todayStr;
                 }
             }, 30000);
@@ -2712,7 +2812,7 @@
                     } catch (error) {
                         console.error("Erreur lors de la génération/envoi :", error);
                         clearInterval(textInterval);
-                        window.showToast(i18n[currentLang].emailSendError, true);
+                        window.showToast(i18n[currentLang].emailSendError, 'error');
                         showFkStep('fkStep3'); // Retourner à l'étape précédente
                     }
                 };
@@ -3011,8 +3111,8 @@
                         userId: userId
                     });
                     feedbackModal.classList.add('hidden'); document.getElementById('feedbackText').value = '';
-                    stars.forEach(s => s.classList.remove('active')); currentStarRating = 0; window.showToast(i18n[currentLang].feedbackSent);
-                } catch(e) { window.showToast(i18n[currentLang].connError, true); console.warn(e); }
+                    stars.forEach(s => s.classList.remove('active')); currentStarRating = 0; window.showToast(i18n[currentLang].feedbackSent, 'success');
+                } catch(e) { window.showToast(i18n[currentLang].connError, 'error'); console.warn(e); }
                 btn.innerText = i18n[currentLang].submitFeedbackBtn;
             };
             
@@ -3021,11 +3121,11 @@
                 const text = document.getElementById('reportText').value.trim();
                 
                 if (!category || category === '') {
-                    window.showToast(i18n[currentLang].selectProblem, true);
+                    window.showToast(i18n[currentLang].selectProblem, 'error');
                     return;
                 }
                 if (text === '') {
-                    window.showToast(i18n[currentLang].describeProblem, true);
+                    window.showToast(i18n[currentLang].describeProblem, 'error');
                     return;
                 }
 
@@ -3041,8 +3141,8 @@
                         userEmail: currentUserMail,
                         userId: userId
                     });
-                    reportModal.classList.add('hidden'); document.getElementById('reportText').value = ''; document.getElementById('reportCategory').value = ''; window.showToast(i18n[currentLang].reportSent);
-                } catch(e) { window.showToast(i18n[currentLang].connError, true); console.warn(e); }
+                    reportModal.classList.add('hidden'); document.getElementById('reportText').value = ''; document.getElementById('reportCategory').value = ''; window.showToast(i18n[currentLang].reportSent, 'success');
+                } catch(e) { window.showToast(i18n[currentLang].connError, 'error'); console.warn(e); }
                 btn.innerText = i18n[currentLang].submitReportBtn;
             };
 
@@ -3063,7 +3163,7 @@
                     }, { merge: true });
                 }
                 
-                window.showToast(i18n[currentLang].prefsSaved);
+                window.showToast(i18n[currentLang].prefsSaved, 'success');
                 btn.innerHTML = '<i class="fas fa-check text-sm"></i>';
                 setTimeout(() => {
                     btn.innerText = originalText;
@@ -3145,12 +3245,12 @@
             document.getElementById('submitLinkBtn').onclick = () => {
                 const url = document.getElementById('linkInputUrl').value.trim();
                 if (!/^https?:\/\//i.test(url)) {
-                    window.showToast(i18n[currentLang].invalidUrl, true);
+                    window.showToast(i18n[currentLang].invalidUrl, 'error');
                     return;
                 }
                 if (url) {
                     if (currentAttachments.length >= MAX_ATTACHMENTS) {
-                        window.showToast(i18n[currentLang].fileLimit, true);
+                        window.showToast(i18n[currentLang].fileLimit, 'error');
                         return;
                     }
                     currentAttachments.push({ name: "Lien Web", url: url, isLink: true });
@@ -3163,17 +3263,17 @@
                 if(!file) return;
 
                 if (currentAttachments.length >= MAX_ATTACHMENTS) {
-                    window.showToast(i18n[currentLang].fileLimit, true);
+                    window.showToast(i18n[currentLang].fileLimit, 'error');
                     return;
                 }
 
                 const usage = await checkUsage('upload');
                 if(!usage.allowed) { 
-                    window.showToast(i18n[currentLang].quotaLimit, true); 
+                    window.showToast(i18n[currentLang].quotaLimit, 'error'); 
                     imgInput.value = ''; docInput.value = ''; 
                     return; 
                 }
-                if(file.size > 5 * 1024 * 1024) { window.showToast(i18n[currentLang].sizeLimit, true); imgInput.value = ''; docInput.value = ''; return; }
+                if(file.size > 5 * 1024 * 1024) { window.showToast(i18n[currentLang].sizeLimit, 'error'); imgInput.value = ''; docInput.value = ''; return; }
 
                 const reader = new FileReader();
                 reader.onload = (e) => {
@@ -3224,7 +3324,7 @@
                 dropZone.classList.add('opacity-0', 'pointer-events-none');
                 
                 if (!userId) {
-                    window.showToast(i18n[currentLang].plsLogin, true);
+                    window.showToast(i18n[currentLang].plsLogin, 'error');
                     return;
                 }
 
@@ -3233,7 +3333,7 @@
                     if (file.type.startsWith('image/') || file.type === 'application/pdf') {
                         processFile(file);
                     } else {
-                        window.showToast(i18n[currentLang].unsupportedFormat, true);
+                        window.showToast(i18n[currentLang].unsupportedFormat, 'error');
                     }
                 } else {
                     const url = e.dataTransfer.getData('text/uri-list') || e.dataTransfer.getData('text/plain');
@@ -3571,9 +3671,6 @@
                                     id: currentSessionId,
                                     title: title,
                                     updatedAt: Date.now(),
-                                    isThiabsMode: isThiabsMode,
-                                    isHollyMode: isHollyMode,
-                                    isMarcoMode: isMarcoMode,
                                     model: currentModel,
                                     messages: [messageObj],
                                     storage: 'local'
@@ -3586,9 +3683,6 @@
                                         id: currentSessionId,
                                         title: title,
                                         updatedAt: Date.now(),
-                                        isThiabsMode: isThiabsMode,
-                                        isHollyMode: isHollyMode,
-                                        isMarcoMode: isMarcoMode,
                                         model: currentModel,
                                         messages: [messageObj],
                                         storage: 'local'
@@ -3605,7 +3699,7 @@
                             if (!currentSessionId || currentSessionId.startsWith('loc_')) {
                                 const title = val ? (val.length > 25 ? val.substring(0, 25) + "..." : val) : "Nouvelle session";
                                 const docRef = await addDoc(collection(db, "artifacts", appId, "users", userId, "sessions"), {
-                                    title: title, updatedAt: Date.now(), isThiabsMode: isThiabsMode, isHollyMode: isHollyMode, isMarcoMode: isMarcoMode, model: currentModel, messages: [messageObj]
+                                    title: title, updatedAt: Date.now(), model: currentModel, messages: [messageObj]
                                 });
                                 currentSessionId = docRef.id;
                             } else {
@@ -3619,7 +3713,7 @@
             }
 
             async function send() {
-                const val = userInput.value.trim();
+                const val = document.getElementById('userInput').value.trim();
                 
                 if (!val && currentAttachments.length === 0) return;
                 if (!userId) return;
@@ -3628,12 +3722,12 @@
                 
                 lastInteraction = { text: val, attachments: attachmentsToProcess };
 
-                userInput.value = ''; userInput.style.height = '44px';
+                document.getElementById('userInput').value = ''; document.getElementById('userInput').style.height = '44px';
                 
-                if(!currentSessionId && conversationContainer.children.length === 1 && hasSeenWelcomeMsg) {
-                    const firstMsg = conversationContainer.querySelector('.prose');
+                if(!currentSessionId && document.getElementById('conversationContainer').children.length === 1 && hasSeenWelcomeMsg) {
+                    const firstMsg = document.getElementById('conversationContainer').querySelector('.prose');
                     if(firstMsg && (firstMsg.innerText.includes("Salut bro") || firstMsg.innerText.includes("Hey bro") || firstMsg.innerText.includes("Bonjour"))) {
-                        conversationContainer.innerHTML = '';
+                        document.getElementById('conversationContainer').innerHTML = '';
                     }
                 }
 
@@ -3642,8 +3736,8 @@
                 renderAttachments();
             }
 
-            userInput.oninput = function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; };
-            userInput.onkeydown = (e) => { 
+            document.getElementById('userInput').oninput = function() { this.style.height = 'auto'; this.style.height = (this.scrollHeight) + 'px'; };
+            document.getElementById('userInput').onkeydown = (e) => { 
                 if (e.key === 'Enter' && !e.shiftKey) { 
                     e.preventDefault(); 
                     if (navigator.vibrate) navigator.vibrate(40); 
